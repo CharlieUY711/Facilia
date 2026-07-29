@@ -50,6 +50,13 @@ export function dashboardItemsForRole(role: Role): DashboardItem[] {
         icon: "👥",
       },
       {
+        key: "personal",
+        titulo: "Personal",
+        descripcion: "Legajos del equipo: documentos, evolución, tareas y comunicados.",
+        href: "/dashboard/personal",
+        icon: "🗂️",
+      },
+      {
         key: "reportes",
         titulo: "Reportes",
         descripcion: "Indicadores de servicio y desempeño.",
@@ -83,6 +90,13 @@ export function dashboardItemsForRole(role: Role): DashboardItem[] {
         icon: "👥",
       },
       {
+        key: "personal",
+        titulo: "Personal",
+        descripcion: "Legajos del equipo: documentos, evolución, tareas y comunicados.",
+        href: "/dashboard/personal",
+        icon: "🗂️",
+      },
+      {
         key: "reportes",
         titulo: "Reportes",
         descripcion: "Indicadores de servicio y desempeño.",
@@ -113,16 +127,11 @@ export function dashboardItemsForRole(role: Role): DashboardItem[] {
   if (role === "personal") {
     return [
       {
-        key: "tareas",
-        titulo: "Mis tareas",
-        descripcion: "Servicios y visitas asignadas.",
-        icon: "🧹",
-      },
-      {
-        key: "reportes-personal",
-        titulo: "Mis reportes",
-        descripcion: "Registro de tareas completadas.",
-        icon: "📝",
+        key: "mi-legajo",
+        titulo: "Mi legajo",
+        descripcion: "Tus datos, documentos, evolución, tareas y comunicados.",
+        href: "/dashboard/mi-legajo",
+        icon: "🗂️",
       },
     ];
   }
