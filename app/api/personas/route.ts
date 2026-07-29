@@ -20,7 +20,7 @@ export async function GET() {
   const { data, error } = await service
     .from("personas")
     .select(
-      "*, organizaciones ( id, nombre ), locaciones ( id, nombre ), profiles ( id, role, email )"
+      "*, organizaciones ( id, nombre ), locaciones ( id, nombre ), profiles!personas_profile_id_fkey ( id, role, email )"
     )
     .order("created_at", { ascending: true });
 
@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
       pending_role: pendingRole,
       created_by: auth.uid,
     })
-    .select("*, organizaciones ( id, nombre ), locaciones ( id, nombre ), profiles ( id, role, email )")
+    .select("*, organizaciones ( id, nombre ), locaciones ( id, nombre ), profiles!personas_profile_id_fkey ( id, role, email )")
     .single();
 
   if (error) return NextResponse.json({ ok: false, error: error.message }, { status: 500 });

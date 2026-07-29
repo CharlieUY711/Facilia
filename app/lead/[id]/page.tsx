@@ -88,7 +88,7 @@ if (loading) return <div className="min-h-screen flex items-center justify-cente
     <div className="min-h-screen bg-paper">
       <header className="bg-white border-b border-navy-100">
         <div className="max-w-4xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-          <Image src="/FACILIA_By.png" alt="FACILIA" width={120} height={30} />
+          <Image src="/FACILIA_By.png" alt="FACILIA" width={138} height={35} />
           <button onClick={() => router.push("/panel")} className="text-sm text-blue hover:underline">
             ← Volver al panel
           </button>

@@ -15,7 +15,7 @@ export async function POST(_req: NextRequest, { params }: { params: { id: string
   const service = createServiceClient();
   const { data: persona, error: fetchError } = await service
     .from("personas")
-    .select("id, profile_id, profiles ( role )")
+    .select("id, profile_id, profiles!personas_profile_id_fkey ( role )")
     .eq("id", params.id)
     .maybeSingle();
 

@@ -43,7 +43,7 @@ function LoginForm() {
     <div className="min-h-screen bg-navy-50/40 flex items-center justify-center px-5">
       <Card className="w-full max-w-sm">
         <div className="flex justify-center mb-6">
-          <Image src="/FACILIA_By.png" alt="FACILIA" width={140} height={36} />
+          <Image src="/FACILIA_By.png" alt="FACILIA" width={161} height={41} />
         </div>
         <h1 className="font-display font-semibold text-lg text-navy text-center mb-6">Panel interno</h1>
         <form onSubmit={handleLogin} className="space-y-4">

@@ -74,7 +74,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
   const { data: actualizada } = await service
     .from("personas")
-    .select("*, organizaciones ( id, nombre ), locaciones ( id, nombre ), profiles ( id, role, email )")
+    .select("*, organizaciones ( id, nombre ), locaciones ( id, nombre ), profiles!personas_profile_id_fkey ( id, role, email )")
     .eq("id", persona.id)
     .single();
 

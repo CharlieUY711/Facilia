@@ -32,7 +32,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   const { data: persona, error: fetchError } = await service
     .from("personas")
-    .select("id, profile_id, profiles ( role )")
+    .select("id, profile_id, profiles!personas_profile_id_fkey ( role )")
     .eq("id", params.id)
     .maybeSingle();
 
@@ -90,14 +90,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       .from("personas")
       .update(updates)
       .eq("id", params.id)
-      .select("*, organizaciones ( id, nombre ), locaciones ( id, nombre ), profiles ( id, role, email )")
+      .select("*, organizaciones ( id, nombre ), locaciones ( id, nombre ), profiles!personas_profile_id_fkey ( id, role, email )")
       .single();
     if (updateError) return NextResponse.json({ ok: false, error: updateError.message }, { status: 500 });
     data = updated;
   } else {
     const { data: current } = await service
       .from("personas")
-      .select("*, organizaciones ( id, nombre ), locaciones ( id, nombre ), profiles ( id, role, email )")
+      .select("*, organizaciones ( id, nombre ), locaciones ( id, nombre ), profiles!personas_profile_id_fkey ( id, role, email )")
       .eq("id", params.id)
       .single();
     data = current;

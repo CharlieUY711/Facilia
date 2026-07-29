@@ -242,7 +242,7 @@ export default function DirectorioPage() {
             <>
               {tab === "personas" && (
                 <Button
-                  className="!rounded-full !px-4 !py-2 !text-sm"
+                  className="!rounded-full !px-4 !py-2 !text-sm whitespace-nowrap"
                   onClick={() => setPersonaModal({ open: true, editing: null })}
                 >
                   + Nuevo
@@ -250,7 +250,7 @@ export default function DirectorioPage() {
               )}
               {tab === "organizaciones" && (
                 <Button
-                  className="!rounded-full !px-4 !py-2 !text-sm"
+                  className="!rounded-full !px-4 !py-2 !text-sm whitespace-nowrap"
                   onClick={() => setOrgModal({ open: true, editing: null })}
                 >
                   + Nuevo
@@ -258,7 +258,7 @@ export default function DirectorioPage() {
               )}
               {tab === "locaciones" && (
                 <Button
-                  className="!rounded-full !px-4 !py-2 !text-sm"
+                  className="!rounded-full !px-4 !py-2 !text-sm whitespace-nowrap"
                   onClick={() => setLocModal({ open: true, editing: null })}
                 >
                   + Nuevo

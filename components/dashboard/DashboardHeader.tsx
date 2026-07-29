@@ -73,7 +73,7 @@ export default function DashboardHeader({}: DashboardHeaderProps) {
     <div className="sticky top-0 z-30 bg-white border-b border-navy-100">
       {/* ── Barra: marca + rol + usuario ───────────────────────────── */}
       <div className="max-w-screen-2xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-        <Image src="/FACILIA_By.png" alt="FACILIA" width={120} height={30} />
+        <Image src="/FACILIA_By.png" alt="FACILIA" width={138} height={35} />
         <div className="flex items-center gap-3">
           {role && (
             <span className="text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full bg-orange/10 text-orange">

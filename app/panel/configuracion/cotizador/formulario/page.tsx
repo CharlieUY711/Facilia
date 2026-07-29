@@ -21,7 +21,7 @@ export default function CotizadorFormularioPage() {
       <header className="bg-white border-b border-navy-100 sticky top-0 z-30">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Image src="/FACILIA_By.png" alt="FACILIA" width={120} height={30} />
+            <Image src="/FACILIA_By.png" alt="FACILIA" width={138} height={35} />
             <Link href="/dashboard" className="text-sm text-ink/50 hover:text-navy transition-colors">
               ← Volver al Dashboard
             </Link>
