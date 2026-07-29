@@ -1,5 +1,20 @@
 export type Role = "super_admin" | "admin" | "colaborador" | "personal" | "usuario";
 
+/**
+ * Jerarquía de roles: a mayor número, más privilegios. Se usa para
+ * decidir quién puede asignar qué rol a quién (ver ROLE_LEVEL abajo).
+ * Super Admin queda fuera de esta comparación en los chequeos: tiene
+ * permiso incondicional sobre cualquier persona/rol (ver los usos de
+ * `auth.role === "super_admin"` en las API routes de /api/personas).
+ */
+export const ROLE_LEVEL: Record<Role, number> = {
+  super_admin: 4,
+  admin: 3,
+  colaborador: 2,
+  personal: 1,
+  usuario: 0,
+};
+
 export interface DashboardItem {
   key: string;
   titulo: string;

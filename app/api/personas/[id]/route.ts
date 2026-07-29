@@ -41,6 +41,12 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
   // Cambio de rol (solo si la persona ya tiene acceso al sistema).
   if (body.role !== undefined) {
+    if (auth.role !== "super_admin") {
+      return NextResponse.json(
+        { ok: false, error: "Solo Super Admin puede asignar roles." },
+        { status: 403 }
+      );
+    }
     if (!persona.profile_id) {
       return NextResponse.json(
         { ok: false, error: "Esta persona todavía no tiene acceso. Invitala primero." },
