@@ -1,4 +1,3 @@
-// lib/cotizador/formulario.ts
 export type CampoOpcion = { value: string; label: string };
 
 export type Campo = {
@@ -22,13 +21,14 @@ export type Paso = {
   campos: Campo[];
 };
 
-export type Formulario = {
+export type FormularioResponse = {
+  ok: boolean;
   pasos: Paso[];
+  error?: string;
 };
 
-export async function fetchFormulario(): Promise<Formulario> {
+export async function fetchFormulario(): Promise<FormularioResponse> {
   const res = await fetch("/api/cotizador/formulario");
   const data = await res.json();
-  if (!data.ok) throw new Error(data.error || "No se pudo cargar el formulario");
   return data;
 }

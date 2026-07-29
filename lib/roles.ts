@@ -27,7 +27,7 @@ export function dashboardItemsForRole(role: Role): DashboardItem[] {
       key: "cotizador",
       titulo: "Nueva cotización",
       descripcion: "Generá un presupuesto para un cliente.",
-      href: "/cotizador",
+      href: "/dashboard/cotizador",
       icon: "🧮",
     },
   ];

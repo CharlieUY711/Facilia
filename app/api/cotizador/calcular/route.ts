@@ -3,50 +3,40 @@ import { calcularCotizacionDesdeDB, type CotizacionInput } from "@/lib/cotizador
 
 /**
  * POST /api/cotizador/calcular
+ * Body: CotizacionInput — {
+ *   ambientes: {tipo, m2}[],
+ *   frecuencia,
+ *   extras?: string[],
+ *   opcionales?: { variable_codigo, opcion_codigo, cantidad? }[]  // Etapa 5G
+ * }
  *
- * Recibe un CotizacionInput (mismo shape que usa el motor de la
- * Etapa 2) y devuelve el resultado calculado con la configuración
- * activa de Supabase. Pensado para que etapas futuras del cotizador
- * público (components/CotizadorForm.tsx) llamen acá en vez de
- * duplicar la lógica del motor en el frontend.
- *
- * No requiere sesión: lo usa el cotizador público, igual que
- * /api/leads.
+ * Corre el motor nuevo (lib/cotizador/engine.ts) contra la configuración
+ * viva en Supabase. Pública (sin requireAdmin): la va a usar el cotizador
+ * público cuando se migre en una etapa futura. Por ahora no la consume
+ * nadie todavía — sirve para probar el motor end-to-end vía HTTP mientras
+ * tanto.
  */
 export async function POST(req: NextRequest) {
-  let body: any;
+  let body: CotizacionInput;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ ok: false, error: "Body inválido" }, { status: 400 });
+    return NextResponse.json({ ok: false, error: "Body inválido, se esperaba JSON" }, { status: 400 });
   }
 
-  if (!body || !Array.isArray(body.ambientes)) {
+  if (!body || !Array.isArray(body.ambientes) || !body.frecuencia) {
     return NextResponse.json(
-      { ok: false, error: "Falta \"ambientes\" (array de { tipo, m2 })" },
+      { ok: false, error: "Body inválido. Se espera { ambientes: [{tipo, m2}], frecuencia, extras?, opcionales? }" },
       { status: 400 }
     );
   }
-  if (typeof body.frecuencia !== "string" || !body.frecuencia) {
-    return NextResponse.json({ ok: false, error: "Falta \"frecuencia\"" }, { status: 400 });
-  }
-
-  const input: CotizacionInput = {
-    ambientes: body.ambientes,
-    frecuencia: body.frecuencia,
-    extras: Array.isArray(body.extras) ? body.extras : undefined,
-  };
 
   try {
-    const resultado = await calcularCotizacionDesdeDB(input);
+    const resultado = await calcularCotizacionDesdeDB(body);
     return NextResponse.json({ ok: true, resultado });
   } catch (err: any) {
-    // Errores del motor (ambiente/opción/variable inexistente o inactiva,
-    // superficie inválida, parámetro faltante, etc.) son errores de
-    // input del cliente, no errores del servidor.
-    return NextResponse.json(
-      { ok: false, error: err?.message ?? "No se pudo calcular la cotización" },
-      { status: 400 }
-    );
+    // Errores del motor (opción/variable inexistente, superficie inválida,
+    // parámetro faltante) son errores de input del usuario, no del server.
+    return NextResponse.json({ ok: false, error: err?.message ?? "Error al calcular la cotización" }, { status: 400 });
   }
 }

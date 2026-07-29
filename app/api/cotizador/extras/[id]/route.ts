@@ -2,66 +2,50 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/serverAuth";
 
-const TIPOS_CALCULO_VALIDOS = ["fixed", "percentage", "formula"] as const;
+const TIPOS_CALCULO_VALIDOS = ["fixed", "percentage", "formula"];
 
 /**
  * PATCH /api/cotizador/extras/:id
- * Acepta nombre, codigo, tipo_calculo, valor, orden, activo.
+ * Body: { nombre?, codigo?, tipo_calculo?, valor?, orden?, activo? }
  */
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await requireAdmin();
   if (!auth) return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 403 });
 
   const body = await req.json();
 
-  if (body.tipo_calculo && !TIPOS_CALCULO_VALIDOS.includes(body.tipo_calculo)) {
-    return NextResponse.json({ ok: false, error: "tipo_calculo inválido" }, { status: 400 });
+  if (body.tipo_calculo !== undefined && !TIPOS_CALCULO_VALIDOS.includes(body.tipo_calculo)) {
+    return NextResponse.json(
+      { ok: false, error: `tipo_calculo inválido. Debe ser uno de: ${TIPOS_CALCULO_VALIDOS.join(", ")}` },
+      { status: 400 }
+    );
+  }
+
+  const update: Record<string, unknown> = {};
+  if (body.nombre !== undefined) update.nombre = body.nombre;
+  if (body.codigo !== undefined) update.codigo = body.codigo;
+  if (body.tipo_calculo !== undefined) update.tipo_calculo = body.tipo_calculo;
+  if (body.valor !== undefined) update.valor = body.valor;
+  if (body.orden !== undefined) update.orden = body.orden;
+  if (body.activo !== undefined) update.activo = body.activo;
+
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ ok: false, error: "Nada para actualizar" }, { status: 400 });
   }
 
   const supabase = createServiceClient();
 
-  if (body.codigo) {
-    const { data: duplicado, error: errorDuplicado } = await supabase
-      .from("cotizador_extras")
-      .select("id")
-      .eq("codigo", body.codigo)
-      .neq("id", params.id)
-      .maybeSingle();
-
-    if (errorDuplicado) {
-      return NextResponse.json({ ok: false, error: errorDuplicado.message }, { status: 500 });
-    }
-    if (duplicado) {
-      return NextResponse.json(
-        { ok: false, error: `Ya existe un adicional con el código "${body.codigo}"` },
-        { status: 400 }
-      );
-    }
-  }
-
-  const updates: Record<string, unknown> = {};
-  if ("nombre" in body) updates.nombre = body.nombre;
-  if ("codigo" in body) updates.codigo = body.codigo;
-  if ("tipo_calculo" in body) updates.tipo_calculo = body.tipo_calculo;
-  if ("valor" in body) updates.valor = body.valor;
-  if ("orden" in body) updates.orden = body.orden;
-  if ("activo" in body) updates.activo = body.activo;
-
-  if (Object.keys(updates).length === 0) {
-    return NextResponse.json({ ok: false, error: "Nada para actualizar" }, { status: 400 });
-  }
-
   const { data, error } = await supabase
     .from("cotizador_extras")
-    .update(updates)
+    .update(update)
     .eq("id", params.id)
     .select()
     .single();
 
   if (error) {
+    if (error.code === "23505") {
+      return NextResponse.json({ ok: false, error: "Ya existe otro adicional con ese código" }, { status: 409 });
+    }
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
 
@@ -70,12 +54,9 @@ export async function PATCH(
 
 /**
  * DELETE /api/cotizador/extras/:id
- * Eliminación lógica (activo=false).
+ * Borrado lógico (activo=false), nunca físico.
  */
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await requireAdmin();
   if (!auth) return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 403 });
 

@@ -2,16 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/serverAuth";
 
-const TIPOS_VALIDOS = [
-  "select",
-  "select_repetible",
-  "number",
-  "boolean",
-  "text",
-  "formula",
-] as const;
+const TIPOS_VALIDOS = ["select", "select_repetible", "select_cantidad", "number", "boolean", "text", "formula"];
+const CANTIDAD_FUENTES_VALIDAS = ["ninguna", "input_cliente", "cantidad_banos"];
 
-export async function GET(){
+/**
+ * GET /api/cotizador/variables
+ * Todas las variables (activas e inactivas) con sus opciones anidadas —
+ * lo usa el panel admin. El cotizador público usa /api/cotizador/config
+ * (solo variables activas).
+ */
+export async function GET() {
 
  const supabase=createServiceClient();
 
@@ -39,9 +39,14 @@ export async function GET(){
 
 /**
  * POST /api/cotizador/variables
- * Crea una variable del cotizador (ej: TIPO_AMBIENTE, FRECUENCIA).
- * Body: { nombre, codigo, tipo?, orden?, obligatorio?, afecta_precio?, descripcion? }
- * Solo Super Admin / Administrador.
+ * Body: { nombre, codigo, tipo, orden?, obligatorio?, afecta_precio?, descripcion?,
+ *         cantidad_fuente?, unidad_cantidad?, cantidad_min?, cantidad_max? }
+ * Crea una variable nueva. Solo Super Admin / Admin.
+ *
+ * Los 4 campos de cantidad (Etapa 5G) solo tienen sentido para variables de
+ * opcionales (vajilla, ambientadores, insumos de cocina/baño, etc.):
+ * cantidad_fuente 'input_cliente' espera unidad_cantidad/cantidad_min/max;
+ * 'cantidad_banos' y 'ninguna' los ignoran. Ver lib/cotizador/engine.ts.
  */
 export async function POST(req: NextRequest) {
   const auth = await requireAdmin();
@@ -51,52 +56,45 @@ export async function POST(req: NextRequest) {
 
   const nombre = (body.nombre ?? "").trim();
   const codigo = (body.codigo ?? "").trim();
+  const tipo = body.tipo ?? "select";
+  const cantidadFuente = body.cantidad_fuente ?? "ninguna";
 
-  if (!nombre) {
-    return NextResponse.json({ ok: false, error: "El nombre es obligatorio" }, { status: 400 });
+  if (!nombre) return NextResponse.json({ ok: false, error: "El nombre es obligatorio" }, { status: 400 });
+  if (!codigo) return NextResponse.json({ ok: false, error: "El código es obligatorio" }, { status: 400 });
+  if (!TIPOS_VALIDOS.includes(tipo)) {
+    return NextResponse.json({ ok: false, error: `Tipo inválido. Debe ser uno de: ${TIPOS_VALIDOS.join(", ")}` }, { status: 400 });
   }
-  if (!codigo) {
-    return NextResponse.json({ ok: false, error: "El código es obligatorio" }, { status: 400 });
-  }
-  if (body.tipo && !TIPOS_VALIDOS.includes(body.tipo)) {
-    return NextResponse.json({ ok: false, error: "Tipo de variable inválido" }, { status: 400 });
-  }
-
-  const supabase = createServiceClient();
-
-  // Validar codigo único antes de insertar, para devolver un mensaje de
-  // error claro en vez del error crudo de Postgres (constraint violation).
-  const { data: existente, error: errorBusqueda } = await supabase
-    .from("cotizador_variables")
-    .select("id")
-    .eq("codigo", codigo)
-    .maybeSingle();
-
-  if (errorBusqueda) {
-    return NextResponse.json({ ok: false, error: errorBusqueda.message }, { status: 500 });
-  }
-  if (existente) {
+  if (!CANTIDAD_FUENTES_VALIDAS.includes(cantidadFuente)) {
     return NextResponse.json(
-      { ok: false, error: `Ya existe una variable con el código "${codigo}"` },
+      { ok: false, error: `cantidad_fuente inválida. Debe ser una de: ${CANTIDAD_FUENTES_VALIDAS.join(", ")}` },
       { status: 400 }
     );
   }
+
+  const supabase = createServiceClient();
 
   const { data, error } = await supabase
     .from("cotizador_variables")
     .insert({
       nombre,
       codigo,
-      tipo: body.tipo ?? "select",
+      tipo,
       orden: body.orden ?? 0,
       obligatorio: body.obligatorio ?? false,
       afecta_precio: body.afecta_precio ?? true,
-      descripcion: body.descripcion || null,
+      descripcion: body.descripcion ?? null,
+      cantidad_fuente: cantidadFuente,
+      unidad_cantidad: body.unidad_cantidad ?? null,
+      cantidad_min: body.cantidad_min ?? null,
+      cantidad_max: body.cantidad_max ?? null,
     })
     .select()
     .single();
 
   if (error) {
+    if (error.code === "23505") {
+      return NextResponse.json({ ok: false, error: `Ya existe una variable con el código "${codigo}"` }, { status: 409 });
+    }
     return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
 

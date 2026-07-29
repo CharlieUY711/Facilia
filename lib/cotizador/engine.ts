@@ -1,13 +1,57 @@
 /**
  * Motor de cálculo del Cotizador FACILIA (configurable, sin valores
- * hardcodeados). Todo lo que puede variar entre presupuestos (factores por
- * tipo de ambiente, factores de frecuencia, precio base por m², margen
- * comercial, adicionales) viene de la base de datos vía
- * `cargarConfiguracion()`; este archivo solo hace el cálculo.
+ * hardcodeados). Todo lo que puede variar entre presupuestos (rendimiento
+ * y costo de insumos por tipo de ambiente, visitas por frecuencia, costo
+ * de hora de operario, margen comercial, adicionales, opcionales) viene
+ * de la base de datos vía `cargarConfiguracion()`; este archivo solo hace
+ * el cálculo.
  *
- * Este motor es independiente del legacy `lib/calculatePrice.ts` (que sigue
- * siendo el que usa hoy el cotizador público) — conviven hasta que una
- * etapa futura migre `components/CotizadorForm.tsx` a este motor.
+ * ── Etapa 5D-bis: modelo de costo real ────────────────────────────────
+ * Ver comentario histórico más abajo, sin cambios en esta etapa.
+ *
+ *   costo_ambiente_por_visita = (m2 / rendimiento_m2_hora) × HORA_OPERARIO
+ *                                + m2 × insumos_m2
+ *   costo_ambiente_mensual    = frecuencia_independiente
+ *                                 ? costo_ambiente_por_visita   (tarifa fija, no depende de visitas)
+ *                                 : costo_ambiente_por_visita × visitas_mes
+ *   costo_mensual             = Σ costo_ambiente_mensual (todos los ambientes)
+ *                                + Σ opcionales + Σ adicionales (extras)
+ *   precio_mensual            = costo_mensual × (1 + MARGEN_COMERCIAL / 100)
+ *
+ * `rendimiento_m2_hora`, `insumos_m2` y `frecuencia_independiente` viven en
+ * cotizador_opciones (solo tienen sentido en opciones de TIPO_AMBIENTE).
+ * `visitas_mes` vive en cotizador_opciones (solo en opciones de FRECUENCIA).
+ * `HORA_OPERARIO` y `MARGEN_COMERCIAL` viven en cotizador_config.
+ * Ver supabase/migrations/2026_07_28_etapa5D_bis_motor_costo.sql.
+ *
+ * ── Etapa 5G: opcionales (vajilla, lavavajillas, cafetera, dispensador
+ * de agua, ambientadores, insumos de cocina/baño) ──────────────────────
+ * Se modelan como cotizador_variables (mismo patrón que TIPO_AMBIENTE),
+ * no como cotizador_extras, porque necesitan una noción de "cantidad" que
+ * los extras no tienen. Cada variable de opcional trae `cantidad_fuente`:
+ *
+ *   'ninguna'        → precio = opcion.precio_fijo (cantidad implícita = 1)
+ *   'input_cliente'  → precio = opcion.precio_fijo × cantidad (la manda el cliente)
+ *   'cantidad_banos' → precio = opcion.precio_fijo × cantidad de ambientes
+ *                       con tipo "BANO" en el presupuesto (mínimo 1, igual
+ *                       que hacía el motor legado con `banosCount`)
+ *
+ * Ver supabase/migrations/2026_07_28_etapa5G_opcionales_variables.sql.
+ * Los add-ons fijos de cada opcional (sanitización de vajilla, "incluir
+ * dispensador" de cada insumo) siguen viviendo en cotizador_extras — se
+ * seleccionan igual que cualquier otro extra, vía `input.extras`.
+ *
+ * ⚠️ Los valores de rendimiento/insumos/precio_fijo de opcionales cargados
+ * por las migraciones de 5D-bis y 5G son PLACEHOLDERS marcados "a
+ * confirmar con FACILIA" — el motor calcula correctamente con cualquier
+ * valor que tengan esas columnas, pero el precio resultante no es
+ * confiable para cobrar hasta que alguien de FACILIA con visibilidad de
+ * costos reales los revise.
+ *
+ * Este motor sigue siendo independiente del legacy `lib/calculatePrice.ts`
+ * (que sigue siendo el que usa hoy el cotizador público) — conviven en
+ * modo shadow hasta que una etapa futura, con los precios ya aprobados,
+ * migre `components/CotizadorForm.tsx` / `app/api/leads` a este motor.
  */
 
 // ── Tipos de entrada ────────────────────────────────────────────
@@ -18,12 +62,29 @@ export interface AmbienteInputCalc {
   m2: number;
 }
 
+/**
+ * Una selección de opcional hecha por el cliente en el wizard.
+ * `cantidad` solo es necesaria (y se valida) cuando la variable
+ * correspondiente tiene `cantidad_fuente === 'input_cliente'`
+ * (ej: VAJILLA_TIPO → cantidad de personas, AMBIENTADORES → cantidad de
+ * unidades). Para el resto se ignora si viene.
+ */
+export interface OpcionalSeleccionado {
+  /** Código de la variable, ej: "VAJILLA_TIPO" */
+  variable_codigo: string;
+  /** Código de la opción elegida dentro de esa variable, ej: "PREMIUM" */
+  opcion_codigo: string;
+  cantidad?: number;
+}
+
 export interface CotizacionInput {
   ambientes: AmbienteInputCalc[];
   /** Código de la opción de la variable FRECUENCIA, ej: "3X_SEMANA" */
   frecuencia: string;
   /** Códigos de cotizador_extras a incluir en el presupuesto */
   extras?: string[];
+  /** Opcionales (vajilla, cafetera, insumos, etc.) elegidos por el cliente */
+  opcionales?: OpcionalSeleccionado[];
 }
 
 // ── Configuración cargada desde Supabase ───────────────────────
@@ -35,7 +96,19 @@ export interface OpcionCotizador {
   factor: number;
   precio_fijo: number | null;
   activo: boolean;
+  /** Solo relevante en opciones de TIPO_AMBIENTE. */
+  rendimiento_m2_hora: number | null;
+  /** Solo relevante en opciones de TIPO_AMBIENTE. */
+  insumos_m2: number | null;
+  /** Solo relevante en opciones de TIPO_AMBIENTE. */
+  frecuencia_independiente: boolean;
+  /** Solo relevante en opciones de FRECUENCIA. */
+  visitas_mes: number | null;
 }
+
+/** Cómo se determina la cantidad que multiplica a `precio_fijo` en una
+ *  variable de tipo opcional. Ver comentario de cabecera — Etapa 5G. */
+export type CantidadFuente = "ninguna" | "input_cliente" | "cantidad_banos";
 
 export interface VariableCotizador {
   id: string;
@@ -44,6 +117,10 @@ export interface VariableCotizador {
   tipo: string;
   activo: boolean;
   opciones: OpcionCotizador[];
+  cantidad_fuente: CantidadFuente;
+  unidad_cantidad: string | null;
+  cantidad_min: number | null;
+  cantidad_max: number | null;
 }
 
 export interface ExtraCotizador {
@@ -71,7 +148,7 @@ export interface LineaDetalle {
 }
 
 export interface CotizacionResultado {
-  superficie_ponderada: number;
+  /** Suma de los costos por visita/mes de todos los ambientes + opcionales + extras, antes de margen. */
   costo_mensual: number;
   precio_mensual: number;
   margen_aplicado: number;
@@ -89,6 +166,15 @@ function buscarVariable(config: CotizadorConfig, codigoVariable: string): Variab
   if (!variable || !variable.activo) {
     throw new Error(`Variable de cotizador desconocida o inactiva: ${codigoVariable}`);
   }
+  return variable;
+}
+
+function buscarVariableOpcional(
+  config: CotizadorConfig,
+  codigoVariable: string
+): VariableCotizador | null {
+  const variable = config.variables.find((v) => v.codigo === codigoVariable);
+  if (!variable || !variable.activo) return null;
   return variable;
 }
 
@@ -110,6 +196,22 @@ function requerirParametro(config: CotizadorConfig, clave: string): number {
   return valor;
 }
 
+function requerirNumero(valor: number | null, campo: string, contexto: string): number {
+  if (valor === null || valor === undefined || Number.isNaN(valor)) {
+    throw new Error(
+      `Falta cargar "${campo}" para ${contexto} en cotizador_opciones — no se puede calcular el costo sin ese dato.`
+    );
+  }
+  return valor;
+}
+
+/** Cuenta ambientes de tipo BANO en el presupuesto, mínimo 1 — mismo
+ *  criterio que usaba `banosCount` en el motor legado (lib/calculatePrice.ts). */
+function contarBanos(ambientes: AmbienteInputCalc[]): number {
+  const count = ambientes.filter((a) => a.tipo === "BANO").length;
+  return Math.max(1, count);
+}
+
 // ── Motor puro ───────────────────────────────────────────────────
 
 /**
@@ -126,46 +228,113 @@ export function calcularCotizacion(
 
   const detalle: LineaDetalle[] = [];
 
-  const precioM2Base = requerirParametro(config, "PRECIO_M2_BASE");
+  const horaOperario = requerirParametro(config, "HORA_OPERARIO");
   const margenComercial = requerirParametro(config, "MARGEN_COMERCIAL");
 
-  // ── 1. Superficie ponderada: suma de m2 × factor de tipo de ambiente ──
   const variableAmbiente = buscarVariable(config, "TIPO_AMBIENTE");
+  const variableFrecuencia = buscarVariable(config, "FRECUENCIA");
+  const opcionFrecuencia = buscarOpcion(variableFrecuencia, input.frecuencia);
+  const visitasMes = requerirNumero(
+    opcionFrecuencia.visitas_mes,
+    "visitas_mes",
+    `la frecuencia "${opcionFrecuencia.codigo}"`
+  );
 
-  let superficiePonderada = 0;
+  // ── 1. Costo mensual por ambiente: mano de obra (según rendimiento) + insumos ──
+  let costoMensual = 0;
   input.ambientes.forEach((a, idx) => {
     if (!a.m2 || a.m2 <= 0) {
       throw new Error(`Superficie inválida para el ambiente #${idx + 1}`);
     }
     const opcionAmbiente = buscarOpcion(variableAmbiente, a.tipo);
-    const ponderado = a.m2 * opcionAmbiente.factor;
-    superficiePonderada += ponderado;
+    const rendimiento = requerirNumero(
+      opcionAmbiente.rendimiento_m2_hora,
+      "rendimiento_m2_hora",
+      `el tipo de ambiente "${opcionAmbiente.codigo}"`
+    );
+    const insumosM2 = requerirNumero(
+      opcionAmbiente.insumos_m2,
+      "insumos_m2",
+      `el tipo de ambiente "${opcionAmbiente.codigo}"`
+    );
+
+    const costoManoObraVisita = (a.m2 / rendimiento) * horaOperario;
+    const costoInsumosVisita = a.m2 * insumosM2;
+    const costoPorVisita = costoManoObraVisita + costoInsumosVisita;
+
+    const costoAmbienteMensual = opcionAmbiente.frecuencia_independiente
+      ? costoPorVisita
+      : costoPorVisita * visitasMes;
+
+    costoMensual += costoAmbienteMensual;
 
     detalle.push({
-      concepto: `${opcionAmbiente.nombre} (${a.m2} m²)`,
+      concepto: opcionAmbiente.frecuencia_independiente
+        ? `${opcionAmbiente.nombre} (${a.m2} m², tarifa fija mensual)`
+        : `${opcionAmbiente.nombre} (${a.m2} m², ${visitasMes} visitas/mes)`,
       cantidad: a.m2,
-      factor: opcionAmbiente.factor,
-      monto: redondear(ponderado),
+      monto: redondear(costoAmbienteMensual),
     });
   });
 
-  // ── 2. Base según precio por m² ────────────────────────────────
-  const base = superficiePonderada * precioM2Base;
-
-  // ── 3. Frecuencia ───────────────────────────────────────────────
-  const variableFrecuencia = buscarVariable(config, "FRECUENCIA");
-  const opcionFrecuencia = buscarOpcion(variableFrecuencia, input.frecuencia);
-  const factorFrecuencia = opcionFrecuencia.factor;
-
-  let costoMensual = base * factorFrecuencia;
-
   detalle.push({
-    concepto: `Frecuencia: ${opcionFrecuencia.nombre}`,
-    factor: factorFrecuencia,
-    monto: redondear(costoMensual),
+    concepto: `Frecuencia: ${opcionFrecuencia.nombre} (${visitasMes} visitas/mes)`,
+    monto: 0,
   });
 
-  // ── 4. Extras ────────────────────────────────────────────────────
+  // ── 2. Opcionales (Etapa 5G) — vajilla, lavavajillas, cafetera, ─────
+  //      dispensador de agua, ambientadores, insumos de cocina/baño.
+  //      Se aplican una vez por presupuesto (no por ambiente).
+  for (const seleccion of input.opcionales ?? []) {
+    const variable = buscarVariableOpcional(config, seleccion.variable_codigo);
+    if (!variable) {
+      throw new Error(`Opcional desconocido o inactivo: ${seleccion.variable_codigo}`);
+    }
+    const opcion = buscarOpcion(variable, seleccion.opcion_codigo);
+    const precioUnitario = requerirNumero(
+      opcion.precio_fijo,
+      "precio_fijo",
+      `la opción "${opcion.codigo}" de "${variable.codigo}"`
+    );
+
+    let cantidad: number;
+    let etiquetaCantidad = "";
+    if (variable.cantidad_fuente === "input_cliente") {
+      if (
+        seleccion.cantidad === undefined ||
+        seleccion.cantidad === null ||
+        Number.isNaN(seleccion.cantidad) ||
+        seleccion.cantidad <= 0
+      ) {
+        throw new Error(
+          `Falta indicar la cantidad (${variable.unidad_cantidad ?? "unidades"}) para "${variable.codigo}"`
+        );
+      }
+      if (variable.cantidad_min !== null && seleccion.cantidad < variable.cantidad_min) {
+        throw new Error(`La cantidad mínima para "${variable.codigo}" es ${variable.cantidad_min}`);
+      }
+      if (variable.cantidad_max !== null && seleccion.cantidad > variable.cantidad_max) {
+        throw new Error(`La cantidad máxima para "${variable.codigo}" es ${variable.cantidad_max}`);
+      }
+      cantidad = seleccion.cantidad;
+      etiquetaCantidad = ` (${cantidad} ${variable.unidad_cantidad ?? "unidades"})`;
+    } else if (variable.cantidad_fuente === "cantidad_banos") {
+      cantidad = contarBanos(input.ambientes);
+      etiquetaCantidad = ` (x${cantidad} baño/s)`;
+    } else {
+      cantidad = 1;
+    }
+
+    const monto = redondear(precioUnitario * cantidad);
+    costoMensual += monto;
+    detalle.push({
+      concepto: `${variable.nombre} — ${opcion.nombre}${etiquetaCantidad}`,
+      cantidad,
+      monto,
+    });
+  }
+
+  // ── 3. Extras ────────────────────────────────────────────────────
   for (const codigoExtra of input.extras ?? []) {
     const extra = config.extras.find((e) => e.codigo === codigoExtra);
     if (!extra || !extra.activo) {
@@ -190,7 +359,7 @@ export function calcularCotizacion(
     });
   }
 
-  // ── 5. Margen comercial ──────────────────────────────────────────
+  // ── 4. Margen comercial ──────────────────────────────────────────
   const precioMensual = costoMensual * (1 + margenComercial / 100);
   const montoMargen = precioMensual - costoMensual;
 
@@ -201,7 +370,6 @@ export function calcularCotizacion(
   });
 
   return {
-    superficie_ponderada: redondear(superficiePonderada),
     costo_mensual: redondear(costoMensual),
     precio_mensual: redondear(precioMensual),
     margen_aplicado: margenComercial,

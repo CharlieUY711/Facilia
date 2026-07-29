@@ -1,9 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
@@ -12,6 +10,8 @@ import Select from "@/components/Select";
 import Combobox from "@/components/Combobox";
 import Textarea from "@/components/Textarea";
 import Modal from "@/components/Modal";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import ViewTabBar from "@/components/dashboard/ViewTabBar";
 import { ROLE_LABEL, type Role } from "@/lib/roles";
 
 // ── Tipos ──────────────────────────────────────────────────────────
@@ -216,26 +216,9 @@ export default function DirectorioPage() {
 
   return (
     <div className="min-h-screen bg-paper">
-      <header className="bg-white border-b border-navy-100 sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-          <Image src="/FACILIA_By.png" alt="FACILIA" width={120} height={30} />
-          <Link href="/dashboard" className="text-sm text-blue hover:underline">
-            ← Volver al dashboard
-          </Link>
-        </div>
-      </header>
+      <DashboardHeader title="Directorio" active="directorio" />
 
-      <main className="max-w-6xl mx-auto px-5 sm:px-8 py-10 space-y-6">
-        <div>
-          <p className="text-orange font-semibold text-sm uppercase tracking-wide mb-1">
-            {currentRole === "super_admin" ? "Super Admin" : "Administrador"}
-          </p>
-          <h1 className="font-display font-bold text-2xl text-navy">Directorio</h1>
-          <p className="text-ink/60 text-sm mt-1">
-            Organizaciones, personas y locaciones. Gestioná accesos y roles de clientes y equipo FACILIA.
-          </p>
-        </div>
-
+      <main className="max-w-screen-2xl mx-auto px-5 sm:px-8 py-10 space-y-6">
         {error && (
           <p className="text-sm text-red-600 bg-red-50 rounded-xl px-4 py-2 flex items-center justify-between">
             {error}
@@ -246,43 +229,50 @@ export default function DirectorioPage() {
         )}
 
         {/* Tabs */}
-        <div className="flex items-center gap-1 bg-white border border-navy-100 rounded-xl p-1 w-fit">
-          {(
-            [
-              ["personas", "Personas", personas.length],
-              ["organizaciones", "Organizaciones", organizaciones.length],
-              ["locaciones", "Locaciones", locaciones.length],
-            ] as [Tab, string, number][]
-          ).map(([key, label, count]) => (
-            <button
-              key={key}
-              onClick={() => setTab(key)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                tab === key ? "bg-navy text-white" : "text-ink/60 hover:text-navy"
-              }`}
-            >
-              {label} <span className="opacity-60">({count})</span>
-            </button>
-          ))}
-        </div>
-
-        <div className="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
-          <Input
-            placeholder="Buscar..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="max-w-xs"
-          />
-          {tab === "personas" && (
-            <Button onClick={() => setPersonaModal({ open: true, editing: null })}>+ Nueva persona</Button>
-          )}
-          {tab === "organizaciones" && (
-            <Button onClick={() => setOrgModal({ open: true, editing: null })}>+ Nueva organización</Button>
-          )}
-          {tab === "locaciones" && (
-            <Button onClick={() => setLocModal({ open: true, editing: null })}>+ Nueva locación</Button>
-          )}
-        </div>
+        <ViewTabBar
+          title="Directorio"
+          tabs={[
+            { id: "personas", label: `Personas (${personas.length})` },
+            { id: "organizaciones", label: `Organizaciones (${organizaciones.length})` },
+            { id: "locaciones", label: `Locaciones (${locaciones.length})` },
+          ]}
+          activeTab={tab}
+          onTabChange={(id) => setTab(id as Tab)}
+          rightSlot={
+            <>
+              {tab === "personas" && (
+                <Button
+                  className="!rounded-full !px-4 !py-2 !text-sm"
+                  onClick={() => setPersonaModal({ open: true, editing: null })}
+                >
+                  + Nuevo
+                </Button>
+              )}
+              {tab === "organizaciones" && (
+                <Button
+                  className="!rounded-full !px-4 !py-2 !text-sm"
+                  onClick={() => setOrgModal({ open: true, editing: null })}
+                >
+                  + Nuevo
+                </Button>
+              )}
+              {tab === "locaciones" && (
+                <Button
+                  className="!rounded-full !px-4 !py-2 !text-sm"
+                  onClick={() => setLocModal({ open: true, editing: null })}
+                >
+                  + Nuevo
+                </Button>
+              )}
+              <Input
+                placeholder="Buscar..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="!py-2 w-40 sm:w-48"
+              />
+            </>
+          }
+        />
 
         {loadingData ? (
           <p className="text-sm text-ink/40">Cargando...</p>

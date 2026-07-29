@@ -4,9 +4,11 @@ import { requireAdmin } from "@/lib/serverAuth";
 
 /**
  * GET /api/cotizador/parametros
- * Lista los parámetros globales del cotizador (PRECIO_M2_BASE,
- * HORA_OPERARIO, MARGEN_COMERCIAL, etc.). Usado por el panel admin
- * para editar el motor de cotización.
+ * Lista los parámetros globales del motor (cotizador_config): precio por
+ * m², margen comercial, costo de hora operario, etc. Solo Super Admin / Admin
+ * — es el endpoint que alimenta la sección "Parámetros" del panel admin
+ * (distinto de /api/cotizador/config, que es el que consume el cotizador
+ * público y no requiere sesión).
  */
 export async function GET() {
   const auth = await requireAdmin();
@@ -26,64 +28,54 @@ export async function GET() {
   return NextResponse.json({ ok: true, parametros: data });
 }
 
-type ParametroInput = { clave?: unknown; valor?: unknown };
-
-function normalizar(items: ParametroInput[]) {
-  const normalizados: { clave: string; valor: number }[] = [];
-
-  for (const item of items) {
-    const clave = typeof item.clave === "string" ? item.clave.trim() : "";
-    const valor = Number(item.valor);
-
-    if (!clave) {
-      throw new Error("Cada parámetro necesita una \"clave\"");
-    }
-    if (!Number.isFinite(valor)) {
-      throw new Error(`El valor de "${clave}" debe ser numérico`);
-    }
-
-    normalizados.push({ clave, valor });
-  }
-
-  return normalizados;
-}
-
 /**
  * PATCH /api/cotizador/parametros
- * Body: { clave, valor } o [{ clave, valor }, ...]
- * Hace upsert por clave (crea el parámetro si no existía todavía).
+ * Body: { clave, valor } o { parametros: { clave, valor }[] }
+ * Hace upsert por "clave" (no crea parámetros nuevos con nombres libres:
+ * solo actualiza valor/descripcion de claves que ya existan, para evitar
+ * que se generen parámetros sueltos que el motor nunca lee).
  */
 export async function PATCH(req: NextRequest) {
   const auth = await requireAdmin();
   if (!auth) return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 403 });
 
   const body = await req.json();
-  const items: ParametroInput[] = Array.isArray(body) ? body : [body];
+  const items: { clave: string; valor: number; descripcion?: string }[] = Array.isArray(body.parametros)
+    ? body.parametros
+    : [body];
 
-  let normalizados: { clave: string; valor: number }[];
-  try {
-    normalizados = normalizar(items);
-  } catch (err: any) {
-    return NextResponse.json({ ok: false, error: err.message }, { status: 400 });
-  }
-
-  if (normalizados.length === 0) {
-    return NextResponse.json({ ok: false, error: "Nada para actualizar" }, { status: 400 });
+  for (const item of items) {
+    if (!item.clave || typeof item.valor !== "number" || Number.isNaN(item.valor)) {
+      return NextResponse.json(
+        { ok: false, error: `Parámetro inválido: ${JSON.stringify(item)}` },
+        { status: 400 }
+      );
+    }
   }
 
   const supabase = createServiceClient();
 
-  const { data, error } = await supabase
-    .from("cotizador_config")
-    .upsert(
-      normalizados.map((p) => ({ ...p, updated_at: new Date().toISOString() })),
-      { onConflict: "clave" }
-    )
-    .select();
+  // Solo actualiza claves existentes — no inserta claves nuevas por esta vía.
+  const resultados = [];
+  for (const item of items) {
+    const update: Record<string, unknown> = { valor: item.valor };
+    if (item.descripcion !== undefined) update.descripcion = item.descripcion;
 
-  if (error) {
-    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    const { data, error } = await supabase
+      .from("cotizador_config")
+      .update(update)
+      .eq("clave", item.clave)
+      .select()
+      .single();
+
+    if (error) {
+      return NextResponse.json(
+        { ok: false, error: `Error actualizando "${item.clave}": ${error.message}` },
+        { status: 500 }
+      );
+    }
+    resultados.push(data);
   }
 
-  return NextResponse.json({ ok: true, parametros: data });
+  return NextResponse.json({ ok: true, parametros: resultados });
 }

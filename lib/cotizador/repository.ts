@@ -1,5 +1,5 @@
 import { createServiceClient } from "@/lib/supabase/server";
-import type { CotizadorConfig, ExtraCotizador, VariableCotizador } from "./engine";
+import type { CantidadFuente, CotizadorConfig, ExtraCotizador, VariableCotizador } from "./engine";
 
 /**
  * Carga la configuración activa del cotizador desde Supabase: variables +
@@ -20,7 +20,11 @@ export async function cargarConfiguracion(): Promise<CotizadorConfig> {
       .select(
         `
         id, nombre, codigo, tipo, activo,
-        cotizador_opciones ( id, nombre, codigo, factor, precio_fijo, activo )
+        cantidad_fuente, unidad_cantidad, cantidad_min, cantidad_max,
+        cotizador_opciones (
+          id, nombre, codigo, factor, precio_fijo, activo,
+          rendimiento_m2_hora, insumos_m2, frecuencia_independiente, visitas_mes
+        )
       `
       )
       .eq("activo", true)
@@ -45,6 +49,13 @@ export async function cargarConfiguracion(): Promise<CotizadorConfig> {
     codigo: v.codigo,
     tipo: v.tipo,
     activo: v.activo,
+    // Filas creadas antes de la Etapa 5G no tienen cantidad_fuente cargada
+    // explícitamente, pero la columna tiene default 'ninguna' en la BD —
+    // este fallback es solo por si llega null desde algún camino viejo.
+    cantidad_fuente: (v.cantidad_fuente ?? "ninguna") as CantidadFuente,
+    unidad_cantidad: v.unidad_cantidad ?? null,
+    cantidad_min: v.cantidad_min === null || v.cantidad_min === undefined ? null : Number(v.cantidad_min),
+    cantidad_max: v.cantidad_max === null || v.cantidad_max === undefined ? null : Number(v.cantidad_max),
     opciones: (v.cotizador_opciones ?? []).map((o: any) => ({
       id: o.id,
       nombre: o.nombre,
@@ -52,6 +63,10 @@ export async function cargarConfiguracion(): Promise<CotizadorConfig> {
       factor: Number(o.factor),
       precio_fijo: o.precio_fijo === null ? null : Number(o.precio_fijo),
       activo: o.activo,
+      rendimiento_m2_hora: o.rendimiento_m2_hora === null ? null : Number(o.rendimiento_m2_hora),
+      insumos_m2: o.insumos_m2 === null ? null : Number(o.insumos_m2),
+      frecuencia_independiente: Boolean(o.frecuencia_independiente),
+      visitas_mes: o.visitas_mes === null ? null : Number(o.visitas_mes),
     })),
   }));
 

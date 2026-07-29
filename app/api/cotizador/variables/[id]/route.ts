@@ -2,45 +2,53 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/serverAuth";
 
-// "codigo" queda afuera a propósito: cambiarlo rompería las referencias
-// que usa el motor (lib/cotizador/engine.ts busca variables por codigo).
-const CAMPOS_EDITABLES = [
-  "nombre",
-  "orden",
-  "obligatorio",
-  "afecta_precio",
-  "descripcion",
-  "activo",
-] as const;
+const CANTIDAD_FUENTES_VALIDAS = ["ninguna", "input_cliente", "cantidad_banos"];
 
 /**
  * PATCH /api/cotizador/variables/:id
- * Edita una variable existente. Si el body trae "codigo", se ignora
- * silenciosamente (no es editable desde acá).
+ * Body: { nombre?, orden?, obligatorio?, afecta_precio?, descripcion?, activo?,
+ *         cantidad_fuente?, unidad_cantidad?, cantidad_min?, cantidad_max? }
+ *
+ * OJO: "codigo" y "tipo" NO se pueden editar desde acá a propósito — son la
+ * referencia estable que usa el motor de cálculo (lib/cotizador/engine.ts)
+ * y el cotizador público; cambiarlos rompería presupuestos ya calculados y
+ * cualquier referencia guardada. Si el body los trae, se ignoran.
  */
-export async function PATCH(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await requireAdmin();
   if (!auth) return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 403 });
 
   const body = await req.json();
 
-  const updates: Record<string, unknown> = {};
-  for (const campo of CAMPOS_EDITABLES) {
-    if (campo in body) updates[campo] = body[campo];
-  }
-
-  if (Object.keys(updates).length === 0) {
-    return NextResponse.json({ ok: false, error: "Nada para actualizar" }, { status: 400 });
+  if (body.cantidad_fuente !== undefined && !CANTIDAD_FUENTES_VALIDAS.includes(body.cantidad_fuente)) {
+    return NextResponse.json(
+      { ok: false, error: `cantidad_fuente inválida. Debe ser una de: ${CANTIDAD_FUENTES_VALIDAS.join(", ")}` },
+      { status: 400 }
+    );
   }
 
   const supabase = createServiceClient();
 
+  const update: Record<string, unknown> = {};
+  if (body.nombre !== undefined) update.nombre = body.nombre;
+  if (body.orden !== undefined) update.orden = body.orden;
+  if (body.obligatorio !== undefined) update.obligatorio = body.obligatorio;
+  if (body.afecta_precio !== undefined) update.afecta_precio = body.afecta_precio;
+  if (body.descripcion !== undefined) update.descripcion = body.descripcion;
+  if (body.activo !== undefined) update.activo = body.activo;
+  if (body.cantidad_fuente !== undefined) update.cantidad_fuente = body.cantidad_fuente;
+  if (body.unidad_cantidad !== undefined) update.unidad_cantidad = body.unidad_cantidad;
+  if (body.cantidad_min !== undefined) update.cantidad_min = body.cantidad_min;
+  if (body.cantidad_max !== undefined) update.cantidad_max = body.cantidad_max;
+  // body.codigo y body.tipo se ignoran a propósito (ver comentario arriba).
+
+  if (Object.keys(update).length === 0) {
+    return NextResponse.json({ ok: false, error: "Nada para actualizar" }, { status: 400 });
+  }
+
   const { data, error } = await supabase
     .from("cotizador_variables")
-    .update(updates)
+    .update(update)
     .eq("id", params.id)
     .select()
     .single();
@@ -54,14 +62,10 @@ export async function PATCH(
 
 /**
  * DELETE /api/cotizador/variables/:id
- * Eliminación lógica: marca la variable como inactiva (activo=false) en
- * vez de borrarla físicamente, para no perder el historial de
- * presupuestos que ya la referencian.
+ * Borrado lógico (activo=false), nunca físico — una variable puede estar
+ * referenciada por presupuestos ya calculados.
  */
-export async function DELETE(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function DELETE(_req: NextRequest, { params }: { params: { id: string } }) {
   const auth = await requireAdmin();
   if (!auth) return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 403 });
 

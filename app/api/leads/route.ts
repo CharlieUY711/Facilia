@@ -50,6 +50,15 @@ export async function POST(req: NextRequest) {
     const body = leadSchema.parse(await req.json());
     const cotizacion = calculatePrice(body as any);
 
+    // Si quien envía el formulario tiene una sesión activa (ej. un
+    // usuario del dashboard generando "Nueva cotización"), dejamos
+    // registrado quién lo creó. Los visitantes anónimos del sitio
+    // público no tienen sesión, así que created_by queda en null.
+    const sessionClient = createClient();
+    const {
+      data: { session },
+    } = await sessionClient.auth.getSession();
+
     const supabase = createServiceClient();
     const { data: lead, error } = await supabase
       .from("leads")
@@ -65,6 +74,7 @@ export async function POST(req: NextRequest) {
         precio_visita: cotizacion.total_por_visita,
         precio_mensual: cotizacion.total_mensual,
         detalle: cotizacion,
+        created_by: session?.user?.id ?? null,
       })
       .select()
       .single();

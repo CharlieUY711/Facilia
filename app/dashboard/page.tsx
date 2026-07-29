@@ -3,15 +3,14 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { createClient } from "@/lib/supabase/client";
 import Card from "@/components/Card";
-import { dashboardItemsForRole, ROLE_LABEL, type Role } from "@/lib/roles";
+import { createClient } from "@/lib/supabase/client";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import { dashboardItemsForRole, type Role } from "@/lib/roles";
 
 export default function DashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [email, setEmail] = useState("");
   const [nombre, setNombre] = useState<string | null>(null);
   const [role, setRole] = useState<Role>("usuario");
 
@@ -30,7 +29,6 @@ export default function DashboardPage() {
       router.push("/panel/login");
       return;
     }
-    setEmail(user.email ?? "");
 
     const { data: profile } = await supabase
       .from("profiles")
@@ -43,13 +41,6 @@ export default function DashboardPage() {
     setLoading(false);
   }
 
-  async function handleLogout() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.push("/panel/login");
-    router.refresh();
-  }
-
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center text-ink/40">Cargando...</div>;
   }
@@ -58,24 +49,13 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-paper">
-      <header className="bg-white border-b border-navy-100 sticky top-0 z-30">
-        <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
-          <Image src="/FACILIA_By.png" alt="FACILIA" width={120} height={30} />
-          <button onClick={handleLogout} className="text-sm text-ink/60 hover:text-navy transition-colors">
-            Cerrar sesión
-          </button>
-        </div>
-      </header>
+      <DashboardHeader />
 
-      <main className="max-w-6xl mx-auto px-5 sm:px-8 py-12">
-        <div className="mb-10">
-          <p className="text-orange font-semibold text-sm uppercase tracking-wide mb-1">
-            {ROLE_LABEL[role]}
-          </p>
+      <main className="max-w-screen-2xl mx-auto px-5 sm:px-8 py-10 space-y-8">
+        <div>
           <h1 className="font-display font-bold text-3xl text-navy">
             Hola{nombre ? `, ${nombre}` : ""} 👋
           </h1>
-          <p className="text-ink/60 text-sm mt-1">{email}</p>
         </div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">

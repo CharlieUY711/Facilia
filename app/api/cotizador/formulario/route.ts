@@ -1,81 +1,87 @@
-// app/api/cotizador/formulario/route.ts
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 
+/**
+ * GET /api/cotizador/formulario
+ *
+ * Estructura completa y resuelta del wizard público: pasos activos, con
+ * sus campos activos, y para cada campo sus opciones YA resueltas:
+ * - si el campo tiene variable_id, las opciones salen de
+ *   cotizador_opciones (activas) de esa variable.
+ * - si no, salen de la columna `opciones` propia del campo (jsonb).
+ *
+ * Pública (sin requireAdmin): la va a consumir el cotizador público
+ * (Etapa 5D). Por ahora no la usa nadie todavía — sirve para verificar
+ * que la estructura cargada en la Etapa 5B se resuelve correctamente
+ * antes de tocar CotizadorForm.tsx.
+ *
+ * Shape de respuesta:
+ * {
+ *   ok: true,
+ *   pasos: [{
+ *     id, codigo, nombre, orden, descripcion,
+ *     campos: [{
+ *       id, nombre, codigo, tipo_input, obligatorio, orden,
+ *       opciones: [...] | { filas: [...] } | null
+ *     }]
+ *   }]
+ * }
+ */
 export async function GET() {
   const supabase = createServiceClient();
 
-  // 1) Pasos activos ordenados
-  const { data: pasos, error: pasosErr } = await supabase
+  const { data, error } = await supabase
     .from("cotizador_pasos")
-    .select("*")
+    .select(
+      `
+      id, codigo, nombre, orden, descripcion, activo,
+      cotizador_campos (
+        id, nombre, codigo, tipo_input, obligatorio, orden, opciones, variable_id, activo,
+        cotizador_variables (
+          id, codigo, activo,
+          cotizador_opciones ( id, nombre, codigo, factor, activo )
+        )
+      )
+    `
+    )
     .eq("activo", true)
-    .order("orden", { ascending: true });
+    .order("orden", { ascending: true })
+    .order("orden", { ascending: true, foreignTable: "cotizador_campos" });
 
-  if (pasosErr) {
-    return NextResponse.json({ ok: false, error: pasosErr.message });
+  if (error) {
+    return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
   }
 
-  // 2) Campos activos por paso
-  const { data: campos, error: camposErr } = await supabase
-    .from("cotizador_campos")
-    .select("*")
-    .eq("activo", true)
-    .order("orden", { ascending: true });
+  const pasos = (data ?? []).map((paso: any) => ({
+    id: paso.id,
+    codigo: paso.codigo,
+    nombre: paso.nombre,
+    orden: paso.orden,
+    descripcion: paso.descripcion,
+    campos: (paso.cotizador_campos ?? [])
+      .filter((campo: any) => campo.activo)
+      .map((campo: any) => {
+        let opciones = campo.opciones ?? null;
 
-  if (camposErr) {
-    return NextResponse.json({ ok: false, error: camposErr.message });
-  }
+        // Campo "de precio": sus opciones vienen de la variable vinculada,
+        // no de la columna `opciones` propia (que debería estar vacía).
+        if (campo.variable_id && campo.cotizador_variables?.activo) {
+          opciones = (campo.cotizador_variables.cotizador_opciones ?? [])
+            .filter((o: any) => o.activo)
+            .map((o: any) => ({ value: o.codigo, label: o.nombre, factor: o.factor }));
+        }
 
-  // 3) Opciones de variables (solo para campos con variable_id)
-  const variableIds = campos.filter((c) => c.variable_id).map((c) => c.variable_id);
-
-  let opcionesPorVariable: Record<string, any[]> = {};
-
-  if (variableIds.length > 0) {
-    const { data: opciones, error: opcionesErr } = await supabase
-      .from("cotizador_opciones")
-      .select("*")
-      .in("variable_id", variableIds)
-      .eq("activo", true)
-      .order("orden", { ascending: true });
-
-    if (opcionesErr) {
-      return NextResponse.json({ ok: false, error: opcionesErr.message });
-    }
-
-    for (const o of opciones) {
-      if (!opcionesPorVariable[o.variable_id]) opcionesPorVariable[o.variable_id] = [];
-      opcionesPorVariable[o.variable_id].push({
-        value: o.codigo,
-        label: o.nombre,
-      });
-    }
-  }
-
-  // 4) Armar estructura final
-  const pasosConCampos = pasos.map((p) => ({
-    id: p.id,
-    nombre: p.nombre,
-    descripcion: p.descripcion,
-    orden: p.orden,
-    campos: campos
-      .filter((c) => c.paso_id === p.id)
-      .map((c) => ({
-        id: c.id,
-        paso_id: c.paso_id,
-        nombre: c.nombre,
-        codigo: c.codigo,
-        tipo_input: c.tipo_input,
-        obligatorio: c.obligatorio,
-        orden: c.orden,
-        activo: c.activo,
-        variable_id: c.variable_id,
-        opciones: c.variable_id
-          ? opcionesPorVariable[c.variable_id] ?? []
-          : c.opciones ?? [],
-      })),
+        return {
+          id: campo.id,
+          nombre: campo.nombre,
+          codigo: campo.codigo,
+          tipo_input: campo.tipo_input,
+          obligatorio: campo.obligatorio,
+          orden: campo.orden,
+          opciones,
+        };
+      }),
   }));
 
-  return NextResponse.json({ ok: true, pasos: pasosConCampos });
+  return NextResponse.json({ ok: true, pasos });
 }
