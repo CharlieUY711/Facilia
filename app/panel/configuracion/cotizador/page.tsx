@@ -1,13 +1,15 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { createClient } from "@/lib/supabase/client";
 import Card from "@/components/Card";
 import Button from "@/components/Button";
 import Input from "@/components/Input";
 import Modal from "@/components/Modal";
 import CotizadorFormularioAdmin from "@/components/CotizadorFormularioAdmin";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import ViewTabBar from "@/components/dashboard/ViewTabBar";
 
 // ── Tipos ────────────────────────────────────────────────────────
 
@@ -28,7 +30,36 @@ interface Opcion {
 }
 
 type CantidadFuente = "ninguna" | "input_cliente" | "cantidad_banos";
-type Tab = "variables" | "parametros" | "consumibles" | "pasos" | "documentacion";
+type Tab = "variables" | "parametros" | "pasos" | "documentacion";
+
+// Agrupación de variables dentro de la tab "Variables" — mapeo explícito
+// por código (a diferencia del filtro anterior por `orden`, acá hace falta
+// distinguir 3 grupos dentro de las mismas variables "opcionales", así que
+// una sola condición numérica no alcanza). Todo lo que no esté mapeado cae
+// en "Otras" para que nunca desaparezca silenciosamente de la vista.
+const GRUPO_ORDEN = ["Estructurales", "Operativas", "Vajilla", "Consumibles", "Otras"] as const;
+type NombreGrupo = (typeof GRUPO_ORDEN)[number];
+const GRUPO_POR_CODIGO: Record<string, NombreGrupo> = {
+  TIPO_AMBIENTE: "Estructurales",
+  tipo_espacio: "Estructurales",
+  FRECUENCIA: "Estructurales",
+  turnos: "Operativas",
+  LAVAVAJILLAS_TIPO: "Operativas",
+  CAFETERA_TIPO: "Operativas",
+  DISPENSADOR_AGUA_TIPO: "Operativas",
+  AMBIENTADORES: "Operativas",
+  VAJILLA_CUBIERTOS_NIVEL: "Vajilla",
+  VAJILLA_PLATOS_NIVEL: "Vajilla",
+  VAJILLA_TAZAS_NIVEL: "Vajilla",
+  VAJILLA_VASOS_NIVEL: "Vajilla",
+  INSUMO_DETERGENTE_NIVEL: "Consumibles",
+  INSUMO_TOALLAS_NIVEL: "Consumibles",
+  INSUMO_JABON_NIVEL: "Consumibles",
+  INSUMO_PAPEL_NIVEL: "Consumibles",
+};
+function grupoDeVariable(v: Variable): NombreGrupo {
+  return GRUPO_POR_CODIGO[v.codigo] ?? "Otras";
+}
 
 interface Variable {
   id: string;
@@ -101,33 +132,6 @@ const PLACEHOLDER_RENDIMIENTO = 20; // m² / hora, a confirmar
 const PLACEHOLDER_INSUMOS = 5; // $ / m², a confirmar
 const PLACEHOLDER_VISITAS_MES = 4; // visitas/mes, a confirmar
 
-// Etapa: agrupación visual de la tabla de Variables/Consumibles.
-// No es un campo de Supabase — es una clasificación heurística por patrones
-// en el código, calculada en el cliente, para poder agrupar la tabla sin
-// tener que agregar una columna nueva todavía. Si algo cae en el grupo
-// equivocado, se ajusta esta lista; no hace falta tocar la base de datos.
-// Orden de evaluación: el primer patrón que matchea gana (por eso
-// "CAFETERA" se evalúa en Electrodomésticos antes que "CAFE" en
-// Consumibles, y "DISPENSADOR" antes que "AGUA").
-type CategoriaVariable = "operativa" | "estructural" | "electrodomestico" | "consumible" | "vajilla";
-
-const GRUPOS_VARIABLES: { id: CategoriaVariable; label: string }[] = [
-  { id: "operativa", label: "Operativas" },
-  { id: "estructural", label: "Estructurales" },
-  { id: "electrodomestico", label: "Electrodomésticos" },
-  { id: "consumible", label: "Consumibles" },
-  { id: "vajilla", label: "Vajilla" },
-];
-
-function categoriaDeVariable(codigo: string): CategoriaVariable {
-  const c = (codigo || "").toUpperCase();
-  if (/VAJILLA|CUBIERT|PLATO|TAZA|POCILLO|PLATILLO|VASO/.test(c)) return "vajilla";
-  if (/CAFETERA|DISPENSADOR|LAVAVAJILLA|AROMATIZADOR|AMBIENTADOR/.test(c)) return "electrodomestico";
-  if (/INSUMO|JABON|DETERGENTE|TOALLA|AROMA|CAFE|AGUA|\bPH\b/.test(c)) return "consumible";
-  if (/TURNO|HORARIO|USUARIO|FRECUENCIA/.test(c)) return "operativa";
-  return "estructural";
-}
-
 function opcionVacia(variable_id: string): Opcion {
   return {
     id: "",
@@ -146,12 +150,19 @@ function opcionVacia(variable_id: string): Opcion {
 }
 
 export default function CotizadorConfig() {
+  const router = useRouter();
   const [variables, setVariables] = useState<Variable[]>([]);
   const [parametros, setParametros] = useState<Parametro[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandido, setExpandido] = useState<string | null>(null);
-  const [gruposColapsados, setGruposColapsados] = useState<Record<string, boolean>>({});
   const [tab, setTab] = useState<Tab>("variables");
+  const [gruposAbiertos, setGruposAbiertos] = useState<Record<string, boolean>>({
+    Estructurales: true,
+    Operativas: true,
+    Vajilla: true,
+    Consumibles: true,
+    Otras: true,
+  });
 
   // Edición de opción (crear o editar) vía modal
   const [opcionEditando, setOpcionEditando] = useState<Opcion | null>(null);
@@ -204,6 +215,13 @@ export default function CotizadorConfig() {
       setValoresParametros(iniciales);
     }
     setLoading(false);
+  }
+
+  async function handleLogout() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push("/panel/login");
+    router.refresh();
   }
 
   // ── Parámetros globales (cotizador_config) ──────────────────────
@@ -385,28 +403,56 @@ export default function CotizadorConfig() {
   const esCostoAmbiente = variableDeOpcion ? esVariableAmbiente(variableDeOpcion.codigo) : false;
   const esCostoFrecuencia = variableDeOpcion ? esVariableFrecuencia(variableDeOpcion.codigo) : false;
 
-  // Ver comentario en la interfaz Variable: orden >= 100 = opcionales de
-  // las Etapas 5G/5H (consumibles), orden < 100 = variables originales.
-  const variablesTabla = variables.filter((v) => (tab === "consumibles" ? v.orden >= 100 : v.orden < 100));
+  // Ver GRUPO_POR_CODIGO arriba: agrupa las variables para la tab "Variables".
+  const gruposConVariables: { grupo: NombreGrupo; lista: Variable[] }[] = GRUPO_ORDEN.map((grupo) => ({
+    grupo,
+    lista: variables.filter((v) => grupoDeVariable(v) === grupo),
+  })).filter((g) => g.lista.length > 0);
+
+  function toggleGrupo(grupo: NombreGrupo) {
+    setGruposAbiertos((prev) => ({ ...prev, [grupo]: !prev[grupo] }));
+  }
 
   return (
     <div className="min-h-screen bg-paper">
-      <DashboardHeader title="Cotizador FACILIA" active="cotizador" />
+      <header className="bg-white border-b border-navy-100 sticky top-0 z-30">
+        <div className="max-w-screen-2xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Image src="/FACILIA_By.png" alt="FACILIA" width={120} height={30} />
+            <Link href="/dashboard" className="text-sm text-ink/50 hover:text-navy transition-colors">
+              ← Volver al Dashboard
+            </Link>
+          </div>
+          <button onClick={handleLogout} className="text-sm text-ink/60 hover:text-navy transition-colors">
+            Cerrar sesión
+          </button>
+        </div>
+      </header>
 
       <main className="max-w-screen-2xl mx-auto px-5 sm:px-8 py-10 space-y-8">
+        <h1 className="font-display font-bold text-2xl text-navy">Cotizador FACILIA</h1>
+
         {/* ── Barra de navegación por tabs ──────────────────────────── */}
-        <ViewTabBar
-          title="Cotizador FACILIA"
-          tabs={[
-            { id: "variables", label: "Variables" },
-            { id: "parametros", label: "Parámetros" },
-            { id: "consumibles", label: "Consumibles" },
-            { id: "pasos", label: "Pasos y Campos" },
-            { id: "documentacion", label: "Documentación" },
-          ]}
-          activeTab={tab}
-          onTabChange={(id) => setTab(id as Tab)}
-        />
+        <nav className="flex flex-wrap gap-2 border-b border-navy-100 pb-3">
+          {(
+            [
+              ["variables", "Variables"],
+              ["parametros", "Parámetros"],
+              ["pasos", "Pasos y Campos"],
+              ["documentacion", "Documentación"],
+            ] as [Tab, string][]
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              onClick={() => setTab(id)}
+              className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+                tab === id ? "bg-navy text-white" : "text-ink/60 hover:bg-navy-50"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
 
         {/* ── Parámetros globales del motor de costo ─────────────── */}
         {tab === "parametros" && (
@@ -482,95 +528,73 @@ export default function CotizadorConfig() {
         </section>
         )}
 
-        {/* ── Variables y opciones (tab "variables") / Consumibles y opcionales (tab "consumibles") ── */}
-        {(tab === "variables" || tab === "consumibles") && (
-        <section>
-          <h2 className="font-display font-semibold text-lg text-navy mb-1">
-            {tab === "consumibles" ? "Consumibles y opcionales" : "Variables estructurales y operativas"}
-          </h2>
-          <p className="text-sm text-ink/60 mb-3">
-            {tab === "consumibles"
-              ? "Vajilla, insumos de baño/cocina, lavavajillas, cafetera, dispensador de agua y ambientadores — todo lo que se agregó en las Etapas 5G/5H."
-              : "Ambientes, espacios, frecuencia de visita y turnos — la estructura base del presupuesto."}
-          </p>
-          <Card padded={false} className="overflow-x-auto">
-            <table className="w-full text-base">
-              <thead className="bg-navy-50/50 text-ink/50 text-xs uppercase">
-                <tr>
-                  <th className="text-left px-5 py-2.5">Variable</th>
-                  <th className="text-left px-5 py-2.5">Tipo</th>
-                  <th className="text-left px-5 py-2.5">Cantidad</th>
-                  <th className="text-left px-5 py-2.5">Opciones</th>
-                  <th className="text-left px-5 py-2.5">Afecta precio</th>
-                  <th className="text-left px-5 py-2.5">Estado</th>
-                  <th className="text-left px-5 py-2.5"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading && (
-                  <tr>
-                    <td colSpan={7} className="text-center py-10 text-ink/40">
-                      Cargando configuración...
-                    </td>
-                  </tr>
-                )}
-                {!loading && variablesTabla.length === 0 && (
-                  <tr>
-                    <td colSpan={7} className="text-center py-10 text-ink/40">
-                      {tab === "consumibles"
-                        ? "No hay consumibles/opcionales configurados todavía."
-                        : "No hay variables configuradas todavía."}
-                    </td>
-                  </tr>
-                )}
-                {!loading &&
-                  GRUPOS_VARIABLES.map((grupo) => {
-                    const items = variablesTabla.filter((v) => categoriaDeVariable(v.codigo) === grupo.id);
-                    if (items.length === 0) return null;
+        {/* ── Variables, agrupadas y plegables ─────────────────────── */}
+        {tab === "variables" && (
+        <section className="space-y-4">
+          <div>
+            <h2 className="font-display font-semibold text-lg text-navy mb-1">Variables y opciones</h2>
+            <p className="text-sm text-ink/60">
+              Agrupadas por tipo. Tocá el título de cada grupo para plegarlo/desplegarlo.
+            </p>
+          </div>
 
-                    const colapsado = !!gruposColapsados[grupo.id];
-                    const activas = items.filter((v) => v.activo).length;
+          {loading && <Card className="text-center py-10 text-ink/40 text-sm">Cargando configuración...</Card>}
 
-                    return (
-                      <Fragment key={grupo.id}>
-                        {/* ── Fila-título del grupo (colapsa/expande el grupo entero) ── */}
-                        <tr
-                          className="border-t border-navy-100 bg-navy-50 hover:bg-navy-100/60 transition-colors cursor-pointer"
-                          onClick={() =>
-                            setGruposColapsados((prev) => ({ ...prev, [grupo.id]: !prev[grupo.id] }))
-                          }
-                        >
-                          <td colSpan={7} className="px-5 py-2.5">
-                            <div className="flex items-center justify-between">
-                              <span className="font-display font-semibold text-navy">
-                                <span className="mr-2 text-navy/40">{colapsado ? "▸" : "▾"}</span>
-                                {grupo.label}
-                              </span>
-                              <span className="text-xs font-semibold text-ink/50">
-                                {items.length} variable{items.length === 1 ? "" : "s"} · {activas} activa
-                                {activas === 1 ? "" : "s"}
-                              </span>
-                            </div>
-                          </td>
-                        </tr>
+          {!loading && gruposConVariables.length === 0 && (
+            <Card className="text-center py-10 text-ink/40 text-sm">No hay variables configuradas todavía.</Card>
+          )}
 
-                        {!colapsado &&
-                          items.map((v) => {
+          {!loading &&
+            gruposConVariables.map(({ grupo, lista }) => {
+              const abierto = gruposAbiertos[grupo] ?? true;
+              return (
+                <div key={grupo}>
+                  <button
+                    onClick={() => toggleGrupo(grupo)}
+                    className="w-full flex items-center justify-between px-1 py-2 text-left"
+                  >
+                    <h3 className="font-display font-semibold text-base text-navy">
+                      <span className="mr-2 text-ink/30">{abierto ? "▾" : "▸"}</span>
+                      {grupo}
+                      <span className="ml-2 text-sm font-normal text-ink/40">
+                        ({lista.length} variable{lista.length === 1 ? "" : "s"})
+                      </span>
+                    </h3>
+                  </button>
+                  {abierto && (
+                    <Card padded={false} className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead className="bg-navy-50/50 text-ink/50 text-xs uppercase">
+                          <tr>
+                            <th className="text-left px-5 py-3">Variable</th>
+                            <th className="text-left px-5 py-3">Código</th>
+                            <th className="text-left px-5 py-3">Tipo</th>
+                            <th className="text-left px-5 py-3">Cantidad</th>
+                            <th className="text-left px-5 py-3">Opciones</th>
+                            <th className="text-left px-5 py-3">Afecta precio</th>
+                            <th className="text-left px-5 py-3">Estado</th>
+                            <th className="text-left px-5 py-3"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {lista.map((v) => {
                             const opciones = v.cotizador_opciones ?? [];
                             const abierta = expandido === v.id;
                             return (
-                              <Fragment key={v.id}>
+                              <>
                                 <tr
+                                  key={v.id}
                                   id={`variable-${v.codigo}`}
                                   className="border-t border-navy-100 hover:bg-navy-50/30 transition-colors scroll-mt-24 cursor-pointer"
                                   onClick={() => setExpandido(abierta ? null : v.id)}
                                 >
-                                  <td className="px-5 py-2.5 font-medium text-ink">
+                                  <td className="px-5 py-3 font-medium text-ink">
                                     <span className="mr-2 text-ink/30">{abierta ? "▾" : "▸"}</span>
                                     {v.nombre}
                                   </td>
-                                  <td className="px-5 py-2.5 text-ink/70">{TIPO_LABEL[v.tipo] ?? v.tipo}</td>
-                                  <td className="px-5 py-2.5 text-ink/70">
+                                  <td className="px-5 py-3 text-ink/70">{v.codigo}</td>
+                                  <td className="px-5 py-3 text-ink/70">{TIPO_LABEL[v.tipo] ?? v.tipo}</td>
+                                  <td className="px-5 py-3 text-ink/70">
                                     <span
                                       className={`text-xs font-semibold px-2.5 py-1 rounded-full whitespace-nowrap ${
                                         v.cantidad_fuente === "ninguna"
@@ -588,8 +612,8 @@ export default function CotizadorConfig() {
                                       </div>
                                     )}
                                   </td>
-                                  <td className="px-5 py-2.5 text-ink/70">{opciones.length} opción(es)</td>
-                                  <td className="px-5 py-2.5">
+                                  <td className="px-5 py-3 text-ink/70">{opciones.length} opción(es)</td>
+                                  <td className="px-5 py-3">
                                     <span
                                       className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
                                         v.afecta_precio ? "bg-blue-100 text-blue-700" : "bg-navy-50 text-ink/50"
@@ -598,7 +622,7 @@ export default function CotizadorConfig() {
                                       {v.afecta_precio ? "Sí" : "No"}
                                     </span>
                                   </td>
-                                  <td className="px-5 py-2.5">
+                                  <td className="px-5 py-3">
                                     <span
                                       className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
                                         v.activo ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
@@ -607,10 +631,10 @@ export default function CotizadorConfig() {
                                       {v.activo ? "Activa" : "Inactiva"}
                                     </span>
                                   </td>
-                                  <td className="px-5 py-2.5">
-                                    {/* span envolvente: corta la propagación del click antes de que
-                                        llegue al <tr> (que expande/colapsa la fila), sin asumir que
-                                        Button reciba el evento nativo como parámetro. */}
+                                  <td className="px-5 py-3">
+                                    {/* span envolvente: corta la propagación del click antes de
+                                        que llegue al <tr> (que expande/colapsa la fila), sin
+                                        asumir que Button reciba el evento nativo como parámetro. */}
                                     <span onClick={(e) => e.stopPropagation()}>
                                       <Button variant="ghost" size="sm" onClick={() => abrirEditarVariable(v)}>
                                         Editar variable
@@ -619,8 +643,8 @@ export default function CotizadorConfig() {
                                   </td>
                                 </tr>
                                 {abierta && (
-                                  <tr className="border-t border-navy-100 bg-navy-50/20">
-                                    <td colSpan={7} className="px-5 py-4">
+                                  <tr key={`${v.id}-detalle`} className="border-t border-navy-100 bg-navy-50/20">
+                                    <td colSpan={8} className="px-5 py-4">
                                       <div className="space-y-2">
                                         {opciones.length === 0 && (
                                           <p className="text-ink/40 text-sm">
@@ -658,11 +682,7 @@ export default function CotizadorConfig() {
                                               )}
                                             </div>
                                             <div className="flex items-center gap-2">
-                                              <Button
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => abrirEditarOpcion(v, o)}
-                                              >
+                                              <Button variant="ghost" size="sm" onClick={() => abrirEditarOpcion(v, o)}>
                                                 Editar
                                               </Button>
                                               <Button
@@ -682,15 +702,16 @@ export default function CotizadorConfig() {
                                     </td>
                                   </tr>
                                 )}
-                              </Fragment>
+                              </>
                             );
                           })}
-                      </Fragment>
-                    );
-                  })}
-              </tbody>
-            </table>
-          </Card>
+                        </tbody>
+                      </table>
+                    </Card>
+                  )}
+                </div>
+              );
+            })}
         </section>
         )}
 
@@ -703,110 +724,91 @@ export default function CotizadorConfig() {
         {/* ── Documentación — cómo se calcula el precio y dónde se edita
              cada valor. Contenido estático, no llama a ninguna API. ──── */}
         {tab === "documentacion" && (
-          <section className="space-y-6">
+          <section className="space-y-6 max-w-3xl">
             <div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-stretch">
-                <Card className="text-sm text-ink/70 leading-relaxed flex flex-col">
-                  <h3 className="font-display font-semibold text-base text-navy mb-2">Cómo se calcula el precio</h3>
-                  <p>
-                    Por cada ambiente que eligió el cliente (ej. 2 oficinas + 1 baño) el motor calcula un
-                    costo por visita y lo multiplica por las visitas del mes (salvo que la opción sea
-                    "tarifa fija mensual"). Después suma todos los ambientes, más los consumibles/opcionales
-                    elegidos, más los adicionales, y aplica el margen comercial:
-                  </p>
-                </Card>
-                <Card className="text-sm text-ink/80 leading-relaxed flex flex-col">
-                  <h3 className="font-display font-semibold text-base text-navy mb-2">Cálculo por ambiente</h3>
-                  <div className="font-mono whitespace-pre-wrap">
-{`costo_ambiente_por_visita =
-  (m² / rendimiento_m2_hora) × HORA_OPERARIO
-  + m² × insumos_m2
+              <h2 className="font-display font-semibold text-lg text-navy mb-2">Cómo se calcula el precio</h2>
+              <p className="text-sm text-ink/70 leading-relaxed">
+                Por cada ambiente que eligió el cliente (ej. 2 oficinas + 1 baño) el motor calcula un
+                costo por visita y lo multiplica por las visitas del mes (salvo que la opción sea
+                "tarifa fija mensual"). Después suma todos los ambientes, más los consumibles/opcionales
+                elegidos, más los adicionales, y aplica el margen comercial:
+              </p>
+              <Card className="mt-3 font-mono text-xs text-ink/80 leading-relaxed whitespace-pre-wrap">
+{`costo_ambiente_por_visita = (m² / rendimiento_m2_hora) × HORA_OPERARIO + m² × insumos_m2
+costo_ambiente_mensual    = costo_ambiente_por_visita × visitas_mes
+                             (o solo costo_ambiente_por_visita si es "tarifa fija mensual")
 
-costo_ambiente_mensual =
-  costo_ambiente_por_visita × visitas_mes
-
-  (o solo costo_ambiente_por_visita si es
-  "tarifa fija mensual")`}
-                  </div>
-                </Card>
-                <Card className="text-sm text-ink/80 leading-relaxed flex flex-col">
-                  <h3 className="font-display font-semibold text-base text-navy mb-2">Cálculo total</h3>
-                  <div className="font-mono whitespace-pre-wrap">
-{`costo_mensual =
-  Σ ambientes
-  + Σ consumibles/opcionales
-  + Σ adicionales
-
-precio_mensual =
-  costo_mensual × (1 + MARGEN_COMERCIAL / 100)`}
-                  </div>
-                </Card>
-              </div>
+costo_mensual  = Σ ambientes + Σ consumibles/opcionales + Σ adicionales
+precio_mensual = costo_mensual × (1 + MARGEN_COMERCIAL / 100)`}
+              </Card>
             </div>
 
             <div>
               <h2 className="font-display font-semibold text-lg text-navy mb-2">Dónde se edita cada valor</h2>
               <Card padded={false} className="overflow-x-auto">
-                <table className="w-full text-base">
+                <table className="w-full text-sm">
                   <thead className="bg-navy-50/50 text-ink/50 text-xs uppercase">
                     <tr>
-                      <th className="text-left px-5 py-2.5">Valor</th>
-                      <th className="text-left px-5 py-2.5">Dónde se edita</th>
+                      <th className="text-left px-5 py-3">Valor</th>
+                      <th className="text-left px-5 py-3">Dónde se edita</th>
                     </tr>
                   </thead>
                   <tbody className="[&>tr]:border-t [&>tr]:border-navy-100">
                     <tr>
-                      <td className="px-5 py-2.5 font-medium text-ink whitespace-nowrap">
+                      <td className="px-5 py-3 font-medium text-ink whitespace-nowrap">
                         HORA_OPERARIO, MARGEN_COMERCIAL, PRECIO_M2_BASE
                       </td>
-                      <td className="px-5 py-2.5 text-ink/70">
+                      <td className="px-5 py-3 text-ink/70">
                         Tab <strong>Parámetros</strong> — es global, afecta todos los presupuestos.
                       </td>
                     </tr>
                     <tr>
-                      <td className="px-5 py-2.5 font-medium text-ink whitespace-nowrap">
+                      <td className="px-5 py-3 font-medium text-ink whitespace-nowrap">
                         Rendimiento y costo de insumos por m²
                       </td>
-                      <td className="px-5 py-2.5 text-ink/70">
-                        Tab <strong>Variables</strong> → variable "Tipo de ambiente" → Editar en cada opción.
+                      <td className="px-5 py-3 text-ink/70">
+                        Tab <strong>Variables</strong> → grupo "Estructurales" → variable "Tipo de ambiente" →
+                        Editar en cada opción.
                       </td>
                     </tr>
                     <tr>
-                      <td className="px-5 py-2.5 font-medium text-ink whitespace-nowrap">Visitas por mes</td>
-                      <td className="px-5 py-2.5 text-ink/70">
-                        Tab <strong>Variables</strong> → variable "Frecuencia de visita" → Editar en cada opción.
+                      <td className="px-5 py-3 font-medium text-ink whitespace-nowrap">Visitas por mes</td>
+                      <td className="px-5 py-3 text-ink/70">
+                        Tab <strong>Variables</strong> → grupo "Estructurales" → variable "Frecuencia de
+                        visita" → Editar en cada opción.
                       </td>
                     </tr>
                     <tr>
-                      <td className="px-5 py-2.5 font-medium text-ink whitespace-nowrap">
+                      <td className="px-5 py-3 font-medium text-ink whitespace-nowrap">
                         Precio de vajilla, insumos de baño/cocina, lavavajillas, cafetera, dispensador,
                         ambientadores
                       </td>
-                      <td className="px-5 py-2.5 text-ink/70">
-                        Tab <strong>Consumibles</strong> → cada variable → Editar en cada opción → campo
-                        "Precio fijo".
+                      <td className="px-5 py-3 text-ink/70">
+                        Tab <strong>Variables</strong> → grupo "Consumibles" o "Vajilla" → cada variable →
+                        Editar en cada opción → campo "Precio fijo".
                       </td>
                     </tr>
                     <tr>
-                      <td className="px-5 py-2.5 font-medium text-ink whitespace-nowrap">
+                      <td className="px-5 py-3 font-medium text-ink whitespace-nowrap">
                         De dónde sale la cantidad (por persona, por baño, tarifa fija)
                       </td>
-                      <td className="px-5 py-2.5 text-ink/70">
-                        Tab <strong>Consumibles</strong> → botón "Editar variable" en la fila (no en la opción).
+                      <td className="px-5 py-3 text-ink/70">
+                        Tab <strong>Variables</strong> → grupo "Consumibles" o "Vajilla" → botón "Editar
+                        variable" en la fila (no en la opción).
                       </td>
                     </tr>
                     <tr>
-                      <td className="px-5 py-2.5 font-medium text-ink whitespace-nowrap">
+                      <td className="px-5 py-3 font-medium text-ink whitespace-nowrap">
                         Add-ons fijos (sanitización de vajilla, "incluir dispensador")
                       </td>
-                      <td className="px-5 py-2.5 text-ink/70">
+                      <td className="px-5 py-3 text-ink/70">
                         Todavía sin edición desde el panel — viven en la tabla{" "}
                         <code className="text-xs">cotizador_extras</code>, se editan por SQL directo por ahora.
                       </td>
                     </tr>
                     <tr>
-                      <td className="px-5 py-2.5 font-medium text-ink whitespace-nowrap">Pasos y campos del wizard</td>
-                      <td className="px-5 py-2.5 text-ink/70">
+                      <td className="px-5 py-3 font-medium text-ink whitespace-nowrap">Pasos y campos del wizard</td>
+                      <td className="px-5 py-3 text-ink/70">
                         Tab <strong>Pasos y Campos</strong>.
                       </td>
                     </tr>
@@ -815,7 +817,7 @@ precio_mensual =
               </Card>
             </div>
 
-            <div className="max-w-3xl rounded-xl border border-orange-200 bg-orange-50/50 p-4">
+            <div className="rounded-xl border border-orange-200 bg-orange-50/50 p-4">
               <p className="text-xs font-semibold uppercase tracking-wide text-orange-700 mb-1.5">
                 Importante — precios de mentira
               </p>
