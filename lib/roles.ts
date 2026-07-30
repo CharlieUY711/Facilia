@@ -50,11 +50,11 @@ export function dashboardItemsForRole(role: Role): DashboardItem[] {
         icon: "👥",
       },
       {
-        key: "personal",
+        key: "rrhh",
         titulo: "Recursos Humanos",
-        descripcion: "Legajos del equipo: documentos, evolución, tareas y comunicados.",
+        descripcion: "Legajos del personal: evolución, tareas, comunicados y documentación.",
         href: "/dashboard/personal",
-        icon: "🗂️",
+        icon: "🧑‍💼",
       },
       {
         key: "reportes",
@@ -90,11 +90,11 @@ export function dashboardItemsForRole(role: Role): DashboardItem[] {
         icon: "👥",
       },
       {
-        key: "personal",
+        key: "rrhh",
         titulo: "Recursos Humanos",
-        descripcion: "Legajos del equipo: documentos, evolución, tareas y comunicados.",
+        descripcion: "Legajos del personal: evolución, tareas, comunicados y documentación.",
         href: "/dashboard/personal",
-        icon: "🗂️",
+        icon: "🧑‍💼",
       },
       {
         key: "reportes",
@@ -129,9 +129,9 @@ export function dashboardItemsForRole(role: Role): DashboardItem[] {
       {
         key: "mi-legajo",
         titulo: "Mi legajo",
-        descripcion: "Tus datos, documentos, evolución, tareas y comunicados.",
+        descripcion: "Tu evolución, tareas asignadas, comunicados y documentación.",
         href: "/dashboard/mi-legajo",
-        icon: "🗂️",
+        icon: "🧑‍💼",
       },
     ];
   }

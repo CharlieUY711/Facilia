@@ -4,6 +4,12 @@ import { requireAdmin } from "@/lib/serverAuth";
 
 const TIPOS_CALCULO_VALIDOS = ["fixed", "percentage", "formula"];
 
+// Auditoría de última modificación (ver 2026_07_29_cotizador_precios_auditoria.sql)
+// — mismo patrón de fallback que el resto: si la migración no corrió
+// todavía, el guardado no se rompe, solo no queda registrado quién lo hizo.
+const SELECT_CON_AUDITORIA =
+  "*, actualizado_por_perfil:profiles!cotizador_extras_actualizado_por_fkey(nombre,email)";
+
 /**
  * PATCH /api/cotizador/extras/:id
  * Body: { nombre?, codigo?, tipo_calculo?, valor?, orden?, activo? }
@@ -34,6 +40,22 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 
   const supabase = createServiceClient();
+
+  const conAuditoria = await supabase
+    .from("cotizador_extras")
+    .update({ ...update, actualizado_en: new Date().toISOString(), actualizado_por: auth.uid })
+    .eq("id", params.id)
+    .select(SELECT_CON_AUDITORIA)
+    .single();
+
+  if (!conAuditoria.error) {
+    return NextResponse.json({ ok: true, extra: conAuditoria.data });
+  }
+
+  console.error(
+    `[PATCH /api/cotizador/extras/${params.id}] falló el update con auditoría, reintentando sin ella:`,
+    conAuditoria.error
+  );
 
   const { data, error } = await supabase
     .from("cotizador_extras")

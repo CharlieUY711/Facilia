@@ -5,6 +5,12 @@ import { requireAdmin } from "@/lib/serverAuth";
 const TIPOS_VALIDOS = ["select", "select_repetible", "select_cantidad", "number", "boolean", "text", "formula"];
 const CANTIDAD_FUENTES_VALIDAS = ["ninguna", "input_cliente", "cantidad_banos"];
 
+// Auditoría de precio_fijo por opción (ver 2026_07_29_cotizador_precios_auditoria.sql).
+const SELECT_CON_AUDITORIA = `
+  *,
+  cotizador_opciones(*, actualizado_por_perfil:profiles!cotizador_opciones_actualizado_por_fkey(nombre,email))
+`;
+
 /**
  * GET /api/cotizador/variables
  * Todas las variables (activas e inactivas) con sus opciones anidadas —
@@ -14,6 +20,20 @@ const CANTIDAD_FUENTES_VALIDAS = ["ninguna", "input_cliente", "cantidad_banos"];
 export async function GET() {
 
  const supabase=createServiceClient();
+
+ const conAuditoria = await supabase
+   .from("cotizador_variables")
+   .select(SELECT_CON_AUDITORIA)
+   .order("orden");
+
+ if (!conAuditoria.error) {
+   return NextResponse.json({ ok: true, variables: conAuditoria.data });
+ }
+
+ console.error(
+   "[GET /api/cotizador/variables] falló el select con auditoría, reintentando sin ella:",
+   conAuditoria.error
+ );
 
  const {data,error}=await supabase
  .from("cotizador_variables")

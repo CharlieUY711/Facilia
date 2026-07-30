@@ -238,14 +238,14 @@ export default function DirectorioPage() {
           ]}
           activeTab={tab}
           onTabChange={(id) => setTab(id as Tab)}
-          rightSlot={
+          tabsTrailing={
             <>
               {tab === "personas" && (
                 <Button
                   className="!rounded-full !px-4 !py-2 !text-sm"
                   onClick={() => setPersonaModal({ open: true, editing: null })}
                 >
-                  + Nuevo
+                  Nueva
                 </Button>
               )}
               {tab === "organizaciones" && (
@@ -253,7 +253,7 @@ export default function DirectorioPage() {
                   className="!rounded-full !px-4 !py-2 !text-sm"
                   onClick={() => setOrgModal({ open: true, editing: null })}
                 >
-                  + Nuevo
+                  Nueva
                 </Button>
               )}
               {tab === "locaciones" && (
@@ -261,16 +261,18 @@ export default function DirectorioPage() {
                   className="!rounded-full !px-4 !py-2 !text-sm"
                   onClick={() => setLocModal({ open: true, editing: null })}
                 >
-                  + Nuevo
+                  Nueva
                 </Button>
               )}
-              <Input
-                placeholder="Buscar..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                className="!py-2 w-40 sm:w-48"
-              />
             </>
+          }
+          rightSlot={
+            <Input
+              placeholder="Buscar..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="!py-2 w-40 sm:w-48"
+            />
           }
         />
 
@@ -458,7 +460,7 @@ function PersonasTable({
                           (o) => o.value !== "super_admin" || puedeAsignarSuperAdmin || p.profiles?.role === "super_admin"
                         )}
                         value={p.profiles?.role}
-                        disabled={disabled || rolBloqueado || !puedeAsignarSuperAdmin}
+                        disabled={disabled || rolBloqueado}
                         onChange={(e) => cambiarRol(p, e.target.value)}
                         className="!py-1.5 !text-sm max-w-[170px]"
                       />

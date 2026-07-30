@@ -7,28 +7,11 @@
  * el cálculo.
  *
  * ── Etapa 5D-bis: modelo de costo real ────────────────────────────────
- * Ver comentario histórico más abajo, sin cambios en esta etapa.
- *
- *   costo_ambiente_por_visita = (m2 / rendimiento_m2_hora) × HORA_OPERARIO
- *                                + m2 × insumos_m2
- *   costo_ambiente_mensual    = frecuencia_independiente
- *                                 ? costo_ambiente_por_visita   (tarifa fija, no depende de visitas)
- *                                 : costo_ambiente_por_visita × visitas_mes
- *   costo_mensual             = Σ costo_ambiente_mensual (todos los ambientes)
- *                                + Σ opcionales + Σ adicionales (extras)
- *   precio_mensual            = costo_mensual × (1 + MARGEN_COMERCIAL / 100)
- *
- * `rendimiento_m2_hora`, `insumos_m2` y `frecuencia_independiente` viven en
- * cotizador_opciones (solo tienen sentido en opciones de TIPO_AMBIENTE).
- * `visitas_mes` vive en cotizador_opciones (solo en opciones de FRECUENCIA).
- * `HORA_OPERARIO` y `MARGEN_COMERCIAL` viven en cotizador_config.
- * Ver supabase/migrations/2026_07_28_etapa5D_bis_motor_costo.sql.
+ * Sin cambios en esta etapa. Ver supabase/migrations/2026_07_28_etapa5D_bis_motor_costo.sql.
  *
  * ── Etapa 5G: opcionales (vajilla, lavavajillas, cafetera, dispensador
  * de agua, ambientadores, insumos de cocina/baño) ──────────────────────
- * Se modelan como cotizador_variables (mismo patrón que TIPO_AMBIENTE),
- * no como cotizador_extras, porque necesitan una noción de "cantidad" que
- * los extras no tienen. Cada variable de opcional trae `cantidad_fuente`:
+ * Se modelan como cotizador_variables, con `cantidad_fuente`:
  *
  *   'ninguna'        → precio = opcion.precio_fijo (cantidad implícita = 1)
  *   'input_cliente'  → precio = opcion.precio_fijo × cantidad (la manda el cliente)
@@ -36,7 +19,33 @@
  *                       con tipo "BANO" en el presupuesto (mínimo 1, igual
  *                       que hacía el motor legado con `banosCount`)
  *
- * Ver supabase/migrations/2026_07_28_etapa5G_opcionales_variables.sql.
+ * ── Etapa 5J: cantidad_fuente avanzada ────────────────────────────────
+ * Dos patrones nuevos, sin tocar los de 5G:
+ *
+ *   'por_tipo_ambiente'   → precio = opcion.precio_fijo × Σ (cantidad de
+ *                           ambientes de cada tipo en el presupuesto ×
+ *                           multiplicador de ese tipo para esta variable).
+ *                           Los multiplicadores viven en
+ *                           cotizador_variable_multiplicadores (uniformes
+ *                           por variable, no varían por opción elegida).
+ *                           A diferencia de 'cantidad_banos', NO fuerza
+ *                           mínimo 1: si el presupuesto no tiene ningún
+ *                           ambiente de los tipos con multiplicador
+ *                           definido, cantidad = 0 y la línea no se cobra.
+ *
+ *   'igual_a_otra_opcion' → precio = opcion.precio_fijo × (cantidad ya
+ *                           resuelta de la variable referenciada en
+ *                           cantidad_referencia_variable_codigo) ×
+ *                           cantidad_referencia_multiplicador. Si el
+ *                           cliente no seleccionó esa otra variable en
+ *                           `input.opcionales`, cantidad = 0 (no se cobra
+ *                           esta línea). El motor resuelve primero todos
+ *                           los opcionales independientes y recién
+ *                           después los que dependen de otro, sin
+ *                           importar el orden en que vengan en el input.
+ *
+ * Ver supabase/migrations/2026_07_28_etapa5G_opcionales_variables.sql y
+ * supabase/migrations/2026_07_30_etapa5J_cantidad_avanzada.sql.
  * Los add-ons fijos de cada opcional (sanitización de vajilla, "incluir
  * dispensador" de cada insumo) siguen viviendo en cotizador_extras — se
  * seleccionan igual que cualquier otro extra, vía `input.extras`.
@@ -46,7 +55,8 @@
  * confirmar con FACILIA" — el motor calcula correctamente con cualquier
  * valor que tengan esas columnas, pero el precio resultante no es
  * confiable para cobrar hasta que alguien de FACILIA con visibilidad de
- * costos reales los revise.
+ * costos reales los revise. Lo mismo aplica a los multiplicadores de
+ * Etapa 5J (ver seed comentado en su migración).
  *
  * Este motor sigue siendo independiente del legacy `lib/calculatePrice.ts`
  * (que sigue siendo el que usa hoy el cotizador público) — conviven en
@@ -107,8 +117,20 @@ export interface OpcionCotizador {
 }
 
 /** Cómo se determina la cantidad que multiplica a `precio_fijo` en una
- *  variable de tipo opcional. Ver comentario de cabecera — Etapa 5G. */
-export type CantidadFuente = "ninguna" | "input_cliente" | "cantidad_banos";
+ *  variable de tipo opcional. Ver comentario de cabecera — Etapas 5G/5J. */
+export type CantidadFuente =
+  | "ninguna"
+  | "input_cliente"
+  | "cantidad_banos"
+  | "por_tipo_ambiente"
+  | "igual_a_otra_opcion";
+
+/** Multiplicador de cantidad_fuente='por_tipo_ambiente' para un tipo de
+ *  ambiente puntual. Ver cotizador_variable_multiplicadores. */
+export interface MultiplicadorTipoAmbiente {
+  tipo_ambiente_codigo: string;
+  multiplicador: number;
+}
 
 export interface VariableCotizador {
   id: string;
@@ -121,6 +143,11 @@ export interface VariableCotizador {
   unidad_cantidad: string | null;
   cantidad_min: number | null;
   cantidad_max: number | null;
+  /** Solo relevante si cantidad_fuente === 'por_tipo_ambiente'. */
+  multiplicadores: MultiplicadorTipoAmbiente[];
+  /** Solo relevante si cantidad_fuente === 'igual_a_otra_opcion'. */
+  cantidad_referencia_variable_codigo: string | null;
+  cantidad_referencia_multiplicador: number;
 }
 
 export interface ExtraCotizador {
@@ -212,6 +239,22 @@ function contarBanos(ambientes: AmbienteInputCalc[]): number {
   return Math.max(1, count);
 }
 
+/** Suma, para cada multiplicador definido en la variable, la cantidad de
+ *  ambientes de ese tipo en el presupuesto × su multiplicador. A
+ *  diferencia de `contarBanos`, no fuerza un mínimo de 1: si ningún
+ *  ambiente del presupuesto matchea un tipo con multiplicador, da 0. */
+function contarPorTipoAmbiente(
+  ambientes: AmbienteInputCalc[],
+  multiplicadores: MultiplicadorTipoAmbiente[]
+): number {
+  let total = 0;
+  for (const m of multiplicadores) {
+    const count = ambientes.filter((a) => a.tipo === m.tipo_ambiente_codigo).length;
+    total += count * m.multiplicador;
+  }
+  return total;
+}
+
 // ── Motor puro ───────────────────────────────────────────────────
 
 /**
@@ -282,23 +325,32 @@ export function calcularCotizacion(
     monto: 0,
   });
 
-  // ── 2. Opcionales (Etapa 5G) — vajilla, lavavajillas, cafetera, ─────
+  // ── 2. Opcionales (Etapas 5G/5J) — vajilla, lavavajillas, cafetera, ──
   //      dispensador de agua, ambientadores, insumos de cocina/baño.
   //      Se aplican una vez por presupuesto (no por ambiente).
-  for (const seleccion of input.opcionales ?? []) {
-    const variable = buscarVariableOpcional(config, seleccion.variable_codigo);
-    if (!variable) {
-      throw new Error(`Opcional desconocido o inactivo: ${seleccion.variable_codigo}`);
-    }
-    const opcion = buscarOpcion(variable, seleccion.opcion_codigo);
-    const precioUnitario = requerirNumero(
-      opcion.precio_fijo,
-      "precio_fijo",
-      `la opción "${opcion.codigo}" de "${variable.codigo}"`
-    );
+  //
+  //      Orden de resolución: primero las variables cuya cantidad NO
+  //      depende de otro opcional ('ninguna' / 'input_cliente' /
+  //      'cantidad_banos' / 'por_tipo_ambiente'), guardando la cantidad
+  //      resuelta de cada una en `cantidadPorVariable`. Recién después
+  //      las 'igual_a_otra_opcion', que leen de ese mapa — así no
+  //      importa el orden en que vengan en `input.opcionales`.
+  const seleccionados = input.opcionales ?? [];
+  const independientes = seleccionados.filter((s) => {
+    const v = buscarVariableOpcional(config, s.variable_codigo);
+    return v?.cantidad_fuente !== "igual_a_otra_opcion";
+  });
+  const dependientes = seleccionados.filter((s) => {
+    const v = buscarVariableOpcional(config, s.variable_codigo);
+    return v?.cantidad_fuente === "igual_a_otra_opcion";
+  });
 
-    let cantidad: number;
-    let etiquetaCantidad = "";
+  const cantidadPorVariable = new Map<string, number>();
+
+  function resolverCantidad(
+    variable: VariableCotizador,
+    seleccion: OpcionalSeleccionado
+  ): { cantidad: number; etiqueta: string } {
     if (variable.cantidad_fuente === "input_cliente") {
       if (
         seleccion.cantidad === undefined ||
@@ -316,23 +368,60 @@ export function calcularCotizacion(
       if (variable.cantidad_max !== null && seleccion.cantidad > variable.cantidad_max) {
         throw new Error(`La cantidad máxima para "${variable.codigo}" es ${variable.cantidad_max}`);
       }
-      cantidad = seleccion.cantidad;
-      etiquetaCantidad = ` (${cantidad} ${variable.unidad_cantidad ?? "unidades"})`;
-    } else if (variable.cantidad_fuente === "cantidad_banos") {
-      cantidad = contarBanos(input.ambientes);
-      etiquetaCantidad = ` (x${cantidad} baño/s)`;
-    } else {
-      cantidad = 1;
+      return {
+        cantidad: seleccion.cantidad,
+        etiqueta: ` (${seleccion.cantidad} ${variable.unidad_cantidad ?? "unidades"})`,
+      };
     }
+    if (variable.cantidad_fuente === "cantidad_banos") {
+      const cantidad = contarBanos(input.ambientes);
+      return { cantidad, etiqueta: ` (x${cantidad} baño/s)` };
+    }
+    if (variable.cantidad_fuente === "por_tipo_ambiente") {
+      const cantidad = contarPorTipoAmbiente(input.ambientes, variable.multiplicadores);
+      return { cantidad, etiqueta: ` (x${cantidad})` };
+    }
+    if (variable.cantidad_fuente === "igual_a_otra_opcion") {
+      const refCodigo = variable.cantidad_referencia_variable_codigo;
+      const cantidadRef = refCodigo ? cantidadPorVariable.get(refCodigo) ?? 0 : 0;
+      const cantidad = cantidadRef * variable.cantidad_referencia_multiplicador;
+      return { cantidad, etiqueta: cantidad > 0 ? ` (x${cantidad})` : "" };
+    }
+    return { cantidad: 1, etiqueta: "" };
+  }
+
+  function aplicarOpcional(seleccion: OpcionalSeleccionado) {
+    const variable = buscarVariableOpcional(config, seleccion.variable_codigo);
+    if (!variable) {
+      throw new Error(`Opcional desconocido o inactivo: ${seleccion.variable_codigo}`);
+    }
+    const opcion = buscarOpcion(variable, seleccion.opcion_codigo);
+    const precioUnitario = requerirNumero(
+      opcion.precio_fijo,
+      "precio_fijo",
+      `la opción "${opcion.codigo}" de "${variable.codigo}"`
+    );
+
+    const { cantidad, etiqueta } = resolverCantidad(variable, seleccion);
+    cantidadPorVariable.set(variable.codigo, cantidad);
+
+    // cantidad = 0 (típico de 'igual_a_otra_opcion' cuando la variable
+    // referenciada no fue seleccionada, o de 'por_tipo_ambiente' cuando
+    // ningún ambiente matchea): no se cobra, pero queda registrada la
+    // cantidad por si otro opcional dependiente la necesita.
+    if (cantidad === 0) return;
 
     const monto = redondear(precioUnitario * cantidad);
     costoMensual += monto;
     detalle.push({
-      concepto: `${variable.nombre} — ${opcion.nombre}${etiquetaCantidad}`,
+      concepto: `${variable.nombre} — ${opcion.nombre}${etiqueta}`,
       cantidad,
       monto,
     });
   }
+
+  independientes.forEach(aplicarOpcional);
+  dependientes.forEach(aplicarOpcional);
 
   // ── 3. Extras ────────────────────────────────────────────────────
   for (const codigoExtra of input.extras ?? []) {

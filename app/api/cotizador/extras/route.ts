@@ -4,6 +4,10 @@ import { requireAdmin } from "@/lib/serverAuth";
 
 const TIPOS_CALCULO_VALIDOS = ["fixed", "percentage", "formula"];
 
+// Auditoría de última modificación (ver 2026_07_29_cotizador_precios_auditoria.sql).
+const SELECT_CON_AUDITORIA =
+  "*, actualizado_por_perfil:profiles!cotizador_extras_actualizado_por_fkey(nombre,email)";
+
 /**
  * GET /api/cotizador/extras
  * Lista los servicios adicionales configurables (limpieza de vidrios,
@@ -14,6 +18,20 @@ export async function GET() {
   if (!auth) return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 403 });
 
   const supabase = createServiceClient();
+
+  const conAuditoria = await supabase
+    .from("cotizador_extras")
+    .select(SELECT_CON_AUDITORIA)
+    .order("orden", { ascending: true });
+
+  if (!conAuditoria.error) {
+    return NextResponse.json({ ok: true, extras: conAuditoria.data });
+  }
+
+  console.error(
+    "[GET /api/cotizador/extras] falló el select con auditoría, reintentando sin ella:",
+    conAuditoria.error
+  );
 
   const { data, error } = await supabase
     .from("cotizador_extras")

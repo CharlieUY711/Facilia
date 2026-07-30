@@ -2,6 +2,12 @@ import { NextRequest,NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 import { requireAdmin } from "@/lib/serverAuth";
 
+// Auditoría (quién/cuándo) agregada en 2026_07_29_cotizador_precios_auditoria.sql
+// — igual patrón de fallback que /api/cotizador/parametros: si esa migración
+// todavía no corrió contra la base, no rompe el guardado, solo no graba/trae
+// quién lo modificó.
+const SELECT_CON_AUDITORIA =
+  "*, actualizado_por_perfil:profiles!cotizador_opciones_actualizado_por_fkey(nombre,email)";
 
 /**
  * PATCH /api/cotizador/opciones/:id
@@ -37,6 +43,21 @@ export async function PATCH(
 
  const supabase=createServiceClient();
 
+ const conAuditoria = await supabase
+   .from("cotizador_opciones")
+   .update({ ...update, actualizado_en: new Date().toISOString(), actualizado_por: auth.uid })
+   .eq("id", params.id)
+   .select(SELECT_CON_AUDITORIA)
+   .single();
+
+ if (!conAuditoria.error) {
+   return NextResponse.json({ ok: true, opcion: conAuditoria.data });
+ }
+
+ console.error(
+   `[PATCH /api/cotizador/opciones/${params.id}] falló el update con auditoría, reintentando sin ella:`,
+   conAuditoria.error
+ );
 
  const {data,error}=await supabase
  .from("cotizador_opciones")

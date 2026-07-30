@@ -7,7 +7,12 @@ const CANTIDAD_FUENTES_VALIDAS = ["ninguna", "input_cliente", "cantidad_banos"];
 /**
  * PATCH /api/cotizador/variables/:id
  * Body: { nombre?, orden?, obligatorio?, afecta_precio?, descripcion?, activo?,
- *         cantidad_fuente?, unidad_cantidad?, cantidad_min?, cantidad_max? }
+ *         cantidad_fuente?, unidad_cantidad?, cantidad_min?, cantidad_max?,
+ *         accesorio_variable_id? }
+ *
+ * accesorio_variable_id (Etapa 5I) — para insumos que dependen de un
+ * electrodoméstico (ej. Agua → Dispensador). Apunta a otra fila de
+ * cotizador_variables. Se manda `null` explícito para desvincular.
  *
  * OJO: "codigo" y "tipo" NO se pueden editar desde acá a propósito — son la
  * referencia estable que usa el motor de cálculo (lib/cotizador/engine.ts)
@@ -40,6 +45,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   if (body.unidad_cantidad !== undefined) update.unidad_cantidad = body.unidad_cantidad;
   if (body.cantidad_min !== undefined) update.cantidad_min = body.cantidad_min;
   if (body.cantidad_max !== undefined) update.cantidad_max = body.cantidad_max;
+  if (body.accesorio_variable_id !== undefined) update.accesorio_variable_id = body.accesorio_variable_id;
   // body.codigo y body.tipo se ignoran a propósito (ver comentario arriba).
 
   if (Object.keys(update).length === 0) {

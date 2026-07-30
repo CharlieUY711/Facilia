@@ -32,7 +32,10 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             <input
               ref={ref}
               id={inputId}
-              className="w-full bg-transparent text-sm font-body text-ink placeholder:text-ink/30 outline-none border-0 p-0 mt-0.5"
+              className={clsx(
+                "w-full bg-transparent text-sm font-body text-ink placeholder:text-ink/30 outline-none border-0 p-0 mt-0.5",
+                props.type === "number" && "text-right"
+              )}
               {...props}
             />
           </div>
@@ -51,6 +54,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             "w-full rounded-xl border px-4 py-2.5 text-sm font-body text-ink placeholder:text-ink/40",
             "focus:outline-none focus:ring-2 focus:ring-blue/30 focus:border-blue transition-colors",
             error ? "border-red-400" : "border-navy-100",
+            props.type === "number" && "text-right",
             className
           )}
           {...props}

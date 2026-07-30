@@ -331,7 +331,9 @@ function BoxInput({
       </label>
       <input
         {...props}
-        className="w-full bg-transparent text-sm text-ink outline-none border-0 p-0 mt-0.5"
+        className={`w-full bg-transparent text-sm text-ink outline-none border-0 p-0 mt-0.5 ${
+          props.type === "number" ? "text-right" : ""
+        }`}
       />
     </div>
   );
@@ -776,7 +778,7 @@ export default function CotizadorForm() {
   }
 
   function formatCurrency(n: number) {
-    return new Intl.NumberFormat("es-UY", { style: "currency", currency: "USD", maximumFractionDigits: 2 }).format(n);
+    return new Intl.NumberFormat("es-UY", { style: "currency", currency: "UYU", maximumFractionDigits: 2 }).format(n);
   }
 
   // Contenido editable del presupuesto: se usa en el paso 5 de resumen final.

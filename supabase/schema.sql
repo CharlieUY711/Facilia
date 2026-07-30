@@ -490,6 +490,9 @@ alter table public.cotizador_opciones add column if not exists insumos_m2 numeri
 alter table public.cotizador_opciones add column if not exists frecuencia_independiente boolean not null default false;
 alter table public.cotizador_opciones add column if not exists visitas_mes numeric;
 alter table public.cotizador_opciones add column if not exists created_at timestamptz not null default now();
+-- Auditoría de última modificación (ver 2026_07_29_cotizador_precios_auditoria.sql)
+alter table public.cotizador_opciones add column if not exists actualizado_en timestamptz;
+alter table public.cotizador_opciones add column if not exists actualizado_por uuid;
 
 do $$
 begin
@@ -502,6 +505,18 @@ end $$;
 
 create index if not exists cotizador_opciones_variable_idx on public.cotizador_opciones (variable_id);
 
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.table_constraints
+    where constraint_name = 'cotizador_opciones_actualizado_por_fkey'
+  ) then
+    alter table public.cotizador_opciones
+      add constraint cotizador_opciones_actualizado_por_fkey
+      foreign key (actualizado_por) references public.profiles (id) on delete set null;
+  end if;
+end $$;
+
 -- ── Parámetros globales del motor (ej: PRECIO_M2_BASE, MARGEN_COMERCIAL) ──
 create table if not exists public.cotizador_config (
   id uuid primary key default uuid_generate_v4(),
@@ -513,6 +528,22 @@ create table if not exists public.cotizador_config (
 
 alter table public.cotizador_config add column if not exists descripcion text;
 alter table public.cotizador_config add column if not exists created_at timestamptz not null default now();
+
+-- Auditoría de última modificación (ver 2026_07_29_cotizador_config_auditoria.sql)
+alter table public.cotizador_config add column if not exists actualizado_en timestamptz;
+alter table public.cotizador_config add column if not exists actualizado_por uuid;
+
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.table_constraints
+    where constraint_name = 'cotizador_config_actualizado_por_fkey'
+  ) then
+    alter table public.cotizador_config
+      add constraint cotizador_config_actualizado_por_fkey
+      foreign key (actualizado_por) references public.profiles (id) on delete set null;
+  end if;
+end $$;
 
 do $$
 begin
@@ -543,6 +574,21 @@ create table if not exists public.cotizador_extras (
 alter table public.cotizador_extras add column if not exists orden int not null default 0;
 alter table public.cotizador_extras add column if not exists activo boolean not null default true;
 alter table public.cotizador_extras add column if not exists created_at timestamptz not null default now();
+-- Auditoría de última modificación (ver 2026_07_29_cotizador_precios_auditoria.sql)
+alter table public.cotizador_extras add column if not exists actualizado_en timestamptz;
+alter table public.cotizador_extras add column if not exists actualizado_por uuid;
+
+do $$
+begin
+  if not exists (
+    select 1 from information_schema.table_constraints
+    where constraint_name = 'cotizador_extras_actualizado_por_fkey'
+  ) then
+    alter table public.cotizador_extras
+      add constraint cotizador_extras_actualizado_por_fkey
+      foreign key (actualizado_por) references public.profiles (id) on delete set null;
+  end if;
+end $$;
 
 -- Recrea el check explícitamente — ver nota en el bloque de
 -- cotizador_variables más arriba: esto es lo que faltaba la primera vez
