@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { createServerSupabaseClient } from "@/lib/supabase/server"; // helper estandar existente en FACILIA
+import { createClient as createServerSupabaseClient } from "@/lib/supabase/server"; // helper estandar existente en FACILIA
 
 export interface RequestContext {
   organizationId: string;
