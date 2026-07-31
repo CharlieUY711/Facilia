@@ -1,0 +1,480 @@
+# PROMPT OPS-03 — Motor de Planificación Operativa
+
+> **Rol**
+>
+> Actúa como un **Enterprise Software Architect** especializado en Facility Management (FM), Computerized Maintenance Management Systems (CMMS), Field Service Management (FSM), planificación de operaciones, DDD y Clean Architecture.
+>
+> El backend (**OPS-01**) y el frontend (**OPS-02**) ya están implementados.
+>
+> Esta etapa desarrolla el **motor de planificación**, que será el cerebro de Operations.
+>
+> **No rediseñar el dominio existente.**
+>
+> **No romper compatibilidad con las APIs ni con el frontend ya implementado.**
+
+---
+
+# Objetivo
+
+Construir el motor que transforme automáticamente los servicios definidos en un contrato en una planificación operativa ejecutable.
+
+El sistema debe generar:
+
+* servicios programados;
+* calendario operativo;
+* órdenes futuras;
+* recurrencias;
+* excepciones;
+* reprogramaciones.
+
+Este motor será el responsable de crear el trabajo futuro de la empresa.
+
+---
+
+# Principio fundamental
+
+## El contrato define QUÉ.
+
+## El Planificador define CUÁNDO.
+
+## Operations define CÓMO.
+
+---
+
+# Flujo
+
+```text
+Contrato Activo
+
+↓
+
+Servicios Contratados
+
+↓
+
+Motor de Planificación
+
+↓
+
+Calendario Operativo
+
+↓
+
+Servicios Programados
+
+↓
+
+Órdenes de Trabajo
+```
+
+---
+
+# Alcance
+
+El motor debe administrar:
+
+* recurrencias;
+* calendarios;
+* feriados;
+* excepciones;
+* cambios de frecuencia;
+* suspensiones;
+* reprogramaciones;
+* generación automática de órdenes.
+
+---
+
+# Modelo de planificación
+
+Diseñar e implementar:
+
+## PlanningRule
+
+Regla principal.
+
+Debe soportar:
+
+* diaria;
+* semanal;
+* quincenal;
+* mensual;
+* anual;
+* personalizada.
+
+---
+
+## OperationalCalendar
+
+Calendario operativo.
+
+---
+
+## ScheduleRule
+
+Reglas específicas.
+
+Ejemplo:
+
+Todos los lunes.
+
+Primer viernes.
+
+Último día hábil.
+
+Cada 15 días.
+
+---
+
+## CalendarException
+
+Excepciones.
+
+Ejemplos:
+
+* feriados;
+* cierre del cliente;
+* suspensión temporal;
+* mantenimiento extraordinario.
+
+---
+
+## GeneratedService
+
+Servicio generado automáticamente.
+
+---
+
+# Recurrencias
+
+Implementar soporte para:
+
+* Todos los días.
+* Lunes a viernes.
+* Días específicos.
+* Cada X días.
+* Cada X semanas.
+* Cada X meses.
+* Primer lunes.
+* Último viernes.
+* Frecuencia personalizada.
+
+Utilizar un modelo extensible.
+
+---
+
+# Calendarios
+
+Crear soporte para múltiples calendarios.
+
+Ejemplos:
+
+Calendario Nacional.
+
+Calendario por Organización.
+
+Calendario por Cliente.
+
+Calendario por Ubicación.
+
+Calendario Especial.
+
+---
+
+# Feriados
+
+Preparar una tabla independiente.
+
+Cada organización podrá definir:
+
+* feriados nacionales;
+* feriados internos;
+* días no laborables;
+* cierres extraordinarios.
+
+---
+
+# Excepciones
+
+Permitir registrar:
+
+* suspensión temporal;
+* reprogramación;
+* cancelación puntual;
+* ejecución extraordinaria.
+
+Toda excepción debe quedar auditada.
+
+---
+
+# Generación automática
+
+Implementar un motor que permita:
+
+Generar:
+
+* una semana;
+* un mes;
+* tres meses;
+* un año.
+
+La ventana debe ser configurable.
+
+---
+
+# Reprogramación
+
+Permitir mover un servicio.
+
+Registrar:
+
+* motivo;
+* usuario;
+* fecha original;
+* nueva fecha.
+
+Nunca perder el historial.
+
+---
+
+# Suspensiones
+
+Permitir suspender:
+
+* un servicio;
+* una sede;
+* un contrato;
+* una frecuencia.
+
+Sin eliminar la planificación histórica.
+
+---
+
+# SLA
+
+La planificación debe respetar:
+
+* horarios permitidos;
+* ventanas de servicio;
+* tiempos mínimos;
+* restricciones contractuales.
+
+---
+
+# Integración con Contract Management
+
+Consumir:
+
+* servicios;
+* frecuencias;
+* SLA;
+* horarios;
+* vigencia;
+* ubicaciones.
+
+Nunca modificar el contrato.
+
+---
+
+# Integración con Directory
+
+Consumir:
+
+* organizaciones;
+* ubicaciones;
+* recursos.
+
+---
+
+# Integración futura con RRHH
+
+Preparar el modelo para considerar:
+
+* disponibilidad del personal;
+* vacaciones;
+* licencias;
+* turnos.
+
+No implementar todavía.
+
+---
+
+# Integración futura con IA
+
+Preparar puntos de extensión para:
+
+* optimización de agenda;
+* balanceo de carga;
+* predicción de tiempos;
+* sugerencias de planificación.
+
+---
+
+# Eventos de dominio
+
+Agregar:
+
+PlanningGenerated
+
+ScheduleCreated
+
+ScheduleUpdated
+
+ScheduleCancelled
+
+ScheduleRescheduled
+
+PlanningSuspended
+
+PlanningResumed
+
+---
+
+# Casos de uso
+
+Implementar:
+
+GenerateOperationalCalendar
+
+GenerateSchedules
+
+RegenerateSchedules
+
+RescheduleService
+
+SuspendPlanning
+
+ResumePlanning
+
+ApplyHolidayCalendar
+
+ApplyPlanningException
+
+ListSchedules
+
+GetOperationalCalendar
+
+---
+
+# APIs
+
+Agregar únicamente las necesarias.
+
+Ejemplos:
+
+```text
+POST /api/operations/planning/generate
+
+POST /api/operations/planning/regenerate
+
+POST /api/operations/schedules/reschedule
+
+POST /api/operations/schedules/suspend
+
+POST /api/operations/schedules/resume
+
+GET /api/operations/calendar
+
+GET /api/operations/schedules
+```
+
+---
+
+# Frontend
+
+Ampliar el Centro de Operaciones.
+
+Agregar:
+
+* Calendario inteligente.
+* Vista de planificación.
+* Gestión de excepciones.
+* Reprogramaciones.
+* Calendarios.
+* Feriados.
+
+Todo reutilizando los componentes existentes.
+
+---
+
+# Dashboard
+
+Agregar indicadores.
+
+Ejemplos:
+
+Servicios planificados.
+
+Servicios reprogramados.
+
+Suspensiones.
+
+Próximas ejecuciones.
+
+Cobertura semanal.
+
+Cobertura mensual.
+
+---
+
+# Calidad
+
+Todo debe:
+
+* compilar;
+* respetar TypeScript Strict;
+* reutilizar el backend existente;
+* no duplicar lógica.
+
+---
+
+# Exclusiones
+
+No implementar todavía:
+
+* asignación automática de técnicos;
+* optimización de rutas;
+* GPS;
+* aplicación móvil;
+* IA generativa.
+
+---
+
+# Entregables
+
+Generar:
+
+* ampliaciones del dominio;
+* migraciones SQL necesarias;
+* nuevas entidades;
+* nuevos casos de uso;
+* repositorios adicionales;
+* APIs;
+* modificaciones del frontend;
+* calendario inteligente;
+* documentación técnica.
+
+Todo completamente funcional.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+* generar automáticamente la planificación desde un contrato;
+* administrar recurrencias complejas;
+* aplicar feriados y excepciones;
+* reprogramar servicios;
+* suspender y reactivar planificación;
+* visualizar el calendario operativo completo.
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar que toda la solución compile correctamente.
+2. Listar archivos creados y modificados.
+3. Confirmar compatibilidad con **OPS-01** y **OPS-02**.
+4. Generar la sección **"Contexto para OPS-04"** con un resumen técnico para implementar el **ciclo completo de Órdenes de Trabajo**, incluyendo asignación de recursos, prioridades, seguimiento de estados, validaciones, dependencias entre tareas y preparación para ejecución en campo.

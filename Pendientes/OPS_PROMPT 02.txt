@@ -1,0 +1,561 @@
+# PROMPT OPS-02 — Frontend del Centro de Operaciones
+
+> **Rol**
+>
+> Actúa como un **Staff Frontend Architect** especializado en ERP, Facility Management (FM), Field Service Management (FSM), Next.js 15 App Router, React 19, TypeScript Strict, TailwindCSS y UX para aplicaciones empresariales.
+>
+> El backend del módulo **Operations** ya fue implementado en **OPS-01**.
+>
+> **No modificar la base de datos.**
+>
+> **No modificar APIs existentes.**
+>
+> **No modificar el dominio.**
+>
+> Implementar únicamente el frontend.
+
+---
+
+# Objetivo
+
+Construir el **Centro de Operaciones de FACILIA**.
+
+Este será el principal panel de trabajo para supervisores, planificadores y operadores.
+
+Debe permitir administrar toda la operación diaria desde una única interfaz.
+
+---
+
+# Principios UX
+
+El usuario debe poder responder inmediatamente:
+
+* ¿Qué servicios hay hoy?
+* ¿Qué está pendiente?
+* ¿Qué está atrasado?
+* ¿Quién está trabajando?
+* ¿Qué incidencias existen?
+* ¿Qué servicios terminaron?
+* ¿Qué contratos requieren atención?
+
+Toda la información debe estar disponible en pocos clics.
+
+---
+
+# Navegación
+
+Agregar el módulo:
+
+```text
+FACILIA
+
+Comercial
+    Leads
+    Cotizaciones
+    Contratos
+
+Operaciones
+    Centro de Operaciones
+    Calendario
+    Órdenes
+    Incidencias
+
+Biblioteca
+
+Administración
+```
+
+---
+
+# Pantalla Principal
+
+Ruta:
+
+```text
+/operations
+```
+
+Debe actuar como un verdadero **Centro de Control Operativo**.
+
+Mostrar:
+
+* KPIs
+* Agenda del día
+* Servicios en ejecución
+* Órdenes pendientes
+* Incidencias abiertas
+* Alertas SLA
+* Próximos servicios
+
+---
+
+# Dashboard Superior
+
+Cards:
+
+* Servicios Programados Hoy
+* Servicios En Curso
+* Servicios Finalizados
+* Órdenes Pendientes
+* Incidencias Abiertas
+* Cumplimiento SLA
+* Productividad
+* Contratos Activos
+
+---
+
+# Calendario Operativo
+
+Ruta:
+
+```text
+/operations/calendar
+```
+
+Vistas:
+
+* Día
+* Semana
+* Mes
+
+Mostrar:
+
+* servicios programados;
+* órdenes;
+* mantenimientos;
+* eventos especiales.
+
+Permitir filtros.
+
+---
+
+# Agenda
+
+Ruta:
+
+```text
+/operations/schedule
+```
+
+Vista cronológica.
+
+Ejemplo:
+
+08:00
+
+Limpieza Oficina Central
+
+↓
+
+10:30
+
+Mantenimiento Preventivo
+
+↓
+
+14:00
+
+Reposición de Insumos
+
+---
+
+# Órdenes de Trabajo
+
+Ruta:
+
+```text
+/work-orders
+```
+
+Vista tipo tabla.
+
+Columnas:
+
+* Número
+* Cliente
+* Ubicación
+* Servicio
+* Prioridad
+* Responsable
+* Estado
+* Inicio
+* Fin
+* SLA
+
+Acciones:
+
+* Abrir
+* Asignar
+* Iniciar
+* Pausar
+* Finalizar
+* Validar
+* Cerrar
+
+---
+
+# Filtros
+
+Implementar filtros por:
+
+* Organización
+* Cliente
+* Contrato
+* Estado
+* Prioridad
+* Responsable
+* Fecha
+* SLA
+
+---
+
+# Búsqueda
+
+Buscar por:
+
+* número;
+* cliente;
+* contrato;
+* ubicación;
+* responsable.
+
+---
+
+# Detalle de Orden
+
+Ruta:
+
+```text
+/work-orders/[id]
+```
+
+Pestañas:
+
+General
+
+Checklist
+
+Evidencias
+
+Incidencias
+
+Timeline
+
+Historial
+
+---
+
+# Información General
+
+Mostrar:
+
+* Cliente
+* Contrato
+* Servicio
+* Ubicación
+* Prioridad
+* SLA
+* Estado
+* Responsable
+* Duración estimada
+* Duración real
+
+---
+
+# Checklist
+
+Mostrar lista interactiva.
+
+Preparada para:
+
+* plantillas reutilizables;
+* múltiples categorías;
+* observaciones.
+
+---
+
+# Evidencias
+
+Consumir Library.
+
+Mostrar:
+
+* Fotografías
+* Videos
+* PDFs
+* Informes
+* Firmas
+* Actas
+
+Acciones:
+
+* Abrir
+* Descargar
+* Adjuntar
+* Desvincular
+
+No almacenar archivos.
+
+---
+
+# Incidencias
+
+Mostrar:
+
+* severidad;
+* descripción;
+* responsable;
+* estado;
+* fecha.
+
+Permitir crear nuevas.
+
+---
+
+# Timeline
+
+Visualizar:
+
+Orden creada
+
+↓
+
+Asignada
+
+↓
+
+Inicio
+
+↓
+
+Pausa
+
+↓
+
+Reanudación
+
+↓
+
+Finalización
+
+↓
+
+Validación
+
+↓
+
+Cierre
+
+---
+
+# Centro de Asignaciones
+
+Nueva pantalla.
+
+Permitir:
+
+* asignar personas;
+* asignar equipos;
+* cambiar responsables;
+* visualizar carga de trabajo.
+
+---
+
+# Vista de Recursos
+
+Mostrar:
+
+* empleados;
+* cuadrillas;
+* disponibilidad;
+* órdenes activas.
+
+Consumir Directory.
+
+---
+
+# Integración con Contract Management
+
+Mostrar siempre:
+
+Contrato asociado.
+
+Botón:
+
+Ver Contrato.
+
+No editar.
+
+---
+
+# Integración con Library
+
+Mostrar panel documental completo.
+
+Toda evidencia proviene de Library.
+
+---
+
+# Componentes reutilizables
+
+Crear:
+
+OperationDashboard
+
+OperationalCalendar
+
+WorkOrderTable
+
+WorkOrderCard
+
+WorkOrderHeader
+
+WorkOrderTimeline
+
+ChecklistPanel
+
+EvidencePanel
+
+IncidentPanel
+
+AssignmentPanel
+
+StatusBadge
+
+PriorityBadge
+
+SlaIndicator
+
+ResourceCalendar
+
+OperationsFilters
+
+---
+
+# Indicadores visuales
+
+Estados:
+
+🟢 Ejecutándose
+
+🟡 Pendiente
+
+🟠 Pausada
+
+🔵 Validada
+
+⚫ Cerrada
+
+🔴 Incidencia
+
+Mostrar SLA con indicadores de color.
+
+---
+
+# Diseño
+
+Seguir exactamente la identidad visual de FACILIA.
+
+Utilizar:
+
+* TailwindCSS
+* Componentes reutilizables
+* Responsive
+* Dark Mode
+* Tabla estándar
+* Cards homogéneas
+* Iconografía consistente
+
+---
+
+# Accesibilidad
+
+Cumplir:
+
+* navegación por teclado;
+* ARIA;
+* foco visible;
+* contraste AA.
+
+---
+
+# Rendimiento
+
+Implementar:
+
+* paginación;
+* virtualización para tablas grandes;
+* lazy loading;
+* skeletons;
+* búsqueda optimizada;
+* memoización cuando corresponda.
+
+---
+
+# Exclusiones
+
+No implementar todavía:
+
+* aplicación móvil;
+* geolocalización;
+* GPS;
+* firma del cliente;
+* IA;
+* optimización automática;
+* checklists dinámicos.
+
+---
+
+# Calidad
+
+Todo debe:
+
+* compilar;
+* reutilizar componentes;
+* no contener `any`;
+* no contener código duplicado;
+* respetar TypeScript Strict.
+
+---
+
+# Entregables
+
+Generar:
+
+* todas las páginas;
+* componentes React;
+* hooks;
+* formularios;
+* tablas;
+* filtros;
+* dashboard;
+* calendario;
+* agenda;
+* integración con APIs existentes.
+
+No modificar el backend.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+* consultar el Centro de Operaciones;
+* navegar el calendario;
+* administrar órdenes de trabajo;
+* asignar recursos;
+* registrar incidencias;
+* consultar evidencias desde Library;
+* visualizar el estado de la operación en tiempo real.
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar que toda la interfaz compile sin errores.
+2. Listar todos los archivos creados.
+3. Confirmar que no se modificó el backend de **OPS-01**.
+4. Generar la sección **"Contexto para OPS-03"** con un resumen técnico para implementar el **motor de planificación operativa**, incluyendo generación automática de servicios recurrentes, reglas de frecuencia, calendarios laborales, excepciones, feriados y programación inteligente derivada de los contratos.

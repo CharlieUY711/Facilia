@@ -1,0 +1,519 @@
+# PROMPT COM-02 — Backend Core + Integración Twilio WhatsApp API
+
+> **Rol**
+>
+> Actúa como un **Senior Backend Architect** especializado en SaaS multi-tenant, Clean Architecture, DDD, integración con APIs externas, WhatsApp Business API, Twilio, webhooks y sistemas operativos empresariales.
+>
+> El módulo:
+>
+> # COM — Communications Hub
+>
+> ya cuenta con:
+>
+> * COM-00 — Documento Maestro Funcional.
+> * COM-01 — Modelo de Dominio y Persistencia.
+>
+> Esta etapa implementa el backend funcional y la integración con Twilio.
+>
+> **No desarrollar frontend.**
+>
+> **No implementar automatizaciones avanzadas todavía.**
+>
+> **No modificar Operations, Directory ni Library.**
+>
+> Mantener arquitectura Charlie Compliant.
+
+---
+
+# Objetivo
+
+Implementar la capa backend que permita:
+
+* enviar mensajes WhatsApp;
+* recibir mensajes;
+* procesar webhooks;
+* registrar estados de entrega;
+* mantener conversaciones;
+* abstraer el proveedor externo.
+
+---
+
+# Arquitectura requerida
+
+Mantener:
+
+```text
+Domain
+
+Application
+
+Infrastructure
+
+API
+```
+
+---
+
+# Principio fundamental
+
+Twilio NO pertenece al dominio.
+
+Debe existir un adaptador.
+
+Arquitectura:
+
+```text id="qz7l4x"
+COM Domain
+
+      |
+
+CommunicationProvider Interface
+
+      |
+
+Twilio WhatsApp Adapter
+
+      |
+
+Twilio API
+```
+
+---
+
+# 1. Provider Abstraction
+
+Crear interfaz:
+
+```text id="8j5u3k"
+CommunicationProvider
+```
+
+Responsabilidades:
+
+* enviar mensaje;
+* consultar estado;
+* procesar eventos.
+
+---
+
+Métodos conceptuales:
+
+```typescript
+sendMessage()
+
+getDeliveryStatus()
+
+processWebhook()
+```
+
+---
+
+# 2. Twilio Adapter
+
+Implementar:
+
+```text id="6zz4nk"
+TwilioWhatsAppProvider
+```
+
+Responsabilidades:
+
+* autenticación;
+* envío;
+* transformación payload;
+* manejo errores.
+
+---
+
+# Configuración segura
+
+Nunca almacenar:
+
+* tokens;
+* claves;
+* secretos.
+
+Utilizar:
+
+* variables de entorno;
+* configuración segura del entorno.
+
+---
+
+# 3. Casos de uso backend
+
+Implementar:
+
+---
+
+# SendCommunication
+
+Entrada:
+
+```text
+conversation_id
+
+recipient
+
+message
+
+channel
+```
+
+Proceso:
+
+1. Validar conversación.
+2. Crear Message.
+3. Enviar mediante provider.
+4. Registrar DeliveryRecord.
+
+---
+
+# ReceiveMessage
+
+Procesar mensajes entrantes.
+
+Ejemplo:
+
+Empleado:
+
+```text
+CONFIRMAR
+```
+
+Flujo:
+
+```text
+Twilio Webhook
+
+↓
+
+COM
+
+↓
+
+Message
+
+↓
+
+Conversation
+```
+
+---
+
+# RegisterDeliveryStatus
+
+Actualizar:
+
+```text
+SENT
+
+DELIVERED
+
+READ
+
+FAILED
+```
+
+---
+
+# CreateConversation
+
+Crear contexto operativo:
+
+Ejemplo:
+
+```text
+Orden 123
+
+Empleado Juan
+
+WhatsApp
+```
+
+---
+
+# 4. APIs REST
+
+Crear:
+
+---
+
+# Envío
+
+```http
+POST /api/com/messages/send
+```
+
+Payload:
+
+```json
+{
+ "conversation_id":"",
+ "message":""
+}
+```
+
+---
+
+# Conversaciones
+
+```http
+GET /api/com/conversations
+
+GET /api/com/conversations/{id}
+```
+
+---
+
+# Mensajes
+
+```http
+GET /api/com/conversations/{id}/messages
+```
+
+---
+
+# Webhook Twilio
+
+Endpoint:
+
+```http
+POST /api/com/webhooks/twilio
+```
+
+Debe procesar:
+
+* mensajes entrantes;
+* estados;
+* multimedia.
+
+---
+
+# 5. Procesamiento Webhook
+
+Validar:
+
+* origen;
+* firma Twilio;
+* organización;
+* número asociado.
+
+---
+
+# Eventos entrantes
+
+Ejemplos:
+
+Mensaje texto:
+
+```text
+MessageReceived
+```
+
+Imagen:
+
+```text
+EvidenceReceivedCandidate
+```
+
+---
+
+# 6. Manejo Multimedia
+
+Cuando llega:
+
+* imagen;
+* documento;
+
+NO guardar archivo.
+
+Flujo:
+
+```text
+Twilio Media
+
+↓
+
+COM
+
+↓
+
+Library Adapter (futuro)
+
+↓
+
+Referencia almacenada
+```
+
+---
+
+# 7. Integración con Library
+
+Crear interfaz:
+
+```text
+EvidenceStorageProvider
+```
+
+No implementar todavía almacenamiento definitivo.
+
+Preparar:
+
+```text
+saveEvidenceReference()
+```
+
+---
+
+# 8. Persistencia
+
+Implementar repositorios:
+
+```text
+ConversationRepository
+
+MessageRepository
+
+DeliveryRepository
+```
+
+---
+
+# 9. Auditoría
+
+Registrar:
+
+* usuario;
+* organización;
+* timestamp;
+* origen.
+
+Ejemplo:
+
+```text
+Mensaje enviado automáticamente
+
+Regla:
+WorkOrderAssigned
+```
+
+---
+
+# 10. Manejo de errores
+
+Controlar:
+
+## Twilio no disponible
+
+Estado:
+
+```text
+FAILED
+```
+
+---
+
+## Número inválido
+
+Registrar:
+
+```text
+DELIVERY_ERROR
+```
+
+---
+
+## Webhook repetido
+
+Debe ser idempotente.
+
+---
+
+# 11. Idempotencia
+
+Garantizar que:
+
+Un mismo webhook no genere:
+
+* mensajes duplicados;
+* eventos repetidos;
+* evidencias duplicadas.
+
+Utilizar:
+
+```text
+external_message_id
+```
+
+---
+
+# 12. Seguridad
+
+Implementar:
+
+* validación webhook;
+* autorización;
+* multi-tenancy;
+* separación organizaciones.
+
+---
+
+# 13. Pruebas
+
+Crear pruebas para:
+
+* envío exitoso;
+* error proveedor;
+* webhook entrante;
+* cambio estado entrega;
+* mensajes duplicados.
+
+---
+
+# Entregables
+
+Generar:
+
+1. Servicios backend.
+2. Adaptador Twilio.
+3. APIs.
+4. Webhooks.
+5. Repositorios.
+6. Validaciones.
+7. Pruebas.
+8. Documentación técnica.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+✅ enviar WhatsApp desde FACILIA
+✅ recibir respuestas
+✅ guardar conversaciones
+✅ registrar estados Twilio
+✅ manejar multimedia básica
+✅ mantener independencia del proveedor
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar compilación completa.
+2. Listar archivos creados/modificados.
+3. Confirmar compatibilidad con COM-00 y COM-01.
+4. Generar sección:
+
+# "Contexto para COM-03"
+
+Incluyendo:
+
+* motor de plantillas;
+* variables dinámicas;
+* reglas automáticas;
+* eventos provenientes de Operations;
+* programación de recordatorios y comunicaciones automáticas.

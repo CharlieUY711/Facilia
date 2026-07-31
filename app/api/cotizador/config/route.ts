@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 
+// Mismo motivo que en app/api/cotizador/formulario/route.ts: GET sin
+// cookies/headers/params se trata como estático por default y queda
+// congelado hasta el próximo deploy.
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/cotizador/config
  *

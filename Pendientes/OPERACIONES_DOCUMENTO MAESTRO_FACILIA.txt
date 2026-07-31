@@ -1,0 +1,585 @@
+# DOCUMENTO MAESTRO — FACILIA OPERATIONS
+
+## Gestión Integral de Operaciones y Ejecución de Servicios
+
+> **Versión:** 1.0
+> **Estado:** Arquitectura Funcional (Pre-Implementación)
+> **Módulo:** Operations
+> **Dependencias:** Directory, Library, Quotations, Contract Management
+
+---
+
+# 1. Visión
+
+FACILIA Operations es el corazón operativo de la plataforma.
+
+Su misión es transformar los compromisos asumidos en un contrato en trabajo planificado, ejecutado, controlado y medido.
+
+Operations no vende servicios.
+
+No administra clientes.
+
+No administra contratos.
+
+Operations ejecuta lo contratado.
+
+---
+
+# 2. Objetivo
+
+Administrar todo el ciclo operativo de los servicios contratados:
+
+* planificación;
+* programación;
+* asignación;
+* ejecución;
+* evidencias;
+* seguimiento;
+* indicadores;
+* cierre.
+
+Debe garantizar que todos los compromisos contractuales sean ejecutados de forma controlada y medible.
+
+---
+
+# 3. Principio fundamental
+
+## Toda operación nace de un contrato.
+
+Nunca debe existir una operación sin respaldo contractual.
+
+El flujo correcto es:
+
+```text
+Lead
+
+↓
+
+Cotización
+
+↓
+
+Contrato Activo
+
+↓
+
+Plan Operativo
+
+↓
+
+Ordenes de Trabajo
+
+↓
+
+Ejecución
+
+↓
+
+Evidencias
+
+↓
+
+Indicadores
+
+↓
+
+Renovación
+```
+
+---
+
+# 4. Qué administra
+
+Operations administra:
+
+* planes operativos;
+* servicios programados;
+* órdenes de trabajo;
+* asignaciones;
+* ejecución;
+* checklists;
+* evidencias;
+* incidencias;
+* seguimiento;
+* cumplimiento;
+* SLA;
+* indicadores.
+
+---
+
+# 5. Qué NO administra
+
+Operations NO administra:
+
+❌ clientes
+
+❌ contratos
+
+❌ documentos
+
+❌ cotizaciones
+
+❌ facturación
+
+❌ usuarios
+
+Cada uno pertenece a otro módulo.
+
+---
+
+# 6. Integración con FACILIA
+
+```text
+                 DIRECTORY
+
+                     │
+
+               Organizaciones
+
+                     │
+
+                     ▼
+
+LEADS → QUOTATIONS → CONTRACTS
+
+                     │
+
+                     ▼
+
+               OPERATIONS
+
+                     │
+
+     ┌───────────────┴───────────────┐
+
+     ▼                               ▼
+
+ Library                        Dashboard
+
+                     │
+
+                 Finance
+```
+
+---
+
+# 7. Responsabilidades
+
+Operations será responsable de:
+
+## Planificación
+
+Qué hacer.
+
+Cuándo.
+
+Dónde.
+
+Con qué frecuencia.
+
+---
+
+## Ejecución
+
+Quién.
+
+Cómo.
+
+Cuánto tiempo.
+
+Resultado.
+
+---
+
+## Control
+
+Cumplimiento.
+
+SLA.
+
+Calidad.
+
+Incidencias.
+
+---
+
+## Evidencias
+
+Fotos.
+
+Informes.
+
+Firmas.
+
+Actas.
+
+Videos.
+
+Todos almacenados en Library.
+
+---
+
+# 8. Entidades principales
+
+El dominio estará compuesto por:
+
+## Service Plan
+
+Plan operativo derivado del contrato.
+
+---
+
+## Scheduled Service
+
+Servicio programado.
+
+---
+
+## Work Order
+
+Orden de Trabajo.
+
+---
+
+## Assignment
+
+Asignación de recursos.
+
+---
+
+## Execution
+
+Resultado de ejecución.
+
+---
+
+## Checklist
+
+Control de calidad.
+
+---
+
+## Incident
+
+Incidencias.
+
+---
+
+## SLA
+
+Cumplimiento.
+
+---
+
+## KPI
+
+Indicadores.
+
+---
+
+# 9. Flujo operativo
+
+```text
+Contrato
+
+↓
+
+Plan Operativo
+
+↓
+
+Calendario
+
+↓
+
+Servicio Programado
+
+↓
+
+Orden de Trabajo
+
+↓
+
+Asignación
+
+↓
+
+Inicio
+
+↓
+
+Checklist
+
+↓
+
+Fotos
+
+↓
+
+Firma Cliente
+
+↓
+
+Cierre
+
+↓
+
+Indicadores
+```
+
+---
+
+# 10. Relación con Library
+
+Operations nunca almacena archivos.
+
+Todo documento se administra mediante Library.
+
+Ejemplos:
+
+* fotos;
+* videos;
+* informes;
+* certificados;
+* firmas;
+* actas.
+
+---
+
+# 11. Relación con Contract Management
+
+Operations consume:
+
+* servicios;
+* frecuencias;
+* SLA;
+* ubicaciones;
+* horarios;
+* restricciones.
+
+Nunca modifica contratos.
+
+---
+
+# 12. Relación con Directory
+
+Consume:
+
+* organizaciones;
+* personas;
+* ubicaciones;
+* equipos de trabajo.
+
+---
+
+# 13. Estados generales
+
+Ejemplo:
+
+Planificado
+
+↓
+
+Asignado
+
+↓
+
+En ejecución
+
+↓
+
+Pausado
+
+↓
+
+Finalizado
+
+↓
+
+Validado
+
+↓
+
+Cerrado
+
+---
+
+# 14. Indicadores
+
+Ejemplos:
+
+Servicios ejecutados
+
+Cumplimiento SLA
+
+Tiempo promedio
+
+Calidad
+
+Incidencias
+
+Servicios pendientes
+
+Productividad
+
+Horas trabajadas
+
+---
+
+# 15. Principios arquitectónicos
+
+Operations será un módulo independiente.
+
+Consumirá servicios de otros módulos.
+
+No duplicará datos.
+
+Toda comunicación será mediante interfaces públicas.
+
+---
+
+# 16. Integraciones futuras
+
+Preparado para:
+
+* aplicación móvil;
+* notificaciones;
+* GPS;
+* códigos QR;
+* NFC;
+* IoT;
+* sensores;
+* IA;
+* optimización automática de rutas.
+
+---
+
+# 17. Objetivo final
+
+Convertir a FACILIA en una plataforma completa de **Facility Services Management (FSM)** donde exista trazabilidad desde el Lead hasta la evidencia final del servicio ejecutado.
+
+---
+
+# 18. Roadmap
+
+La implementación se dividirá en las siguientes etapas:
+
+### OPS-00
+
+Arquitectura Funcional.
+
+---
+
+### OPS-00.1
+
+Integración con FACILIA.
+
+---
+
+### OPS-01
+
+Dominio y Backend.
+
+---
+
+### OPS-02
+
+Frontend.
+
+---
+
+### OPS-03
+
+Planificación Operativa.
+
+---
+
+### OPS-04
+
+Órdenes de Trabajo.
+
+---
+
+### OPS-05
+
+Ejecución en Campo.
+
+---
+
+### OPS-06
+
+Recursos, Activos y Equipamiento.
+
+---
+
+### OPS-07
+
+Incidencias y Calidad.
+
+---
+
+### OPS-08
+
+Dashboard y KPIs.
+
+---
+
+### OPS-09
+
+Automatización e Inteligencia Operativa.
+
+---
+
+# 19. Listado oficial de prompts
+
+```text
+OPS-00
+Arquitectura Funcional y Técnica
+
+OPS-00.1
+Integración Arquitectónica con FACILIA
+
+OPS-01
+Dominio, SQL y Backend
+
+OPS-02
+Frontend del Centro de Operaciones
+
+OPS-03
+Planificación Operativa
+
+OPS-04
+Órdenes de Trabajo
+
+OPS-05
+Ejecución en Campo
+
+OPS-06
+Recursos, Activos y Equipamiento
+
+OPS-07
+Incidencias, Calidad y SLA
+
+OPS-08
+Dashboard, KPIs y Analítica
+
+OPS-09
+Automatización, IA e Integraciones Futuras
+```
+
+---
+
+# 20. Decisiones arquitectónicas congeladas
+
+Quedan definidas las siguientes reglas para todo el desarrollo del módulo:
+
+1. Toda operación debe tener un contrato vigente como origen.
+2. Operations nunca crea ni modifica contratos.
+3. Operations nunca almacena documentos; toda la evidencia se gestiona mediante Library.
+4. Directory es la única fuente de verdad para organizaciones, personas y ubicaciones.
+5. Toda Orden de Trabajo debe derivarse de un Plan Operativo.
+6. El Plan Operativo es la traducción operacional de los servicios definidos en un contrato.
+7. Todo cambio contractual (renovación, extensión, cancelación) debe propagarse a Operations mediante eventos o servicios de integración, sin duplicar información.
+8. El módulo debe diseñarse para soportar múltiples sedes, múltiples equipos de trabajo y servicios recurrentes sin modificar la arquitectura base.
+
+Con este documento, el módulo **Operations** queda formalmente definido y listo para comenzar la implementación con **OPS-00**.

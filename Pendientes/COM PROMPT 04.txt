@@ -1,0 +1,542 @@
+# PROMPT COM-04 — Inbox Operacional, Evidencias, Respuestas e Incidentes desde WhatsApp
+
+> **Rol**
+>
+> Actúa como un **Enterprise Backend Architect** especializado en sistemas de comunicación operacional, gestión de evidencias, Field Service Management (FSM), DDD, integración WhatsApp y plataformas SaaS multi-tenant.
+>
+> El módulo:
+>
+> # COM — Communications Hub
+>
+> ya cuenta con:
+>
+> * COM-00 — Documento Maestro Funcional.
+> * COM-01 — Modelo de Dominio y Persistencia.
+> * COM-02 — Backend Core + Integración Twilio.
+> * COM-03 — Motor de Plantillas y Automatizaciones.
+>
+> Esta etapa incorpora la capacidad de recibir información desde el personal operativo y convertir conversaciones en datos operacionales.
+>
+> **No implementar chatbot avanzado.**
+>
+> **No utilizar inteligencia artificial.**
+>
+> **No modificar Operations.**
+>
+> **No administrar archivos directamente.**
+>
+> Mantener arquitectura Charlie Compliant.
+
+---
+
+# Objetivo
+
+Permitir que el personal operativo pueda utilizar WhatsApp como canal de comunicación bidireccional para:
+
+* confirmar tareas;
+* informar problemas;
+* enviar fotos;
+* solicitar recursos;
+* reportar incidencias;
+* completar información operativa.
+
+---
+
+# Principio fundamental
+
+WhatsApp es la interfaz.
+
+FACILIA es la plataforma de gestión.
+
+Toda interacción debe quedar:
+
+* registrada;
+* relacionada;
+* auditable.
+
+---
+
+# Flujo general
+
+```text id="d7i5m2"
+Empleado
+
+↓
+
+WhatsApp
+
+↓
+
+Twilio Webhook
+
+↓
+
+COM Inbox
+
+↓
+
+Clasificación
+
+↓
+
+Acción Operativa
+
+↓
+
+Operations / Library / Supervisor
+```
+
+---
+
+# 1. Inbox Operacional
+
+Crear concepto:
+
+## CommunicationInbox
+
+Representa mensajes recibidos pendientes de procesamiento.
+
+---
+
+Campos:
+
+* id;
+* organization_id;
+* conversation_id;
+* sender;
+* mensaje;
+* tipo;
+* fecha;
+* estado.
+
+---
+
+Estados:
+
+```text id="3cn9y8"
+NEW
+
+PROCESSING
+
+PROCESSED
+
+IGNORED
+
+ERROR
+```
+
+---
+
+# 2. Procesamiento de respuestas simples
+
+Implementar comandos básicos.
+
+---
+
+## Confirmación
+
+Empleado:
+
+```text
+CONFIRMAR
+```
+
+Resultado:
+
+```text id="8u2kcd"
+EmployeeConfirmedTask
+```
+
+---
+
+## Rechazo
+
+Empleado:
+
+```text
+NO PUEDO
+```
+
+Resultado:
+
+```text id="7x7j0f"
+EmployeeRejectedTask
+```
+
+---
+
+## Solicitud de ayuda
+
+Empleado:
+
+```text
+AYUDA
+```
+
+Resultado:
+
+```text id="9sf5eg"
+SupportRequested
+```
+
+---
+
+# 3. Motor de clasificación básico
+
+Implementar reglas simples:
+
+Ejemplo:
+
+```text id="3smx1a"
+Texto recibido
+
+↓
+
+Comparar comandos
+
+↓
+
+Ejecutar acción
+```
+
+---
+
+No implementar:
+
+* NLP;
+* IA;
+* interpretación semántica.
+
+---
+
+# 4. Evidencias
+
+Cuando llega:
+
+* imagen;
+* documento.
+
+Crear:
+
+## EvidenceReceived
+
+Evento:
+
+```text id="d9kw3s"
+EvidenceReceived
+```
+
+---
+
+Flujo:
+
+```text id="brb9a8"
+WhatsApp Media
+
+↓
+
+COM
+
+↓
+
+Library Adapter
+
+↓
+
+Archivo almacenado
+
+↓
+
+Referencia asociada
+```
+
+---
+
+# 5. Integración con Library
+
+Crear interfaz:
+
+```text id="qx6j5p"
+EvidenceRepository
+```
+
+Responsabilidad:
+
+Enviar:
+
+* imagen;
+* documento;
+* metadata.
+
+---
+
+Metadata:
+
+* origen;
+* empleado;
+* orden;
+* fecha;
+* conversación.
+
+---
+
+# 6. Reporte de incidentes
+
+Empleado:
+
+```text
+No puedo continuar.
+Hay una falla.
+```
+
+Crear:
+
+## OperationalIssue
+
+Referencia:
+
+* empleado;
+* conversación;
+* orden;
+* descripción.
+
+---
+
+Estados:
+
+```text id="u5qf4y"
+OPEN
+
+IN_REVIEW
+
+RESOLVED
+
+CLOSED
+```
+
+---
+
+# 7. Requerimientos operativos
+
+Permitir crear solicitudes:
+
+Ejemplos:
+
+* faltan insumos;
+* falta herramienta;
+* necesito autorización;
+* necesito soporte.
+
+---
+
+Entidad:
+
+## OperationalRequest
+
+---
+
+Campos:
+
+* tipo;
+* descripción;
+* prioridad;
+* creador;
+* fecha.
+
+---
+
+Tipos:
+
+```text id="n1v8d7"
+SUPPLY
+
+EQUIPMENT
+
+SUPPORT
+
+ACCESS
+
+OTHER
+```
+
+---
+
+# 8. Notificaciones internas
+
+Cuando ocurre:
+
+## Incidente
+
+Notificar:
+
+* supervisor;
+* responsable operativo.
+
+---
+
+## Falta de recurso
+
+Notificar:
+
+* operaciones.
+
+---
+
+# 9. APIs
+
+Crear:
+
+---
+
+# Inbox
+
+```http id="4qzjba"
+GET /api/com/inbox
+
+GET /api/com/inbox/{id}
+```
+
+---
+
+# Evidencias
+
+```http id="j8y8ne"
+GET /api/com/evidences
+```
+
+---
+
+# Incidentes
+
+```http id="t4u7ma"
+POST /api/com/issues
+
+GET /api/com/issues
+```
+
+---
+
+# Solicitudes
+
+```http id="2ah8p9"
+POST /api/com/requests
+
+GET /api/com/requests
+```
+
+---
+
+# 10. Seguridad
+
+Garantizar:
+
+* empleado solo accede a sus conversaciones;
+* organización aislada;
+* auditoría completa.
+
+Registrar:
+
+* quién envió;
+* qué orden;
+* qué acción generó.
+
+---
+
+# 11. Integración futura
+
+Preparar para:
+
+## Operations
+
+Crear:
+
+* actualización de estado;
+* incidencias.
+
+---
+
+## Quality
+
+Crear:
+
+* no conformidades;
+* auditorías.
+
+---
+
+## GEO
+
+Crear:
+
+* eventos asociados a presencia.
+
+---
+
+# 12. Componentes técnicos
+
+Crear:
+
+```text id="5z9q7h"
+InboxProcessor
+
+MessageClassifier
+
+EvidenceHandler
+
+IssueCreator
+
+RequestCreator
+
+CommandHandler
+```
+
+---
+
+# Entregables
+
+Generar:
+
+1. Procesador de mensajes entrantes.
+2. Manejo de comandos.
+3. Evidencias.
+4. Incidentes.
+5. Requerimientos.
+6. Integración Library.
+7. APIs.
+8. Documentación.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+✅ recibir mensajes WhatsApp
+✅ registrar respuestas
+✅ confirmar tareas
+✅ rechazar tareas
+✅ recibir fotos
+✅ generar evidencias
+✅ crear incidentes
+✅ crear requerimientos operativos
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar compilación.
+2. Listar archivos creados/modificados.
+3. Confirmar compatibilidad con COM-00 a COM-03.
+4. Generar sección:
+
+# "Contexto para COM-05"
+
+Incluyendo:
+
+* integración definitiva COM + Operations;
+* relación con órdenes de trabajo;
+* actualización de estados operativos;
+* ciclo completo de comunicación de una tarea;
+* trazabilidad de ejecución desde asignación hasta cierre.

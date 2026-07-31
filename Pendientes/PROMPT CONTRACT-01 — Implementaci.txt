@@ -1,0 +1,570 @@
+# PROMPT CONTRACT-01 — Implementación del Dominio, Base de Datos y Backend del Módulo Contract Management
+
+> **Rol**
+>
+> Actúa como un **Senior Software Engineer** especializado en DDD, Clean Architecture, Next.js 15 App Router, React 19, TypeScript Strict, Supabase y PostgreSQL.
+>
+> Este proyecto forma parte de **FACILIA** y debe respetar completamente la arquitectura Charlie Compliant.
+>
+> La arquitectura funcional (**CONTRACT-00**) y la arquitectura de integración (**CONTRACT-00.1**) ya fueron aprobadas.
+>
+> **No rediseñar la arquitectura.**
+>
+> **No modificar el dominio definido.**
+>
+> Implementar únicamente el backend.
+
+---
+
+# Objetivo
+
+Construir el núcleo del módulo **Contract Management** completamente funcional.
+
+Debe quedar compilando.
+
+Debe integrarse con:
+
+* Directory
+* Quotations
+* Library
+
+Y dejar preparada la integración con:
+
+* Operations
+* Finance
+
+---
+
+# Alcance
+
+Esta etapa implementa únicamente:
+
+* Dominio
+* SQL
+* Repositorios
+* Casos de uso
+* APIs
+* Validaciones
+* Integración con Library y Quotations
+
+No implementar frontend.
+
+---
+
+# Stack
+
+* Next.js App Router
+* TypeScript Strict
+* PostgreSQL
+* Supabase
+* Repository Pattern
+* DDD
+* Clean Architecture
+* Charlie Compliant
+
+---
+
+# Restricción principal
+
+## No permitir crear contratos manualmente.
+
+Todo contrato debe originarse desde:
+
+```text
+QUOTE
+EXTENSION
+RENEWAL
+```
+
+Debe existir validación de origen.
+
+---
+
+# Base de datos
+
+Generar todas las migraciones SQL.
+
+Como mínimo:
+
+---
+
+## contracts
+
+Campos mínimos
+
+* id
+* contract_number
+* organization_id
+* quotation_id (nullable)
+* parent_contract_id (nullable)
+* origin_type
+* origin_entity_id
+* status
+* currency
+* total_amount
+* start_date
+* end_date
+* renewal_date
+* signed_at
+* activated_at
+* cancelled_at
+* cancellation_reason
+* created_by
+* updated_by
+* created_at
+* updated_at
+* deleted_at
+
+---
+
+## contract_services
+
+Representa los servicios contratados.
+
+Campos mínimos
+
+* id
+* contract_id
+* service_catalog_id
+* location_id
+* frequency
+* quantity
+* unit
+* unit_price
+* subtotal
+* notes
+* created_at
+
+---
+
+## contract_locations
+
+Una organización puede tener varias sedes.
+
+Campos mínimos
+
+* id
+* contract_id
+* location_id
+* notes
+
+---
+
+## contract_events
+
+Timeline contractual.
+
+Campos
+
+* id
+* contract_id
+* event_type
+* description
+* created_by
+* created_at
+
+Ejemplos
+
+ContractCreated
+
+Approved
+
+Activated
+
+Cancelled
+
+Renewed
+
+Extended
+
+---
+
+## contract_links
+
+Relaciones futuras con otros módulos.
+
+Preparar estructura para:
+
+* Library
+* Operations
+* Finance
+
+No duplicar información.
+
+---
+
+# Dominio
+
+Crear entidades:
+
+Contract
+
+ContractService
+
+ContractLocation
+
+ContractEvent
+
+ContractOrigin
+
+ContractStatus
+
+Money
+
+DateRange
+
+ContractNumber
+
+Value Objects necesarios.
+
+---
+
+# Aggregate Root
+
+Aggregate principal:
+
+```text
+Contract
+```
+
+Debe controlar:
+
+* estado;
+* servicios;
+* ubicaciones;
+* eventos.
+
+---
+
+# Repositories
+
+Crear interfaces:
+
+ContractRepository
+
+ContractServiceRepository
+
+ContractEventRepository
+
+ContractOriginRepository
+
+---
+
+Crear implementación Supabase.
+
+---
+
+# Casos de uso
+
+Implementar:
+
+CreateContractFromQuotation
+
+CreateRenewal
+
+CreateExtension
+
+ApproveContract
+
+ActivateContract
+
+CancelContract
+
+ExpireContract
+
+GetContract
+
+GetContractTimeline
+
+ListContracts
+
+ListContractsByOrganization
+
+ListActiveContracts
+
+AttachLibraryDocument
+
+DetachLibraryDocument
+
+ListContractDocuments
+
+---
+
+Todos deben vivir en Application.
+
+---
+
+# Máquina de estados
+
+Implementar validaciones.
+
+Estados:
+
+DRAFT
+
+REVIEW
+
+APPROVED
+
+SIGN_PENDING
+
+ACTIVE
+
+EXPIRING
+
+RENEWED
+
+EXPIRED
+
+CANCELLED
+
+No permitir transiciones inválidas.
+
+---
+
+# Numeración
+
+Implementar servicio para generar números.
+
+Ejemplo:
+
+```text
+CTR-2026-000001
+```
+
+No hardcodear.
+
+Preparar configurable.
+
+---
+
+# Integración con Quotations
+
+Implementar validación:
+
+Una cotización solamente podrá generar contrato si:
+
+Estado:
+
+APPROVED
+
+o
+
+ACCEPTED
+
+Según el modelo existente.
+
+Conservar referencia permanente.
+
+---
+
+# Integración con Library
+
+No almacenar archivos.
+
+Implementar únicamente:
+
+AttachDocument()
+
+DetachDocument()
+
+ListDocuments()
+
+Consumir el módulo Library mediante interfaces.
+
+Nunca acceder directamente a Storage.
+
+---
+
+# Integración con Directory
+
+Consumir:
+
+Organización
+
+Ubicaciones
+
+Contactos
+
+No duplicar entidades.
+
+---
+
+# Eventos de dominio
+
+Emitir eventos:
+
+ContractCreated
+
+ContractApproved
+
+ContractActivated
+
+ContractCancelled
+
+ContractRenewed
+
+ContractExtended
+
+DocumentAttached
+
+---
+
+Preparar arquitectura orientada a eventos.
+
+---
+
+# APIs
+
+Crear:
+
+GET /api/contracts
+
+GET /api/contracts/:id
+
+POST /api/contracts/from-quotation
+
+POST /api/contracts/:id/approve
+
+POST /api/contracts/:id/activate
+
+POST /api/contracts/:id/cancel
+
+POST /api/contracts/:id/renew
+
+POST /api/contracts/:id/extend
+
+GET /api/contracts/:id/events
+
+GET /api/contracts/:id/services
+
+GET /api/contracts/:id/documents
+
+POST /api/contracts/:id/documents
+
+DELETE /api/contracts/:id/documents/:documentId
+
+---
+
+# Validaciones
+
+Validar:
+
+* Organización existente.
+* Cotización válida.
+* Contrato origen.
+* Fechas.
+* Servicios.
+* Ubicaciones.
+* Estado.
+* Duplicados.
+* Solapamiento de contratos (si aplica).
+
+---
+
+# Seguridad
+
+Implementar:
+
+RLS.
+
+Soft Delete.
+
+UUID.
+
+Timestamps.
+
+Auditoría básica.
+
+Preparar ACL futura.
+
+---
+
+# Calidad
+
+Todo debe:
+
+Compilar.
+
+Sin warnings.
+
+Sin any.
+
+Sin TODO.
+
+Sin mocks.
+
+Sin código muerto.
+
+---
+
+# Exclusiones
+
+No implementar:
+
+* Frontend.
+* Firma digital.
+* Renovaciones automáticas.
+* Alertas.
+* Facturación.
+* Operaciones.
+* OCR.
+* IA.
+
+---
+
+# Entregables
+
+Generar:
+
+* Todas las migraciones SQL.
+* Todas las entidades.
+* Todos los repositorios.
+* Todos los casos de uso.
+* Todas las APIs.
+* Todos los DTO.
+* Todas las validaciones.
+
+No generar pseudocódigo.
+
+No explicar.
+
+Generar únicamente código.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+* Crear un contrato desde una cotización aprobada.
+* Crear una renovación.
+* Crear una extensión.
+* Gestionar estados.
+* Asociar documentos de Library.
+* Consultar el historial.
+* Consultar servicios contratados.
+* Compilar sin errores.
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar que toda la solución compile.
+2. Listar todos los archivos creados.
+3. Listar las migraciones SQL generadas.
+4. Verificar que no existan dependencias circulares.
+5. Generar un apartado **"Contexto para CONTRACT-02"** con un resumen técnico y un prompt de continuidad para implementar la interfaz de usuario completa del módulo:
+
+* listado de contratos;
+* detalle;
+* timeline;
+* servicios;
+* documentos;
+* estados;
+* integración con Library;
+* navegación estándar de FACILIA;
+
+sin modificar el backend implementado.

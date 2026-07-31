@@ -70,7 +70,7 @@ export default function DashboardHeader({}: DashboardHeaderProps) {
   }
 
   return (
-    <div className="sticky top-0 z-30 bg-white border-b border-navy-100">
+    <div className="sticky top-0 z-30 bg-white border-b border-navy-100 safe-top">
       {/* ── Barra: marca + rol + usuario ───────────────────────────── */}
       <div className="max-w-screen-2xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
         <Image src="/FACILIA_By.png" alt="FACILIA" width={120} height={30} />

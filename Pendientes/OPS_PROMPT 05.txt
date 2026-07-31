@@ -1,0 +1,441 @@
+# PROMPT OPS-05 — Ejecución en Campo (Field Execution)
+
+> **Rol**
+>
+> Actúa como un **Enterprise Software Architect** especializado en Field Service Management (FSM), Facility Management, aplicaciones móviles empresariales, Progressive Web Apps (PWA), trabajo offline, sincronización distribuida y Clean Architecture.
+>
+> El módulo **Operations** ya cuenta con:
+>
+> * OPS-00 Arquitectura.
+> * OPS-00.1 Integración.
+> * OPS-01 Backend.
+> * OPS-02 Frontend.
+> * OPS-03 Motor de Planificación.
+> * OPS-04 Gestión de Órdenes de Trabajo.
+>
+> Esta etapa implementa la experiencia de ejecución para técnicos, operarios y supervisores en campo.
+>
+> **No modificar la arquitectura existente.**
+>
+> **No romper compatibilidad con las APIs actuales.**
+
+---
+
+# Objetivo
+
+Construir el módulo de **Ejecución en Campo**, permitiendo que el personal operativo pueda ejecutar una Orden de Trabajo desde un teléfono, tablet o navegador, incluso con conectividad limitada.
+
+La ejecución debe registrar evidencia completa y mantener trazabilidad absoluta.
+
+---
+
+# Principio fundamental
+
+## La Orden de Trabajo es el centro de la ejecución.
+
+Toda acción realizada en campo debe quedar asociada a una Orden de Trabajo y auditada.
+
+No se permite registrar actividades fuera del flujo operativo.
+
+---
+
+# Plataforma
+
+La solución debe funcionar como:
+
+* Progressive Web App (PWA).
+* Responsive Web.
+* Preparada para empaquetarse como aplicación móvil.
+
+No desarrollar aplicaciones nativas.
+
+---
+
+# Flujo operativo
+
+```text
+Orden asignada
+        ↓
+Empleado acepta
+        ↓
+Inicio de ejecución
+        ↓
+Checklist
+        ↓
+Captura de evidencias
+        ↓
+Registro de incidencias (si aplica)
+        ↓
+Observaciones
+        ↓
+Firma del cliente
+        ↓
+Finalización
+        ↓
+Validación
+```
+
+---
+
+# Bandeja de trabajo
+
+Crear una vista denominada:
+
+## **"Mis Órdenes"**
+
+Mostrar únicamente las órdenes asignadas al usuario.
+
+Columnas:
+
+* Número.
+* Cliente.
+* Ubicación.
+* Servicio.
+* Prioridad.
+* Estado.
+* Hora programada.
+* SLA.
+
+Permitir filtros por:
+
+* Hoy.
+* Pendientes.
+* En ejecución.
+* Finalizadas.
+* Prioridad.
+
+---
+
+# Detalle de Orden
+
+Mostrar:
+
+* información del cliente;
+* ubicación;
+* contrato (solo lectura);
+* servicio contratado;
+* duración estimada;
+* instrucciones;
+* responsable;
+* estado;
+* SLA;
+* historial.
+
+---
+
+# Checklist dinámico
+
+Consumir plantillas configurables.
+
+Permitir:
+
+* marcar ítems;
+* registrar observaciones;
+* indicar "No aplica";
+* adjuntar evidencia a un ítem específico.
+
+Preparar soporte para futuras plantillas por tipo de servicio.
+
+---
+
+# Captura de evidencias
+
+Integración exclusiva con **Library**.
+
+Permitir adjuntar:
+
+* fotografías;
+* videos;
+* documentos;
+* audio (preparado);
+* PDFs.
+
+Operations solo almacenará referencias.
+
+---
+
+# Firma del cliente
+
+Implementar soporte para firma manuscrita en pantalla.
+
+Registrar:
+
+* nombre del firmante;
+* cargo;
+* fecha y hora;
+* evidencia asociada.
+
+La imagen de la firma deberá almacenarse en Library.
+
+Preparar la arquitectura para integrarse posteriormente con **Contract Management** y la firma electrónica avanzada.
+
+---
+
+# Observaciones
+
+Permitir registrar comentarios libres durante la ejecución.
+
+Registrar:
+
+* usuario;
+* fecha;
+* tipo de observación;
+* texto.
+
+---
+
+# Incidencias
+
+Permitir crear incidencias desde la Orden.
+
+Clasificación:
+
+* Seguridad.
+* Calidad.
+* Equipamiento.
+* Cliente.
+* Acceso.
+* Materiales.
+* Otro.
+
+Toda incidencia debe quedar vinculada a la Orden.
+
+---
+
+# Trabajo Offline
+
+Implementar soporte para:
+
+* consulta de órdenes descargadas;
+* ejecución sin conexión;
+* almacenamiento local;
+* sincronización automática cuando vuelva la conectividad.
+
+Definir una estrategia de resolución de conflictos basada en fecha y versión.
+
+---
+
+# Geolocalización (preparada)
+
+No hacer obligatoria la geolocalización, pero preparar la arquitectura para registrar:
+
+* coordenadas de inicio;
+* coordenadas de finalización;
+* precisión;
+* timestamp.
+
+La activación deberá ser configurable por organización.
+
+---
+
+# Escaneo de QR y NFC (preparado)
+
+Preparar puntos de extensión para:
+
+* identificación de ubicaciones;
+* activos;
+* salas técnicas;
+* equipos.
+
+No implementar la lógica completa.
+
+---
+
+# Temporizador de ejecución
+
+Agregar un cronómetro asociado a la Orden.
+
+Registrar:
+
+* tiempo activo;
+* pausas;
+* tiempo total.
+
+El usuario podrá:
+
+* iniciar;
+* pausar;
+* reanudar;
+* finalizar.
+
+---
+
+# Dashboard del técnico
+
+Mostrar:
+
+* órdenes del día;
+* próximas tareas;
+* tareas atrasadas;
+* tiempo trabajado;
+* cumplimiento personal.
+
+---
+
+# Supervisión
+
+Permitir a los supervisores visualizar en tiempo real:
+
+* órdenes en ejecución;
+* órdenes pausadas;
+* órdenes finalizadas pendientes de validación;
+* incidencias abiertas.
+
+---
+
+# Integración con Directory
+
+Consumir:
+
+* empleado autenticado;
+* cuadrilla;
+* supervisor.
+
+No duplicar información.
+
+---
+
+# Integración con Contract Management
+
+Mostrar información relevante del contrato únicamente para consulta.
+
+No permitir modificaciones.
+
+---
+
+# Integración con Library
+
+Toda evidencia generada en campo debe almacenarse mediante Library.
+
+No utilizar almacenamiento local permanente para documentos.
+
+---
+
+# APIs
+
+Agregar únicamente las necesarias.
+
+Ejemplos:
+
+```text
+GET /api/my-work-orders
+
+POST /api/work-orders/{id}/accept
+
+POST /api/work-orders/{id}/start
+
+POST /api/work-orders/{id}/pause
+
+POST /api/work-orders/{id}/resume
+
+POST /api/work-orders/{id}/complete
+
+POST /api/work-orders/{id}/comment
+
+POST /api/work-orders/{id}/signature
+
+POST /api/work-orders/{id}/sync
+```
+
+---
+
+# Componentes React
+
+Crear, como mínimo:
+
+* MyWorkOrdersPage
+* MobileWorkOrderCard
+* WorkExecutionPanel
+* ChecklistExecution
+* SignaturePad
+* EvidenceUploader
+* IncidentForm
+* OfflineSyncIndicator
+* ExecutionTimer
+* TechnicianDashboard
+
+Reutilizar componentes existentes siempre que sea posible.
+
+---
+
+# Seguridad
+
+Registrar en auditoría:
+
+* usuario;
+* dispositivo (si está disponible);
+* fecha;
+* acción;
+* cambios de estado.
+
+Mantener compatibilidad con el Audit Log corporativo.
+
+---
+
+# Calidad
+
+Todo debe:
+
+* compilar sin errores;
+* funcionar como PWA;
+* respetar TypeScript Strict;
+* no utilizar `any`;
+* reutilizar infraestructura existente;
+* soportar trabajo offline.
+
+---
+
+# Exclusiones
+
+No implementar todavía:
+
+* optimización automática de rutas;
+* inteligencia artificial;
+* reconocimiento de imágenes;
+* control biométrico;
+* inventario de materiales;
+* gestión avanzada de activos.
+
+---
+
+# Entregables
+
+Generar:
+
+* componentes React;
+* páginas;
+* hooks;
+* lógica offline;
+* sincronización;
+* APIs necesarias;
+* integración con Library;
+* firma manuscrita;
+* documentación técnica.
+
+Todo el código debe ser completamente funcional.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+* aceptar una Orden de Trabajo;
+* ejecutar el checklist;
+* adjuntar evidencias;
+* registrar incidencias;
+* capturar la firma del cliente;
+* trabajar sin conexión;
+* sincronizar automáticamente al recuperar conectividad;
+* cerrar la ejecución manteniendo trazabilidad completa.
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar que toda la solución compile correctamente.
+2. Listar todos los archivos creados o modificados.
+3. Confirmar compatibilidad con las etapas **OPS-01** a **OPS-04**.
+4. Generar la sección **"Contexto para OPS-06"** con un resumen técnico para implementar el módulo de **Recursos, Activos y Equipamiento**, incluyendo herramientas, vehículos, insumos operativos, cuadrillas y disponibilidad de recursos, reutilizando la arquitectura existente y evitando duplicación con futuros módulos de inventario o RR.HH.

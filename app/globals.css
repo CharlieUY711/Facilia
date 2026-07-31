@@ -4,10 +4,62 @@
 
 html {
   scroll-behavior: smooth;
+  /* Evita que Safari/Chrome iOS agranden el texto automáticamente al rotar */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  height: 100%;
 }
 
 body {
   @apply bg-paper text-ink font-body antialiased;
+  min-height: 100%;
+  /* Evita el "rebote" azul/gris al hacer scroll de más en iOS Safari */
+  overscroll-behavior-y: none;
+  /* Quita el resaltado gris al tocar links/botones en iOS/Android */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Cualquier elemento que use h-screen debe usar la altura real visible en
+   iOS Safari (la barra de direcciones cambia el 100vh clásico). Se define
+   una variable actualizada por JS como fallback y se usa dvh donde el
+   navegador lo soporte. */
+:root {
+  --app-vh: 1vh;
+}
+.h-screen-safe {
+  height: 100vh;
+  height: calc(var(--app-vh, 1vh) * 100);
+  height: 100dvh;
+}
+.min-h-screen-safe {
+  min-height: 100vh;
+  min-height: calc(var(--app-vh, 1vh) * 100);
+  min-height: 100dvh;
+}
+
+/* El proyecto usa h-screen / min-h-screen (utilidades de Tailwind) en varias
+   pantallas de dashboard/panel. Se sobrescriben acá para que en iPhone usen
+   la altura visible real (100dvh) en vez de 100vh, que en Safari incluye el
+   área tapada por la barra de direcciones y corta contenido o botones. */
+.h-screen {
+  height: 100vh;
+  height: 100dvh;
+}
+.min-h-screen {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Áreas seguras del iPhone (notch, isla dinámica, home indicator) */
+.safe-top {
+  padding-top: env(safe-area-inset-top);
+}
+.safe-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.safe-x {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
 }
 
 ::selection {
@@ -17,6 +69,24 @@ body {
 :focus-visible {
   outline: 2px solid #0169F5;
   outline-offset: 2px;
+}
+
+/* iOS hace zoom automático al enfocar un input/select/textarea si su
+   font-size es menor a 16px. Forzamos 16px en mobile y dejamos que el
+   diseño (text-sm en el label) se mantenga igual visualmente. */
+@media (max-width: 640px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
+
+/* Botones y elementos táctiles: quitar delay de 300ms y asegurar
+   un área mínima de toque cómoda en iPhone (Apple HIG recomienda 44px). */
+button,
+a {
+  touch-action: manipulation;
 }
 
 @media (prefers-reduced-motion: reduce) {

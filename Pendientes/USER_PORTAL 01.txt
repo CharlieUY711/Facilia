@@ -1,0 +1,615 @@
+# PROMPT PORTAL-01 — Identidad, Usuarios, Roles y Modelo de Acceso para Portales FACILIA
+
+> **Rol**
+>
+> Actúa como un **Enterprise Identity Architect** especializado en SaaS multi-tenant, IAM (Identity and Access Management), RBAC, DDD, Clean Architecture y plataformas empresariales.
+>
+> El ecosistema:
+>
+> # FACILIA Portal Platform
+>
+> cuenta con:
+>
+> * Documento Maestro PORTAL-00.
+> * Módulos existentes:
+>
+>   * Directory.
+>   * Operations.
+>   * Contracts.
+>   * Library.
+>   * COM.
+>   * GEO.
+>
+> Esta etapa define la arquitectura de identidad y autorización que será utilizada por:
+>
+> * Employee Portal.
+> * Customer Portal.
+> * Panel interno FACILIA.
+>
+> **No desarrollar pantallas.**
+>
+> **No crear lógica específica de negocio.**
+>
+> **No duplicar Directory.**
+>
+> Directory continúa siendo la fuente maestra de identidad.
+
+---
+
+# Objetivo
+
+Definir cómo los usuarios acceden a FACILIA y qué pueden hacer dentro de cada portal.
+
+Debe quedar resuelto:
+
+* identidad;
+* autenticación;
+* organizaciones;
+* roles;
+* permisos;
+* alcance de información.
+
+---
+
+# Principio fundamental
+
+FACILIA no administra usuarios aislados.
+
+Administra:
+
+```text
+Persona
+
+↓
+
+Usuario
+
+↓
+
+Organización
+
+↓
+
+Rol
+
+↓
+
+Permisos
+```
+
+---
+
+# 1. Fuente de identidad
+
+El sistema debe consumir:
+
+```text
+DIRECTORY
+```
+
+como Master Data Management.
+
+Directory administra:
+
+* Personas.
+* Organizaciones.
+* Relaciones.
+* Ubicaciones.
+* Roles base.
+
+Los portales consumen esa información.
+
+---
+
+# 2. Modelo de Usuario
+
+Definir entidad:
+
+## PortalUser
+
+Representa una identidad habilitada para ingresar.
+
+Campos:
+
+* id;
+* directory_person_id;
+* email;
+* teléfono;
+* estado;
+* último acceso;
+* organización principal.
+
+Estados:
+
+```text
+ACTIVE
+
+INVITED
+
+BLOCKED
+
+DISABLED
+```
+
+---
+
+# 3. Relación Usuario - Organización
+
+Un usuario puede pertenecer a una o varias organizaciones.
+
+Modelo:
+
+```text
+User
+
+   |
+
+OrganizationMembership
+
+   |
+
+Organization
+```
+
+---
+
+Ejemplo:
+
+Empleado FACILIA:
+
+```text
+Juan
+
+↓
+
+FACILIA SAS
+
+↓
+
+Rol:
+Operario
+```
+
+---
+
+Cliente:
+
+```text
+María
+
+↓
+
+ABC SA
+
+↓
+
+Rol:
+Administrador Cliente
+```
+
+---
+
+# 4. Roles del sistema
+
+Definir RBAC.
+
+---
+
+# Roles internos FACILIA
+
+## Platform Admin
+
+Acceso total.
+
+---
+
+## Operations Manager
+
+Puede:
+
+* planificar;
+* supervisar;
+* consultar operaciones.
+
+---
+
+## Supervisor
+
+Puede:
+
+* administrar equipos;
+* revisar ejecución;
+* gestionar incidencias.
+
+---
+
+## Employee
+
+Puede:
+
+* consultar tareas propias;
+* reportar ejecución;
+* enviar evidencias.
+
+---
+
+# Roles cliente
+
+## Customer Admin
+
+Puede:
+
+* administrar usuarios cliente;
+* consultar contratos;
+* consultar servicios.
+
+---
+
+## Customer User
+
+Puede:
+
+* consultar información autorizada.
+
+---
+
+# 5. Modelo de permisos
+
+No controlar solo por rol.
+
+Implementar:
+
+```text
+Role
+
++
+
+Permission
+
++
+
+Scope
+```
+
+---
+
+Ejemplo:
+
+Permiso:
+
+```text
+view_work_orders
+```
+
+Scope:
+
+```text
+OWN_ASSIGNED
+```
+
+Resultado:
+
+El empleado solo ve sus órdenes.
+
+---
+
+Ejemplo:
+
+Supervisor:
+
+```text
+view_work_orders
+
+Scope:
+
+TEAM
+```
+
+---
+
+Cliente:
+
+```text
+view_contracts
+
+Scope:
+
+OWN_ORGANIZATION
+```
+
+---
+
+# 6. Catálogo inicial de permisos
+
+## Employee Portal
+
+```text
+portal.employee.access
+
+tasks.view
+
+tasks.confirm
+
+tasks.start
+
+tasks.complete
+
+evidence.create
+
+incident.create
+
+communication.view
+```
+
+---
+
+## Customer Portal
+
+```text
+portal.customer.access
+
+contracts.view
+
+services.view
+
+evidence.view
+
+requests.create
+
+requests.view
+```
+
+---
+
+## Administración
+
+```text
+users.manage
+
+roles.manage
+
+organizations.manage
+```
+
+---
+
+# 7. Autenticación
+
+Definir estrategia:
+
+Soportar:
+
+* email/password;
+* magic link;
+* invitación.
+
+Preparar futuro:
+
+* SSO;
+* Microsoft Entra;
+* Google Workspace.
+
+---
+
+# 8. Invitaciones
+
+Flujo:
+
+```text
+Administrador
+
+↓
+
+Invita usuario
+
+↓
+
+Usuario recibe enlace
+
+↓
+
+Completa acceso
+
+↓
+
+Cuenta activa
+```
+
+---
+
+# 9. Seguridad Multi Tenant
+
+Reglas obligatorias:
+
+Toda consulta debe validar:
+
+```text
+organization_id
+```
+
+Nunca permitir:
+
+* acceso cruzado;
+* consulta global desde cliente;
+* exposición de evidencias.
+
+---
+
+# 10. Auditoría
+
+Registrar:
+
+* login;
+* invitación;
+* cambio rol;
+* bloqueo;
+* permisos modificados.
+
+Entidad:
+
+```text
+AccessAuditLog
+```
+
+---
+
+# 11. Preparación para Mobile
+
+Employee Portal debe soportar:
+
+* PWA;
+* sesión persistente;
+* dispositivo registrado.
+
+Preparar entidad futura:
+
+```text
+UserDevice
+```
+
+---
+
+# 12. Integración con módulos
+
+## Directory
+
+Fuente de personas.
+
+---
+
+## Operations
+
+Consume:
+
+* empleado;
+* supervisor;
+* permisos.
+
+---
+
+## Library
+
+Controla:
+
+* quién puede ver documentos.
+
+---
+
+## COM
+
+Controla:
+
+* destinatarios autorizados.
+
+---
+
+## GEO
+
+Controla:
+
+* dispositivos autorizados.
+
+---
+
+# 13. APIs necesarias
+
+Definir:
+
+```http
+GET /api/portal/me
+
+GET /api/portal/permissions
+
+GET /api/portal/organizations
+
+POST /api/portal/invitations
+
+PATCH /api/portal/users/{id}/roles
+```
+
+---
+
+# 14. Modelo conceptual final
+
+```text
+                    Directory
+
+                        |
+
+                    Person
+
+                        |
+
+                    PortalUser
+
+                        |
+
+          OrganizationMembership
+
+                        |
+
+                       Role
+
+                        |
+
+                    Permission
+
+                        |
+
+                     Portal
+              /                  \
+             /                    \
+ Employee Portal            Customer Portal
+```
+
+---
+
+# Entregables
+
+Generar:
+
+1. Modelo IAM.
+2. Entidades.
+3. Relaciones.
+4. Catálogo de roles.
+5. Catálogo de permisos.
+6. Reglas multi-tenant.
+7. Flujos de invitación.
+8. APIs propuestas.
+9. Decisiones arquitectónicas.
+
+---
+
+# Criterios de aceptación
+
+Debe quedar definido:
+
+✅ cómo ingresa un empleado
+✅ cómo ingresa un cliente
+✅ cómo se separan organizaciones
+✅ cómo funcionan los roles
+✅ cómo se aplican permisos
+✅ cómo se auditan accesos
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar compatibilidad con Directory existente.
+2. Confirmar que no existe duplicación de usuarios.
+3. Documentar modelo final de acceso.
+4. Generar sección:
+
+# "Contexto para PORTAL-02"
+
+Incluyendo:
+
+* arquitectura base del Portal FACILIA;
+* estructura Next.js;
+* layouts;
+* navegación;
+* componentes compartidos;
+* Design System;
+* protección de rutas.

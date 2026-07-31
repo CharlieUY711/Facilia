@@ -1,0 +1,608 @@
+# PROMPT PORTAL-02 — Arquitectura Base del Portal FACILIA, Layouts, Navegación y Design System
+
+> **Rol**
+>
+> Actúa como un **Frontend Platform Architect** especializado en Next.js App Router, React, TypeScript Strict, Design Systems, SaaS multi-tenant, arquitectura modular y aplicaciones empresariales.
+>
+> El ecosistema:
+>
+> # FACILIA Portal Platform
+>
+> cuenta con:
+>
+> * PORTAL-00 — Documento Maestro Portal.
+> * PORTAL-01 — Identidad, Usuarios, Roles y Acceso.
+>
+> Esta etapa implementa la base técnica común para:
+>
+> * Employee Portal.
+> * Customer Portal.
+> * Administración FACILIA.
+>
+> **No implementar todavía funcionalidades operativas.**
+>
+> **No crear módulos de tareas, contratos o evidencias.**
+>
+> **No duplicar lógica de negocio.**
+>
+> Crear únicamente la plataforma base.
+
+---
+
+# Objetivo
+
+Construir la arquitectura frontend común sobre la cual funcionarán todos los portales FACILIA.
+
+Debe resolver:
+
+* estructura de aplicación;
+* autenticación;
+* layouts;
+* navegación;
+* permisos;
+* componentes compartidos;
+* diseño visual.
+
+---
+
+# Stack obligatorio
+
+Mantener:
+
+```text id="g3s5sm"
+Next.js App Router
+
+React
+
+TypeScript Strict
+
+Tailwind CSS
+
+Supabase Auth
+
+Componentes reutilizables
+
+Design System FACILIA
+```
+
+---
+
+# 1. Arquitectura de Portales
+
+Crear estructura:
+
+```text id="9t9g0d"
+FACILIA Portal
+
+
+/app
+
+    /(auth)
+
+    /(employee)
+
+    /(customer)
+
+    /(admin)
+
+
+/components
+
+/lib
+
+/hooks
+
+/services
+
+/types
+
+```
+
+---
+
+# 2. Separación de experiencias
+
+No mezclar navegación.
+
+---
+
+# Employee Portal
+
+Ruta:
+
+```text id="x1f7pr"
+/employee
+```
+
+Diseñado para:
+
+* celular;
+* rapidez;
+* ejecución.
+
+---
+
+# Customer Portal
+
+Ruta:
+
+```text id="7e3f8a"
+/customer
+```
+
+Diseñado para:
+
+* consulta;
+* gestión;
+* información.
+
+---
+
+# Admin Portal
+
+Ruta:
+
+```text id="f3d8cx"
+/admin
+```
+
+Para:
+
+* configuración;
+* administración.
+
+---
+
+# 3. Sistema de Layouts
+
+Crear:
+
+---
+
+## Root Layout
+
+Responsable de:
+
+* providers;
+* sesión;
+* tema;
+* configuración global.
+
+---
+
+## Portal Layout
+
+Compartido:
+
+* header;
+* navegación;
+* usuario actual;
+* organización.
+
+---
+
+## Employee Layout
+
+Debe incluir:
+
+* navegación inferior móvil;
+* acceso rápido.
+
+Ejemplo:
+
+```text id="u5shg8"
+
+Inicio
+
+Mis tareas
+
+Mensajes
+
+Perfil
+```
+
+---
+
+## Customer Layout
+
+Debe incluir:
+
+```text id="g8j1mk"
+
+Inicio
+
+Servicios
+
+Contratos
+
+Documentos
+
+Solicitudes
+```
+
+---
+
+# 4. Control de acceso
+
+Implementar protección de rutas.
+
+Flujo:
+
+```text id="g5n8l3"
+Usuario entra
+
+↓
+
+Validar sesión
+
+↓
+
+Consultar organización
+
+↓
+
+Consultar rol
+
+↓
+
+Validar permiso
+
+↓
+
+Permitir acceso
+```
+
+---
+
+Crear:
+
+```text id="8w0d7m"
+ProtectedRoute
+
+PermissionGuard
+
+OrganizationGuard
+```
+
+---
+
+# 5. Contexto global
+
+Crear:
+
+## PortalContext
+
+Debe contener:
+
+* usuario actual;
+* organización;
+* rol;
+* permisos.
+
+Ejemplo:
+
+```typescript id="1oq5h1"
+{
+ user,
+ organization,
+ role,
+ permissions
+}
+```
+
+---
+
+# 6. Design System FACILIA
+
+Implementar base visual:
+
+---
+
+## Colores oficiales
+
+```text id="94hshb"
+Navy
+
+#0B2A61
+
+
+Orange
+
+#D97400
+
+
+Blue
+
+#0169F5
+```
+
+---
+
+# Tipografía
+
+Mantener:
+
+* Poppins para títulos.
+* Liberation Sans / equivalente web para contenido.
+
+---
+
+# Componentes base
+
+Crear:
+
+```text id="0t0w54"
+Button
+
+Card
+
+Badge
+
+Table
+
+Modal
+
+Drawer
+
+Input
+
+Select
+
+Avatar
+
+EmptyState
+
+LoadingState
+
+ErrorState
+```
+
+---
+
+# 7. Componentes empresariales comunes
+
+Crear:
+
+---
+
+## PortalHeader
+
+Mostrar:
+
+* logo FACILIA;
+* usuario;
+* organización.
+
+---
+
+## PortalNavigation
+
+Navegación dinámica según permisos.
+
+---
+
+## OrganizationSwitcher
+
+Preparado para usuarios multi-organización.
+
+---
+
+## PermissionAwareComponent
+
+Renderiza según permisos.
+
+---
+
+# 8. Estados estándar
+
+Todos los módulos deben reutilizar:
+
+---
+
+Loading:
+
+```text id="yzf8ag"
+Skeleton
+```
+
+---
+
+Sin datos:
+
+```text id="2im6vl"
+Empty State
+```
+
+---
+
+Error:
+
+```text id="8m6zq3"
+Error Panel
+```
+
+---
+
+# 9. Servicios Frontend
+
+Crear capa:
+
+```text id="py7h5a"
+services/
+
+    auth.service.ts
+
+    portal.service.ts
+
+    permission.service.ts
+```
+
+---
+
+No llamar APIs directamente desde componentes.
+
+---
+
+# 10. Hooks comunes
+
+Crear:
+
+```text id="k7w1j4"
+useCurrentUser()
+
+useOrganization()
+
+usePermissions()
+
+usePortalNavigation()
+```
+
+---
+
+# 11. Responsive Design
+
+Employee:
+
+Prioridad:
+
+```text id="r5x8hk"
+Mobile
+
+Tablet
+
+Desktop
+```
+
+---
+
+Customer:
+
+Prioridad:
+
+```text id="g7w2bm"
+Desktop
+
+Tablet
+
+Mobile
+```
+
+---
+
+# 12. Auditoría frontend
+
+Preparar captura:
+
+* navegación;
+* acciones sensibles;
+* errores.
+
+---
+
+# 13. Integración futura
+
+Preparar integración con:
+
+## Operations
+
+Tareas.
+
+---
+
+## Contracts
+
+Contratos.
+
+---
+
+## Library
+
+Documentos.
+
+---
+
+## COM
+
+Mensajes.
+
+---
+
+## GEO
+
+Ubicación.
+
+---
+
+# 14. APIs base
+
+Crear únicamente:
+
+```http id="49h4np"
+GET /api/portal/session
+
+GET /api/portal/navigation
+
+GET /api/portal/profile
+```
+
+---
+
+# 15. Calidad
+
+Debe cumplir:
+
+* TypeScript Strict.
+* componentes reutilizables.
+* sin duplicación.
+* arquitectura modular.
+* código limpio.
+
+---
+
+# Entregables
+
+Generar:
+
+1. Estructura frontend.
+2. Layouts.
+3. Navegación.
+4. Guards.
+5. Contextos.
+6. Design System.
+7. Componentes base.
+8. Hooks.
+9. Documentación.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+✅ iniciar sesión
+✅ identificar portal correspondiente
+✅ validar permisos
+✅ cargar layout correcto
+✅ navegar según rol
+✅ reutilizar componentes comunes
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar compilación.
+2. Listar archivos creados/modificados.
+3. Confirmar compatibilidad con PORTAL-00 y PORTAL-01.
+4. Generar sección:
+
+# "Contexto para PORTAL-03"
+
+Incluyendo:
+
+* implementación del Employee Portal MVP;
+* dashboard operativo;
+* tareas asignadas;
+* estados de ejecución;
+* integración con Operations y COM.

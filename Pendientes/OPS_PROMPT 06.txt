@@ -1,0 +1,517 @@
+# PROMPT OPS-06 — Recursos, Activos y Equipamiento
+
+> **Rol**
+>
+> Actúa como un **Enterprise Software Architect** especializado en Facility Management (FM), Enterprise Asset Management (EAM), Field Service Management (FSM), CMMS, DDD y Clean Architecture.
+>
+> El módulo **Operations** ya implementó:
+>
+> * Arquitectura
+> * Backend
+> * Frontend
+> * Planificación
+> * Órdenes de Trabajo
+> * Ejecución en Campo
+>
+> Esta etapa incorpora la administración de los recursos necesarios para ejecutar correctamente un servicio.
+>
+> **No rediseñar la arquitectura existente.**
+>
+> **No convertir este módulo en un sistema de inventario o ERP de compras.**
+
+---
+
+# Objetivo
+
+Permitir planificar y controlar los recursos utilizados en la operación diaria.
+
+El objetivo no es administrar stock financiero, sino asegurar que cada Orden de Trabajo disponga de los recursos necesarios para ejecutarse.
+
+---
+
+# Principio fundamental
+
+## Operations administra recursos operativos.
+
+No administra patrimonio.
+
+No administra compras.
+
+No administra contabilidad.
+
+Su responsabilidad es saber:
+
+* qué recurso se necesita;
+* dónde está;
+* quién lo tiene asignado;
+* si está disponible.
+
+---
+
+# Alcance
+
+El módulo debe administrar:
+
+* cuadrillas;
+* herramientas;
+* equipos;
+* vehículos;
+* kits operativos;
+* insumos operativos;
+* disponibilidad.
+
+Todo orientado exclusivamente a la ejecución de servicios.
+
+---
+
+# Exclusiones
+
+No administrar:
+
+* costos contables;
+* depreciaciones;
+* compras;
+* proveedores;
+* inventario financiero;
+* activos fijos.
+
+Estas funciones pertenecerán a futuros módulos de Assets o Finance.
+
+---
+
+# Modelo de dominio
+
+Implementar las siguientes entidades.
+
+---
+
+## Resource
+
+Entidad genérica.
+
+Representa cualquier recurso operativo.
+
+Tipos:
+
+* Persona
+* Cuadrilla
+* Vehículo
+* Herramienta
+* Equipo
+* Kit
+* Insumo
+
+---
+
+## Crew
+
+Grupo de trabajo.
+
+Debe permitir:
+
+* integrantes;
+* supervisor;
+* disponibilidad;
+* capacidad.
+
+---
+
+## Equipment
+
+Equipamiento reutilizable.
+
+Ejemplos:
+
+* aspiradora industrial;
+* hidrolavadora;
+* escalera;
+* generador.
+
+---
+
+## Vehicle
+
+Vehículos utilizados por la operación.
+
+Registrar:
+
+* matrícula;
+* tipo;
+* estado;
+* disponibilidad.
+
+---
+
+## OperationalKit
+
+Conjunto predefinido de recursos.
+
+Ejemplo:
+
+Kit Limpieza Oficina.
+
+Debe incluir:
+
+* herramientas;
+* equipos;
+* insumos.
+
+---
+
+## ConsumableRequirement
+
+Lista de insumos requeridos por un servicio.
+
+No controlar inventario.
+
+Solo requerimientos.
+
+---
+
+# Disponibilidad
+
+Cada recurso debe tener estados.
+
+Ejemplo:
+
+```text
+AVAILABLE
+
+ASSIGNED
+
+IN_USE
+
+MAINTENANCE
+
+OUT_OF_SERVICE
+```
+
+---
+
+# Asignaciones
+
+Permitir asignar recursos a:
+
+* Plan Operativo;
+* Servicio Programado;
+* Orden de Trabajo;
+* Cuadrilla.
+
+Registrar:
+
+* fecha;
+* usuario;
+* motivo;
+* duración prevista.
+
+---
+
+# Compatibilidad
+
+Permitir indicar:
+
+* recursos obligatorios;
+* recursos opcionales;
+* recursos incompatibles;
+* cantidad mínima.
+
+Ejemplo:
+
+Una hidrolavadora no puede estar asignada a dos órdenes simultáneamente.
+
+---
+
+# Vehículos
+
+Preparar el modelo para:
+
+* conductor responsable;
+* kilometraje inicial/final;
+* combustible (referencial);
+* observaciones.
+
+No implementar mantenimiento de flota.
+
+---
+
+# Equipamiento
+
+Registrar:
+
+* código interno;
+* nombre;
+* categoría;
+* estado;
+* ubicación actual;
+* responsable actual.
+
+---
+
+# Kits Operativos
+
+Permitir reutilizar kits.
+
+Ejemplo:
+
+Limpieza Corporativa
+
+↓
+
+Aspiradora
+
+↓
+
+Escalera
+
+↓
+
+Carro
+
+↓
+
+Señalización
+
+↓
+
+Elementos de protección personal
+
+Los kits podrán asociarse automáticamente a tipos de servicio.
+
+---
+
+# Integración con Planning
+
+El planificador deberá validar disponibilidad antes de generar asignaciones.
+
+No impedir la planificación, pero emitir alertas cuando existan conflictos.
+
+---
+
+# Integración con Work Orders
+
+Cada Orden podrá mostrar:
+
+* recursos asignados;
+* recursos requeridos;
+* faltantes;
+* observaciones.
+
+---
+
+# Integración con Ejecución
+
+Durante la ejecución se podrá:
+
+* confirmar recursos utilizados;
+* indicar recursos faltantes;
+* reportar recursos dañados.
+
+---
+
+# Integración futura con Inventory
+
+Preparar interfaces para que un futuro módulo de Inventario pueda:
+
+* confirmar disponibilidad;
+* descontar consumibles;
+* registrar reposiciones.
+
+Operations no administrará stock.
+
+---
+
+# Integración futura con Assets
+
+Preparar interfaces para:
+
+* mantenimiento preventivo de equipos;
+* historial del activo;
+* vida útil.
+
+Operations solo consumirá esa información.
+
+---
+
+# Dashboard
+
+Agregar indicadores.
+
+Ejemplos:
+
+* recursos disponibles;
+* recursos en uso;
+* vehículos activos;
+* kits utilizados;
+* conflictos de disponibilidad;
+* herramientas fuera de servicio.
+
+---
+
+# APIs
+
+Agregar únicamente las necesarias.
+
+Ejemplos:
+
+```text
+GET /api/resources
+
+GET /api/crews
+
+GET /api/equipment
+
+GET /api/vehicles
+
+POST /api/work-orders/{id}/resources
+
+POST /api/work-orders/{id}/assign-crew
+
+GET /api/resources/availability
+```
+
+---
+
+# Frontend
+
+Agregar nuevas vistas.
+
+## Recursos
+
+Tabla estándar FACILIA.
+
+Columnas:
+
+* Código;
+* Nombre;
+* Tipo;
+* Estado;
+* Responsable;
+* Ubicación;
+* Disponibilidad.
+
+---
+
+## Cuadrillas
+
+Visualizar:
+
+* integrantes;
+* supervisor;
+* carga de trabajo;
+* órdenes asignadas.
+
+---
+
+## Equipamiento
+
+Visualizar:
+
+* estado;
+* ubicación;
+* disponibilidad;
+* historial operativo.
+
+---
+
+## Vehículos
+
+Visualizar:
+
+* conductor;
+* disponibilidad;
+* órdenes asignadas.
+
+---
+
+# Componentes React
+
+Crear:
+
+* ResourceTable
+* ResourceCard
+* CrewPanel
+* EquipmentPanel
+* VehiclePanel
+* OperationalKitPanel
+* ResourceAvailabilityBadge
+* ResourceAssignmentDialog
+
+Reutilizar componentes existentes.
+
+---
+
+# Seguridad
+
+Todas las asignaciones deberán registrar:
+
+* usuario;
+* fecha;
+* organización;
+* motivo.
+
+---
+
+# Calidad
+
+Todo debe:
+
+* compilar;
+* respetar TypeScript Strict;
+* reutilizar componentes;
+* mantener la arquitectura Charlie Compliant.
+
+---
+
+# Exclusiones
+
+No implementar:
+
+* compras;
+* inventario financiero;
+* depreciaciones;
+* mantenimiento de activos;
+* órdenes de compra;
+* costos.
+
+---
+
+# Entregables
+
+Generar:
+
+* ampliaciones del dominio;
+* migraciones SQL necesarias;
+* nuevas entidades;
+* repositorios;
+* casos de uso;
+* APIs;
+* componentes frontend;
+* dashboard de recursos;
+* documentación técnica.
+
+Todo completamente funcional.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+* registrar recursos operativos;
+* crear cuadrillas;
+* asignar recursos a órdenes;
+* validar disponibilidad;
+* administrar kits operativos;
+* consultar el estado de herramientas, equipos y vehículos;
+* detectar conflictos de asignación.
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar que toda la solución compile correctamente.
+2. Listar los archivos creados o modificados.
+3. Confirmar compatibilidad con todas las etapas anteriores de Operations.
+4. Generar la sección **"Contexto para OPS-07"** con un resumen técnico para implementar el módulo de **Incidencias, Calidad y Cumplimiento de SLA**, incorporando gestión de no conformidades, acciones correctivas, reclamos de clientes, auditorías internas e indicadores de calidad, sin romper la arquitectura existente.

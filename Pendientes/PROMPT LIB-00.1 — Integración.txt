@@ -1,0 +1,618 @@
+# PROMPT LIB-00.1 — Integración Arquitectónica de Library dentro de FACILIA
+
+> **Rol**
+>
+> Actúa como un **Arquitecto de Software Enterprise Senior**, especialista en DDD, Clean Architecture, plataformas SaaS multi-tenant, gestión documental empresarial y diseño de módulos desacoplados.
+>
+> Este documento es una extensión de **LIB-00 — Arquitectura Funcional del Módulo Library**.
+>
+> En esta etapa **no se genera código**.
+>
+> El objetivo es definir cómo Library se integra dentro de la plataforma FACILIA sin crear dependencias incorrectas ni acoplamiento entre módulos.
+
+---
+
+# Contexto
+
+FACILIA es una plataforma empresarial orientada a la gestión de servicios de:
+
+* limpieza profesional;
+* mantenimiento;
+* continuidad operativa;
+* gestión de clientes;
+* operaciones;
+* documentación empresarial.
+
+La plataforma utiliza una arquitectura modular basada en:
+
+* Next.js App Router.
+* TypeScript Strict.
+* Supabase.
+* PostgreSQL.
+* DDD.
+* Clean Architecture.
+* Repository Pattern.
+* Arquitectura Charlie Compliant.
+
+Cada módulo representa un **bounded context independiente**.
+
+---
+
+# Objetivo
+
+Definir cómo el módulo **Library** se integra con todos los módulos actuales y futuros de FACILIA.
+
+Library debe convertirse en la capa documental transversal de la plataforma.
+
+---
+
+# Principio fundamental
+
+## Los módulos no almacenan archivos.
+
+Los módulos solamente gestionan información de negocio.
+
+Los documentos pertenecen a Library.
+
+Ejemplo incorrecto:
+
+```text
+Quotation
+
+- proposal_pdf
+- image_file
+- contract_file
+```
+
+Ejemplo correcto:
+
+```text
+Quotation
+
+      |
+      |
+DocumentLink
+
+      |
+      |
+Library Document
+```
+
+---
+
+# Arquitectura conceptual
+
+Definir:
+
+```text
+                         FACILIA PLATFORM
+
+
+ Organizations
+ People
+ Quotations
+ Operations
+ Assets
+ Tickets
+ Contracts
+ Billing
+
+
+             \       |       /
+
+                    Library
+
+
+             Documents
+             Storage
+             Permissions
+             Versions
+             Audit
+```
+
+---
+
+# Document Ownership
+
+Definir claramente:
+
+¿Quién es dueño del documento?
+
+Regla propuesta:
+
+## Library es dueña del documento físico.
+
+Library administra:
+
+* archivo;
+* ubicación;
+* permisos;
+* acceso;
+* historial.
+
+El módulo origen administra:
+
+* contexto;
+* relación;
+* significado empresarial.
+
+---
+
+# Document Reference Pattern
+
+Diseñar el patrón:
+
+```text
+Document
+
+     |
+
+DocumentReference
+
+     |
+
+Business Entity
+```
+
+Ejemplo:
+
+```text
+Documento:
+
+contrato_cliente.pdf
+
+
+Referencias:
+
+Contract
+id: 123
+
+
+Organization
+id: 456
+
+
+Quotation
+id: 789
+```
+
+---
+
+# Entidades que pueden vincular documentos
+
+Definir integración para:
+
+## Directory
+
+### Organization
+
+Documentos:
+
+* contratos;
+* certificados;
+* documentación legal.
+
+---
+
+### Person
+
+Documentos:
+
+* identificaciones;
+* certificados;
+* documentación laboral.
+
+---
+
+## Comercial
+
+### Quotation
+
+Documentos:
+
+* propuesta comercial;
+* relevamiento;
+* fotos;
+* anexos.
+
+---
+
+## Contract Lifecycle
+
+Futuro:
+
+Documentos:
+
+* contrato;
+* adendas;
+* renovaciones;
+* actas.
+
+---
+
+## Operaciones
+
+### Work Order
+
+Documentos:
+
+* fotos antes/después;
+* informes;
+* evidencias;
+* certificados.
+
+---
+
+## Activos
+
+Documentos:
+
+* manuales;
+* garantías;
+* fichas técnicas.
+
+---
+
+# Interface de integración
+
+Diseñar una interfaz estándar.
+
+Ejemplo conceptual:
+
+```typescript
+DocumentService
+```
+
+Métodos:
+
+```typescript
+attach()
+
+detach()
+
+list()
+
+hasDocuments()
+```
+
+Los módulos consumidores no conocen:
+
+* Storage.
+* Supabase.
+* Buckets.
+* URLs.
+* Permisos.
+
+---
+
+# Eventos de dominio
+
+Diseñar eventos preparados para arquitectura orientada a eventos.
+
+Ejemplos:
+
+## DocumentCreated
+
+Cuando se crea un documento.
+
+---
+
+## DocumentUpdated
+
+Cuando cambia información.
+
+---
+
+## DocumentLinked
+
+Cuando se asocia a una entidad.
+
+---
+
+## DocumentDeleted
+
+Cuando se elimina.
+
+---
+
+## DocumentAccessed
+
+Cuando se consulta.
+
+---
+
+Estos eventos permitirán en el futuro:
+
+* notificaciones;
+* auditoría;
+* IA;
+* workflows;
+* integraciones externas.
+
+---
+
+# Seguridad e identidad
+
+Definir la relación entre:
+
+* Usuario.
+* Organización.
+* Rol.
+* Documento.
+
+Regla:
+
+Library controla acceso al documento.
+
+El módulo de negocio solamente solicita acceso.
+
+Ejemplo:
+
+Un usuario abre un contrato.
+
+Proceso:
+
+```text
+Contrato solicita documento
+
+↓
+
+Library valida permisos
+
+↓
+
+Library devuelve acceso permitido
+```
+
+---
+
+# Multi-tenancy
+
+FACILIA es multi-organización.
+
+Definir:
+
+## Aislamiento
+
+Una organización no puede ver documentos privados de otra.
+
+---
+
+## Documentos compartidos
+
+Preparar:
+
+* documentos públicos;
+* documentos compartidos;
+* documentos privados.
+
+---
+
+# Relación con Cotizador
+
+Definir específicamente:
+
+Flujo:
+
+```text
+Lead
+
+↓
+
+Cotización
+
+↓
+
+Documentos asociados
+
+↓
+
+Presupuesto aprobado
+
+↓
+
+Contrato futuro
+
+↓
+
+Mismo expediente documental
+```
+
+No duplicar documentos.
+
+---
+
+# Relación con Contratos
+
+Definir preparación futura.
+
+Un contrato será:
+
+Una entidad de negocio.
+
+No un tipo especial de archivo.
+
+Ejemplo:
+
+```text
+Contract
+
+      |
+
+DocumentLink
+
+      |
+
+Library
+```
+
+---
+
+# API transversal
+
+Definir una capa común:
+
+Ejemplo:
+
+```text
+/api/documents
+```
+
+o servicio interno.
+
+Debe permitir:
+
+* adjuntar documento;
+* listar documentos;
+* eliminar relación;
+* seleccionar documento existente.
+
+---
+
+# UI transversal
+
+Definir componentes reutilizables:
+
+## DocumentPanel
+
+Panel de documentos de cualquier entidad.
+
+Ejemplo:
+
+Cliente:
+
+```
+Documentos
+
+Contrato.pdf
+Factura.pdf
+Certificado.pdf
+```
+
+---
+
+## DocumentPicker
+
+Selector de documentos existente.
+
+Ejemplo:
+
+Desde Cotizador:
+
+"Adjuntar documento"
+
+---
+
+## DocumentUploader
+
+Carga contextual.
+
+Ejemplo:
+
+Desde una OT:
+
+"Subir evidencia"
+
+---
+
+# Reglas de diseño
+
+Library:
+
+NO debe saber:
+
+* qué es un contrato;
+* qué es una cotización;
+* qué es una orden de trabajo.
+
+Los módulos:
+
+NO deben saber:
+
+* dónde se guardan archivos;
+* cómo funcionan los permisos;
+* cómo funciona Storage.
+
+---
+
+# Preparación futura
+
+Dejar preparada la arquitectura para:
+
+## Contratos
+
+* vencimientos;
+* renovaciones;
+* adendas.
+
+## Firma digital
+
+* documentos firmables;
+* evidencias;
+* certificados.
+
+## IA
+
+* OCR;
+* búsqueda semántica;
+* asistente documental.
+
+---
+
+# Entregable
+
+Generar un documento técnico completo con:
+
+1. Arquitectura de integración.
+2. Bounded Contexts involucrados.
+3. Modelo de relaciones.
+4. Patrones utilizados.
+5. Contratos entre módulos.
+6. Seguridad multi-tenant.
+7. Eventos.
+8. Interfaces.
+9. Ejemplos de integración.
+10. Reglas que deben respetarse durante la implementación.
+
+---
+
+# Restricciones
+
+NO generar:
+
+* código;
+* SQL;
+* componentes React;
+* APIs implementadas.
+
+Solo arquitectura.
+
+---
+
+# Criterios de aceptación
+
+Al finalizar este documento debe quedar definido:
+
+* cómo cualquier módulo de FACILIA usa Library;
+* cómo se relacionan documentos y entidades;
+* cómo se controla seguridad;
+* cómo se evita duplicación;
+* cómo se prepara la plataforma para contratos, firma e IA.
+
+---
+
+# Contexto para LIB-01
+
+Al finalizar generar una sección:
+
+## "Contexto para LIB-01"
+
+Debe contener un resumen ejecutivo para el equipo de implementación indicando:
+
+* qué entidades crear;
+* qué relaciones respetar;
+* qué interfaces implementar;
+* qué restricciones no romper;
+* cómo integrar el backend de Library con la plataforma FACILIA existente.
+
+Esta sección será utilizada como contexto obligatorio para iniciar la implementación del dominio y backend en LIB-01.

@@ -1,0 +1,449 @@
+# PROMPT GEO-06 — Panel Supervisor y Visualización Operativa GEO
+
+> **Rol**
+>
+> Actúa como un **Enterprise Frontend Architect** especializado en plataformas SaaS empresariales, dashboards operativos, Workforce Management, Field Service Management (FSM), geolocalización y diseño de interfaces de supervisión.
+>
+> El módulo **GEO — Geopositioning & Workforce Control** ya cuenta con:
+>
+> * GEO-00 — Documento funcional y arquitectura.
+> * GEO-01 — Modelo de dominio y persistencia.
+> * GEO-02 — Backend Core y APIs.
+> * GEO-03 — Integración con Directory y Operations.
+> * GEO-04 — Agente Móvil / PWA de captura GPS.
+> * GEO-05 — Motor de Geocercas y Validaciones.
+>
+> Esta etapa implementa el panel de supervisión operacional.
+>
+> **No modificar la lógica del backend GEO.**
+>
+> **No crear nuevas entidades de dominio.**
+>
+> **No implementar analítica avanzada.**
+>
+> El objetivo es dar visibilidad operativa a supervisores y administradores.
+
+---
+
+# Objetivo
+
+Crear una interfaz que permita visualizar:
+
+* personal operativo activo;
+* ubicación actual;
+* estado de jornada;
+* tareas relacionadas;
+* cumplimiento geográfico;
+* alertas operativas.
+
+---
+
+# Principio fundamental
+
+El supervisor no controla personas por ubicación.
+
+Controla la correcta ejecución del servicio.
+
+La información debe mostrarse relacionada con:
+
+```text id="f4kzj6"
+Empleado
+
++
+
+Orden asignada
+
++
+
+Cliente
+
++
+
+Horario
+
++
+
+Estado operativo
+```
+
+---
+
+# Roles de acceso
+
+Definir permisos:
+
+## Administrador Organización
+
+Puede:
+
+* ver toda la organización;
+* administrar configuración.
+
+---
+
+## Supervisor Operativo
+
+Puede:
+
+* ver personal asignado;
+* ver órdenes bajo su responsabilidad;
+* consultar alertas.
+
+---
+
+## Cliente
+
+Futuro:
+
+* solo visualizar cumplimiento de sus servicios.
+
+No implementar todavía.
+
+---
+
+# Navegación
+
+Crear sección:
+
+```text
+FACILIA
+
+ └── GEO
+
+      ├── Monitor
+
+      ├── Personal
+
+      ├── Geocercas
+
+      ├── Alertas
+
+      └── Historial
+```
+
+---
+
+# Dashboard principal
+
+## GEO Monitor
+
+Vista principal.
+
+Debe mostrar:
+
+* personal activo;
+* estado;
+* última actualización;
+* ubicación;
+* tarea asociada.
+
+---
+
+# Mapa Operativo
+
+Implementar componente preparado para mapa.
+
+Mostrar:
+
+* empleados;
+* clientes;
+* geocercas;
+* estados.
+
+Estados visuales:
+
+```text id="aj4v4s"
+ACTIVO
+
+EN CLIENTE
+
+EN TRASLADO
+
+SIN CONEXIÓN
+
+ALERTA
+```
+
+---
+
+# No implementar
+
+Todavía:
+
+* rutas;
+* navegación;
+* cálculo de tráfico;
+* optimización.
+
+---
+
+# Panel de Personal
+
+Tabla estándar FACILIA.
+
+Columnas:
+
+* Nombre;
+* Estado;
+* Dispositivo;
+* Última ubicación;
+* Última conexión;
+* Orden actual;
+* Cliente.
+
+---
+
+# Detalle del empleado
+
+Al seleccionar:
+
+Mostrar:
+
+## Información básica
+
+* nombre;
+* organización;
+* dispositivo.
+
+---
+
+## Jornada
+
+* inicio;
+* fin;
+* duración.
+
+---
+
+## Tracking
+
+* última posición;
+* última sincronización.
+
+---
+
+## Actividad
+
+Mostrar:
+
+* órdenes relacionadas;
+* eventos GEO.
+
+---
+
+# Panel de Alertas
+
+Mostrar eventos:
+
+Ejemplos:
+
+## Llegada tarde
+
+```text
+Orden 123
+
+Esperado:
+08:00
+
+Llegó:
+08:35
+```
+
+---
+
+## Fuera de zona
+
+```text
+Empleado fuera de geocerca asignada
+```
+
+---
+
+## Sin conexión
+
+```text
+Dispositivo sin actualizar
+```
+
+---
+
+# Historial
+
+Permitir consultar:
+
+Filtros:
+
+* empleado;
+* fecha;
+* cliente;
+* orden.
+
+Mostrar:
+
+* sesiones;
+* entradas;
+* salidas;
+* validaciones.
+
+---
+
+# Componentes React
+
+Crear:
+
+```text id="o9m9pr"
+GeoMonitorMap
+
+EmployeeTrackingTable
+
+EmployeeStatusCard
+
+GeoAlertPanel
+
+GeofenceStatusBadge
+
+TrackingTimeline
+
+PresenceValidationCard
+
+GeoFilters
+```
+
+---
+
+# Integración API
+
+Consumir:
+
+```http id="pbbd3t"
+GET /api/geo/tracking/active
+
+GET /api/geo/presence/current
+
+GET /api/geo/alerts
+
+GET /api/geo/employees/{id}
+
+GET /api/geo/history
+```
+
+---
+
+# Actualización de información
+
+Preparar arquitectura para:
+
+* polling;
+* refresh manual;
+* futura actualización tiempo real.
+
+No implementar WebSockets todavía.
+
+---
+
+# Seguridad
+
+Aplicar:
+
+* permisos por rol;
+* aislamiento organización;
+* auditoría de consultas sensibles.
+
+---
+
+# UX
+
+Mantener:
+
+* diseño FACILIA;
+* componentes existentes;
+* tablas estándar;
+* responsive.
+
+Debe funcionar en:
+
+* escritorio;
+* tablet.
+
+---
+
+# Indicadores principales
+
+Mostrar KPIs:
+
+* empleados activos;
+* servicios en ejecución;
+* llegadas correctas;
+* alertas abiertas;
+* dispositivos conectados.
+
+---
+
+# Integración futura
+
+Preparar extensión para:
+
+* clientes;
+* reportes;
+* BI;
+* calidad;
+* SLA.
+
+---
+
+# Calidad
+
+Todo debe:
+
+* compilar;
+* respetar TypeScript Strict;
+* reutilizar componentes existentes;
+* mantener arquitectura Charlie Compliant.
+
+---
+
+# Entregables
+
+Generar:
+
+* páginas GEO.
+* componentes React.
+* integración API.
+* permisos.
+* dashboards.
+* documentación técnica.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+✅ visualizar personal activo
+✅ consultar última ubicación
+✅ ver órdenes relacionadas
+✅ detectar alertas
+✅ consultar historial
+✅ supervisar cumplimiento operativo
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar compilación completa.
+2. Listar archivos creados/modificados.
+3. Confirmar compatibilidad con GEO-00 a GEO-05.
+4. Generar sección:
+
+# "Contexto para GEO-CLOSE"
+
+Incluyendo:
+
+* arquitectura final del módulo GEO;
+* entidades implementadas;
+* integraciones realizadas;
+* APIs disponibles;
+* futuras extensiones posibles;
+* recomendaciones para congelar GEO versión 1.0.

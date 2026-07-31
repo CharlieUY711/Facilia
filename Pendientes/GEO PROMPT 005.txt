@@ -1,0 +1,489 @@
+# PROMPT GEO-05 — Motor de Geocercas y Validaciones Operativas
+
+> **Rol**
+>
+> Actúa como un **Enterprise Software Architect** especializado en Geospatial Computing, Location Intelligence, Field Service Management (FSM), Workforce Management, motores de reglas y Clean Architecture.
+>
+> El módulo **GEO — Geopositioning & Workforce Control** ya cuenta con:
+>
+> * GEO-00 — Documento funcional y arquitectura.
+> * GEO-01 — Modelo de dominio y persistencia.
+> * GEO-02 — Backend Core y APIs.
+> * GEO-03 — Integración con Directory y Operations.
+> * GEO-04 — Agente Móvil / PWA de captura GPS.
+>
+> Esta etapa implementa el motor encargado de interpretar posiciones GPS y convertirlas en eventos operativos.
+>
+> **No desarrollar mapas avanzados.**
+>
+> **No desarrollar optimización de rutas.**
+>
+> **No desarrollar IA.**
+>
+> El objetivo es implementar validaciones geográficas operativas básicas y confiables.
+
+---
+
+# Objetivo
+
+Transformar datos GPS en información operacional:
+
+```text
+Ubicación GPS
+
++
+
+Geocerca
+
++
+
+Horario
+
++
+
+Orden asignada
+
+↓
+
+Evento operativo
+```
+
+---
+
+# Principio fundamental
+
+El GPS solo proporciona posición.
+
+El motor GEO interpreta esa posición.
+
+Ejemplo:
+
+GPS:
+
+```text
+Latitud: X
+Longitud: Y
+```
+
+Motor GEO:
+
+```text
+Empleado llegó al cliente
+```
+
+---
+
+# Alcance MVP
+
+Implementar:
+
+* creación de geocercas;
+* cálculo de distancia;
+* detección entrada;
+* detección salida;
+* permanencia;
+* validación contra órdenes;
+* alertas básicas.
+
+---
+
+# Modelo de Geocerca
+
+Una geocerca representa una zona autorizada.
+
+Ejemplos:
+
+* cliente;
+* oficina;
+* depósito.
+
+---
+
+# Tipos iniciales
+
+```text
+CLIENT_LOCATION
+
+OFFICE
+
+WAREHOUSE
+
+CUSTOM
+```
+
+---
+
+# Configuración
+
+Cada geocerca debe permitir:
+
+* nombre;
+* organización;
+* ubicación;
+* radio;
+* estado;
+* referencia externa.
+
+---
+
+# Cálculo geográfico
+
+Implementar cálculo de distancia entre:
+
+```text
+posición actual
+
+vs
+
+centro de geocerca
+```
+
+Utilizar fórmula geográfica adecuada.
+
+Ejemplo:
+
+Haversine.
+
+---
+
+# Estados de presencia
+
+Crear máquina de estados:
+
+```text
+OUTSIDE
+
+ENTERING
+
+INSIDE
+
+LEAVING
+```
+
+---
+
+# Eventos
+
+Generar:
+
+## Entrada
+
+Cuando:
+
+```text
+Distancia <= Radio permitido
+```
+
+Evento:
+
+```text
+EmployeeArrivedLocation
+```
+
+---
+
+## Salida
+
+Cuando:
+
+```text
+Distancia > Radio permitido
+```
+
+Evento:
+
+```text
+EmployeeLeftLocation
+```
+
+---
+
+## Permanencia
+
+Mientras:
+
+```text
+Estado = INSIDE
+```
+
+Registrar:
+
+* inicio;
+* fin;
+* duración.
+
+Evento:
+
+```text
+EmployeeStayedLocation
+```
+
+---
+
+# Anti falsos positivos
+
+Implementar controles básicos:
+
+## Precisión GPS
+
+No aceptar ubicaciones con precisión insuficiente.
+
+Ejemplo:
+
+GPS error > radio permitido.
+
+---
+
+## Persistencia mínima
+
+No generar entrada/salida con un único punto.
+
+Validar:
+
+* repetición;
+* continuidad;
+* timestamps.
+
+---
+
+## Movimiento
+
+Preparar para detectar:
+
+* estático;
+* desplazamiento.
+
+---
+
+# Integración con Operations
+
+Relacionar:
+
+```text
+WorkOrder
+
++
+
+Geofence
+
++
+
+TrackingSession
+```
+
+---
+
+# Validaciones operativas
+
+Implementar:
+
+---
+
+# Arrival Validation
+
+Comparar:
+
+```text
+Hora planificada
+
+vs
+
+Hora llegada real
+```
+
+Resultado:
+
+```text
+ON_TIME
+
+LATE
+
+EARLY
+```
+
+---
+
+# Presence Validation
+
+Comparar:
+
+```text
+Tiempo requerido
+
+vs
+
+Tiempo real dentro de zona
+```
+
+Resultado:
+
+```text
+COMPLIANT
+
+PARTIAL
+
+FAILED
+```
+
+---
+
+# Location Deviation
+
+Detectar:
+
+Ejemplo:
+
+Orden:
+
+Cliente A
+
+Empleado:
+
+Cliente B
+
+Resultado:
+
+```text
+LocationDeviationDetected
+```
+
+---
+
+# Motor de reglas básico
+
+Crear estructura preparada para reglas.
+
+Ejemplos:
+
+```text
+SI empleado llega después de horario
+
+ENTONCES generar desviación
+```
+
+---
+
+```text
+SI permanencia < tiempo mínimo
+
+ENTONCES marcar cumplimiento parcial
+```
+
+---
+
+# Eventos de dominio
+
+Publicar:
+
+```text
+EmployeeArrivedLocation
+
+EmployeeLeftLocation
+
+EmployeeStayedLocation
+
+LocationDeviationDetected
+
+PresenceValidated
+```
+
+---
+
+# APIs
+
+Agregar:
+
+```http
+POST /api/geo/geofences/check
+
+GET /api/geo/presence/{employee_id}
+
+GET /api/geo/work-orders/{id}/validation
+```
+
+---
+
+# Dashboard futuro
+
+Preparar datos para:
+
+* mapa operativo;
+* empleados dentro de clientes;
+* tiempos de permanencia;
+* cumplimiento horario.
+
+---
+
+# Seguridad
+
+Toda validación debe registrar:
+
+* organización;
+* empleado;
+* timestamp;
+* fuente GPS;
+* regla aplicada.
+
+---
+
+# Performance
+
+Diseñar para:
+
+* miles de posiciones;
+* múltiples empleados;
+* múltiples organizaciones.
+
+Evitar cálculos innecesarios.
+
+---
+
+# Exclusiones
+
+No implementar:
+
+* rutas;
+* navegación;
+* optimización;
+* mapas interactivos;
+* inteligencia artificial;
+* predicción.
+
+---
+
+# Entregables
+
+Generar:
+
+* motor geográfico;
+* servicios de cálculo;
+* reglas;
+* eventos;
+* APIs;
+* validaciones;
+* documentación técnica.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+✅ crear geocercas
+✅ detectar entrada y salida
+✅ medir permanencia
+✅ validar llegada a clientes
+✅ comparar horarios planificados vs reales
+✅ detectar desvíos básicos
+✅ generar eventos operativos
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar compilación.
+2. Listar archivos creados/modificados.
+3. Confirmar compatibilidad con GEO-01 a GEO-04.
+4. Generar sección **"Contexto para GEO-06"** explicando la construcción del **Panel Supervisor GEO**, incluyendo mapa operativo, visualización de personal activo, estado de tareas, últimas posiciones y controles de supervisión.

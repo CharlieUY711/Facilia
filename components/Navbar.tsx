@@ -3,7 +3,7 @@ import Image from "next/image";
 
 export default function Navbar() {
   return (
-    <header className="sticky top-0 z-40 bg-paper/80 backdrop-blur-md border-b border-navy-100/50">
+    <header className="sticky top-0 z-40 bg-paper/80 backdrop-blur-md border-b border-navy-100/50 safe-top">
       <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center">
           <Image src="/FACILIA_By.png" alt="FACILIA — Facility Services by ODDY" width={150} height={39} priority />

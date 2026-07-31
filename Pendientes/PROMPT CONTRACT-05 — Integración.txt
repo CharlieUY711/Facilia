@@ -1,0 +1,434 @@
+# PROMPT CONTRACT-05 — Integración entre Contract Management y Operations
+
+> **Rol**
+>
+> Actúa como un **Enterprise Solution Architect** especializado en ERP, Facility Management, CMMS, FSM (Field Service Management), Contract Lifecycle Management (CLM), DDD, Event-Driven Architecture y Clean Architecture.
+>
+> Este documento representa la última etapa del módulo **Contract Management**.
+>
+> Los módulos implementados hasta el momento son:
+>
+> * Directory
+> * Library
+> * Quotations
+> * Contract Management
+>
+> El siguiente módulo de FACILIA será **Operations**.
+>
+> El objetivo de esta etapa es dejar completamente definida la integración entre ambos módulos.
+>
+> **No rediseñar la arquitectura existente.**
+>
+> **No romper compatibilidad con los módulos anteriores.**
+
+---
+
+# Objetivo
+
+El contrato debe convertirse en la **fuente oficial de la operación**.
+
+Operations nunca debe inventar servicios.
+
+Operations únicamente podrá ejecutar aquello que esté contratado.
+
+---
+
+# Principio fundamental
+
+## El contrato gobierna la operación.
+
+Toda actividad operativa debe tener un contrato vigente que la respalde.
+
+No deben existir Órdenes de Trabajo sin un contrato asociado, salvo excepciones expresamente configuradas (por ejemplo, trabajos extraordinarios o de emergencia).
+
+---
+
+# Arquitectura General
+
+Diseñar la integración conceptual:
+
+```text
+Lead
+    │
+    ▼
+Cotización
+    │
+    ▼
+Contrato Activo
+    │
+    ▼
+Plan de Servicio
+    │
+    ▼
+Planificación Operativa
+    │
+    ▼
+Orden de Trabajo
+    │
+    ▼
+Ejecución
+    │
+    ▼
+Evidencias (Library)
+```
+
+El contrato define **qué** debe hacerse.
+
+Operations define **cómo, cuándo y quién** lo hace.
+
+---
+
+# Alcance contractual
+
+Cada contrato deberá definir como mínimo:
+
+* Servicios contratados.
+* Ubicaciones.
+* Frecuencias.
+* Horarios.
+* SLA.
+* Personal mínimo (si corresponde).
+* Equipamiento requerido (si corresponde).
+* Observaciones operativas.
+
+Toda esta información será consumida por Operations.
+
+---
+
+# Modelo de integración
+
+El contrato debe exponer un modelo estándar para Operations.
+
+Ejemplo conceptual:
+
+```text
+Contract
+
+↓
+
+ContractService
+
+↓
+
+Operational Service Definition
+
+↓
+
+Operations
+```
+
+Operations nunca deberá leer directamente tablas internas del contrato.
+
+Debe consumir un servicio de aplicación o API pública del módulo Contract.
+
+---
+
+# Plan de Servicio
+
+Agregar el concepto de:
+
+## Service Plan
+
+Representa la interpretación operativa del contrato.
+
+Ejemplo:
+
+Contrato:
+
+* Limpieza oficinas
+* Lunes a Viernes
+* 18:00 a 22:00
+
+Plan de Servicio:
+
+* 5 visitas semanales
+* Duración estimada
+* Recursos necesarios
+* Checklist asociado
+
+El Plan de Servicio pertenece a Operations, pero nace del contrato.
+
+---
+
+# Eventos de integración
+
+Definir eventos de dominio.
+
+Ejemplos:
+
+```text
+ContractActivated
+
+ContractRenewed
+
+ContractExtended
+
+ContractCancelled
+
+ContractExpired
+
+ServiceAdded
+
+ServiceRemoved
+
+ServiceUpdated
+```
+
+Operations reaccionará a estos eventos.
+
+---
+
+# Casos de uso
+
+Definir:
+
+## Al activar un contrato
+
+Generar automáticamente el Plan Operativo.
+
+---
+
+## Al renovar un contrato
+
+Actualizar el Plan Operativo.
+
+---
+
+## Al extender un contrato
+
+Agregar nuevos servicios.
+
+---
+
+## Al cancelar un contrato
+
+Cerrar automáticamente los planes operativos relacionados.
+
+---
+
+## Al vencer un contrato
+
+Suspender la planificación futura.
+
+---
+
+# Integración con Library
+
+Operations continuará utilizando Library.
+
+Ejemplo:
+
+Orden de Trabajo
+
+↓
+
+Fotos
+
+↓
+
+Informes
+
+↓
+
+Actas
+
+↓
+
+Firmas del cliente
+
+Todo almacenado en Library.
+
+---
+
+# Integración con Directory
+
+Operations continuará consumiendo:
+
+* Organizaciones.
+* Personas.
+* Ubicaciones.
+
+Nunca duplicar datos.
+
+---
+
+# SLA
+
+Preparar el modelo para que el contrato defina:
+
+* tiempo de respuesta;
+* tiempo de resolución;
+* frecuencia;
+* disponibilidad.
+
+Operations utilizará estos parámetros para medir cumplimiento.
+
+---
+
+# Calendario operativo
+
+Preparar la arquitectura para generar automáticamente:
+
+* visitas;
+* tareas recurrentes;
+* inspecciones;
+* mantenimientos preventivos.
+
+No implementar todavía.
+
+---
+
+# KPI
+
+Preparar indicadores.
+
+Ejemplos:
+
+Servicios activos
+
+Cumplimiento SLA
+
+Servicios ejecutados
+
+Servicios pendientes
+
+Renovaciones próximas
+
+Valor contractual ejecutado
+
+---
+
+# Reglas de negocio
+
+Ejemplos:
+
+No generar nuevas órdenes cuando:
+
+* contrato cancelado;
+* contrato vencido;
+* contrato suspendido.
+
+Permitir excepciones únicamente mediante autorización.
+
+---
+
+# Integración futura con Finance
+
+Preparar eventos para:
+
+* facturación periódica;
+* servicios extraordinarios;
+* penalizaciones;
+* reajustes.
+
+No implementar.
+
+---
+
+# APIs públicas
+
+Definir únicamente APIs públicas del contrato para consumo de Operations.
+
+Ejemplos:
+
+```text
+GET /contracts/{id}/services
+
+GET /contracts/{id}/locations
+
+GET /contracts/{id}/sla
+
+GET /contracts/{id}/schedule
+
+GET /contracts/{id}/status
+```
+
+Operations no accederá directamente a la base de datos del módulo Contract.
+
+---
+
+# Seguridad
+
+Mantener aislamiento entre módulos.
+
+Operations podrá consultar información contractual.
+
+No podrá modificar contratos.
+
+---
+
+# Calidad
+
+Todo debe:
+
+* mantener compatibilidad con CONTRACT-00 a CONTRACT-04;
+* reutilizar componentes y servicios existentes;
+* respetar DDD y Clean Architecture;
+* evitar dependencias circulares.
+
+---
+
+# Exclusiones
+
+No implementar todavía:
+
+* planificación automática;
+* asignación de técnicos;
+* optimización de rutas;
+* checklists;
+* inventario;
+* activos;
+* facturación.
+
+Estas funcionalidades pertenecerán al módulo **Operations**.
+
+---
+
+# Entregables
+
+Generar un documento técnico completo que incluya:
+
+1. Arquitectura de integración.
+2. Eventos de dominio.
+3. APIs públicas.
+4. Contratos de integración entre módulos.
+5. Reglas de negocio.
+6. Casos de uso.
+7. Estrategia de sincronización.
+8. Riesgos y mitigaciones.
+9. Preparación para Operations.
+
+---
+
+# Criterios de aceptación
+
+Al finalizar debe quedar completamente definido:
+
+* cómo un contrato genera una operación;
+* cómo una renovación impacta la operación;
+* cómo una extensión modifica la planificación;
+* cómo la cancelación detiene la ejecución;
+* cómo Operations consume información contractual sin acoplarse al dominio de Contract Management.
+
+---
+
+# Cierre del módulo Contract Management
+
+Al finalizar el documento, generar una sección titulada:
+
+## **"Contract Management – Arquitectura Congelada"**
+
+Esta sección debe:
+
+* resumir todas las decisiones arquitectónicas tomadas desde **CONTRACT-00** hasta **CONTRACT-05**;
+* listar las entidades principales;
+* listar los eventos de dominio;
+* listar las APIs públicas;
+* indicar las dependencias con Directory, Library, Quotations y Operations;
+* enumerar explícitamente las reglas que no podrán romperse en futuras evoluciones.
+
+Finalmente, generar una sección:
+
+## **"Contexto para el Módulo Operations"**
+
+Este será el documento de transición para comenzar el siguiente módulo de FACILIA, explicando qué información Operations recibirá de Contract Management, qué responsabilidades asumirá y cuáles permanecerán exclusivamente en el dominio contractual. De esta manera, el desarrollo de **Operations** podrá comenzar sin redefinir la arquitectura ya establecida.

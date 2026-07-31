@@ -1,0 +1,544 @@
+Continuando el roadmap, **LIB-06 y LIB-07** ya serían la capa avanzada de inteligencia y automatización documental. En este punto Library deja de ser solamente un gestor documental y empieza a convertirse en una plataforma de conocimiento operativo.
+
+---
+
+# PROMPT LIB-06 — OCR, Indexación y Búsqueda Inteligente Documental
+
+> **Rol**
+>
+> Actúa como un **Enterprise Software Architect especializado en Document Management Systems (DMS), búsqueda documental, OCR, indexación, PostgreSQL, inteligencia artificial aplicada a documentos y arquitectura DDD.**
+>
+> FACILIA Library ya cuenta con:
+>
+> * Gestión documental.
+> * Repositorios público y privado.
+> * Carpetas.
+> * Storage.
+> * Permisos.
+> * Auditoría.
+> * Versionado.
+> * Workflows.
+>
+> Esta etapa agrega capacidades de búsqueda avanzada sin modificar la arquitectura existente.
+
+---
+
+# Objetivo
+
+Permitir que FACILIA encuentre documentos no solamente por nombre, sino también por su contenido.
+
+Ejemplo:
+
+Un usuario busca:
+
+"garantía motor aspiradora industrial"
+
+y el sistema encuentra:
+
+```
+Manual_Aspiradora_X500.pdf
+
+Contenido:
+Garantía del motor:
+24 meses desde fecha de instalación.
+```
+
+---
+
+# Alcance
+
+Implementar:
+
+* OCR.
+* Extracción de texto.
+* Indexación.
+* Búsqueda Full Text.
+* Metadatos inteligentes.
+
+---
+
+# Pipeline documental
+
+Diseñar:
+
+```
+Upload documento
+
+↓
+
+Storage
+
+↓
+
+Procesamiento
+
+↓
+
+OCR
+
+↓
+
+Extracción texto
+
+↓
+
+Indexación
+
+↓
+
+Disponible para búsqueda
+```
+
+---
+
+# OCR
+
+Preparar arquitectura para soportar:
+
+* PDFs escaneados.
+* Imágenes.
+* Fotografías.
+* Documentos históricos.
+
+Extraer:
+
+* texto.
+* idioma.
+* páginas.
+* confianza OCR.
+
+---
+
+# Entidad
+
+Crear:
+
+## document_content_index
+
+Campos:
+
+* id
+* document_id
+* version_id
+* extracted_text
+* language
+* pages
+* indexed_at
+* processing_status
+
+---
+
+# Estados procesamiento
+
+```
+Pending
+
+Processing
+
+Completed
+
+Failed
+
+Retry
+```
+
+---
+
+# Búsqueda
+
+Implementar búsqueda por:
+
+## Metadata
+
+* nombre.
+* descripción.
+* tipo.
+* organización.
+
+## Contenido
+
+* texto extraído.
+* palabras.
+* frases.
+
+---
+
+# Ranking
+
+Preparar sistema de relevancia:
+
+Ejemplo:
+
+Mayor peso:
+
+1. Nombre del archivo.
+2. Título.
+3. Descripción.
+4. Contenido OCR.
+
+---
+
+# UI
+
+Agregar:
+
+## Buscador global
+
+Ejemplo:
+
+```
+Buscar documentos...
+
+"certificado instalación"
+```
+
+Resultados:
+
+```
+Certificado_Cliente.pdf
+
+Coincidencia:
+Página 3
+"Certificado de instalación..."
+```
+
+---
+
+# Preview avanzado
+
+Mostrar:
+
+* páginas.
+* texto encontrado.
+* resaltado de coincidencias.
+
+---
+
+# Integración FACILIA
+
+Buscar dentro de:
+
+* contratos.
+* presupuestos.
+* manuales.
+* órdenes de trabajo.
+* informes.
+
+---
+
+# Seguridad
+
+El buscador debe respetar:
+
+* Organización.
+* ACL.
+* Permisos.
+
+Nunca mostrar documentos sin autorización.
+
+---
+
+# Exclusiones
+
+No implementar todavía:
+
+* IA generativa.
+* Chat documental.
+* Firma digital.
+
+---
+
+# Entregables
+
+* Arquitectura OCR.
+* Migraciones.
+* Servicios.
+* APIs.
+* UI.
+* Documentación.
+
+---
+
+# Criterios aceptación
+
+Debe permitir:
+
+* Subir documento.
+* Procesarlo.
+* Extraer contenido.
+* Buscar por texto.
+* Respetar permisos.
+
+---
+
+# Contexto LIB-07
+
+Preparar integración con inteligencia artificial documental.
+
+---
+
+---
+
+# PROMPT LIB-07 — IA Documental y Asistente de Conocimiento FACILIA
+
+> **Rol**
+>
+> Actúa como un **Arquitecto de IA Empresarial** especializado en RAG, embeddings, búsqueda semántica, asistentes corporativos y sistemas documentales inteligentes.
+
+---
+
+# Contexto
+
+FACILIA Library ahora dispone de:
+
+* Documentos.
+* Versiones.
+* Permisos.
+* Workflows.
+* OCR.
+* Indexación.
+
+Esta etapa agrega inteligencia sobre el conocimiento almacenado.
+
+---
+
+# Objetivo
+
+Crear una capa de inteligencia que permita consultar la documentación empresarial de forma natural.
+
+---
+
+# Concepto
+
+Crear:
+
+## FACILIA Knowledge Layer
+
+Una capa sobre Library.
+
+No reemplaza documentos.
+
+Los interpreta.
+
+---
+
+# Casos de uso
+
+## Consulta operativa
+
+Usuario:
+
+"¿Cuál es el procedimiento para limpiar un piso técnico?"
+
+Sistema:
+
+Busca documentos autorizados.
+
+Responde:
+
+"Según el procedimiento LIM-004..."
+
+---
+
+## Consulta contractual
+
+Usuario:
+
+"¿Cuándo vence el contrato del cliente ABC?"
+
+Sistema:
+
+Consulta documentos relacionados.
+
+---
+
+## Consulta técnica
+
+Usuario:
+
+"¿Qué mantenimiento requiere este equipo?"
+
+Busca:
+
+* manuales.
+* fichas técnicas.
+* historial.
+
+---
+
+# Arquitectura RAG
+
+Diseñar:
+
+```
+Documentos
+
+↓
+
+Extracción texto
+
+↓
+
+Chunks
+
+↓
+
+Embeddings
+
+↓
+
+Vector Database
+
+↓
+
+Retriever
+
+↓
+
+LLM
+
+↓
+
+Respuesta
+```
+
+---
+
+# Seguridad
+
+La IA debe respetar exactamente los permisos existentes.
+
+Regla:
+
+Un usuario solamente puede preguntar sobre documentos que podría ver manualmente.
+
+---
+
+# Entidades
+
+Preparar:
+
+## document_embeddings
+
+Campos:
+
+* document_id
+* version_id
+* chunk
+* embedding
+* metadata
+
+---
+
+# Asistente
+
+Crear arquitectura:
+
+FACILIA Assistant
+
+Capaz de:
+
+* responder preguntas.
+* citar documentos.
+* indicar páginas.
+* mostrar fuentes.
+
+---
+
+# UI
+
+Agregar:
+
+## Chat documental
+
+Ejemplo:
+
+```
+Pregunta:
+
+¿Cuál es el SLA acordado con Cliente XYZ?
+
+
+Respuesta:
+
+El contrato establece 4 horas.
+
+Fuente:
+Contrato_XYZ.pdf
+Página 7
+```
+
+---
+
+# Automatizaciones futuras
+
+Preparar:
+
+* clasificación automática.
+* extracción de campos.
+* detección de vencimientos.
+* generación de resúmenes.
+
+---
+
+# Integraciones
+
+Aplicaciones:
+
+## Contratos
+
+Extraer:
+
+* fechas.
+* montos.
+* renovaciones.
+
+## Calidad
+
+Extraer:
+
+* procedimientos.
+* normas.
+
+## Operaciones
+
+Extraer:
+
+* instrucciones.
+
+---
+
+# Exclusiones
+
+No implementar:
+
+* entrenamiento propio de modelos.
+* modelos privados.
+* reemplazo humano.
+
+---
+
+# Entregables
+
+* Arquitectura IA.
+* Modelo datos.
+* Servicios.
+* APIs.
+* UI.
+* Documentación.
+
+---
+
+# Resultado después de LIB-07
+
+FACILIA Library evolucionará hacia:
+
+✅ Gestión documental
+✅ Control empresarial
+✅ Búsqueda inteligente
+✅ Conocimiento operativo
+✅ Asistente documental IA
+
+---
+
+Con LIB-07 se cerraría la visión completa de **FACILIA Library como Knowledge Management Platform**, pero sin bloquear el desarrollo del negocio principal (Clean, Care, Continuidad Operativa y contratos).

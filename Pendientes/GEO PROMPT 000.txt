@@ -1,0 +1,461 @@
+# PROMPT GEO-00 — Documento Funcional y Arquitectura del Módulo GEO
+
+> **Rol**
+>
+> Actúa como un **Principal Enterprise Software Architect** especializado en SaaS multi-tenant, Workforce Management, Field Service Management (FSM), Geolocation Platforms, Mobile Workforce, DDD y Clean Architecture.
+>
+> FACILIA incorpora un nuevo módulo independiente denominado:
+>
+> # GEO — Geopositioning & Workforce Control
+>
+> Este módulo será responsable de gestionar información geográfica operacional del personal utilizando dispositivos móviles provistos por la empresa.
+>
+> **No generar código.**
+> **No generar SQL.**
+> **No implementar funcionalidades.**
+>
+> El objetivo de esta etapa es definir el documento funcional y la arquitectura base del módulo.
+
+---
+
+# 1. Objetivo del módulo
+
+Definir una plataforma de geolocalización operacional que permita relacionar:
+
+```
+Empleado
++
+Dispositivo
++
+Ubicación GPS
++
+Horario laboral
++
+Orden de Trabajo
++
+Ubicación del Cliente
+```
+
+para validar la correcta ejecución de servicios.
+
+---
+
+# 2. Propósito empresarial
+
+GEO debe permitir que FACILIA pueda ofrecer:
+
+* trazabilidad operacional;
+* control de cumplimiento horario;
+* evidencia de presencia;
+* transparencia hacia clientes corporativos;
+* mejora de supervisión.
+
+---
+
+# 3. Principio arquitectónico
+
+GEO es un módulo independiente.
+
+## GEO NO administra:
+
+* contratos;
+* servicios;
+* órdenes;
+* planificación;
+* empleados;
+* clientes.
+
+Estos pertenecen a otros dominios.
+
+---
+
+## GEO administra:
+
+* dispositivos;
+* posiciones;
+* sesiones de seguimiento;
+* geocercas;
+* eventos geográficos;
+* validaciones de presencia.
+
+---
+
+# 4. Relación con otros módulos
+
+## Directory
+
+Fuente maestra de:
+
+* personas;
+* usuarios;
+* organizaciones;
+* dispositivos asignados.
+
+---
+
+## Operations
+
+Fuente de:
+
+* órdenes de trabajo;
+* horarios;
+* asignaciones;
+* ubicaciones requeridas.
+
+GEO devuelve:
+
+* eventos de presencia;
+* validaciones;
+* evidencias geográficas.
+
+---
+
+## Contract Management
+
+Fuente de:
+
+* ubicaciones del cliente;
+* sedes;
+* zonas autorizadas.
+
+---
+
+## Library
+
+Uso futuro para:
+
+* reportes;
+* evidencias;
+* documentación.
+
+---
+
+# 5. Casos de uso principales
+
+## Caso 1 — Inicio de jornada
+
+Empleado inicia su actividad.
+
+Sistema:
+
+* valida usuario;
+* identifica dispositivo;
+* inicia sesión GEO.
+
+---
+
+## Caso 2 — Registro de ubicación
+
+Durante la jornada:
+
+Sistema registra:
+
+* posición;
+* fecha;
+* hora;
+* precisión.
+
+---
+
+## Caso 3 — Llegada a cliente
+
+Empleado llega a una ubicación autorizada.
+
+Sistema genera:
+
+```
+EmployeeArrivedLocation
+```
+
+---
+
+## Caso 4 — Permanencia
+
+Sistema valida:
+
+* tiempo dentro de zona;
+* relación con tarea asignada.
+
+---
+
+## Caso 5 — Salida
+
+Sistema registra:
+
+```
+EmployeeLeftLocation
+```
+
+---
+
+## Caso 6 — Incumplimiento
+
+Ejemplo:
+
+Orden:
+
+08:00 Cliente A
+
+GPS:
+
+08:45 llegada
+
+Generar:
+
+```
+LateArrivalDetected
+```
+
+---
+
+# 6. Modelo conceptual inicial
+
+Definir los siguientes conceptos:
+
+---
+
+# Device
+
+Representa un dispositivo empresarial.
+
+Responsabilidad:
+
+* identificar celular;
+* asociarlo a usuario;
+* controlar estado.
+
+---
+
+# LocationRecord
+
+Representa una posición registrada.
+
+Datos:
+
+* latitud;
+* longitud;
+* precisión;
+* timestamp.
+
+---
+
+# TrackingSession
+
+Representa un período activo de seguimiento.
+
+Ejemplo:
+
+```
+Empleado:
+Juan Pérez
+
+Inicio:
+08:00
+
+Fin:
+17:00
+```
+
+---
+
+# Geofence
+
+Representa una zona autorizada.
+
+Ejemplos:
+
+* cliente;
+* oficina;
+* depósito.
+
+---
+
+# PresenceEvent
+
+Representa un evento geográfico.
+
+Ejemplos:
+
+* entrada;
+* salida;
+* permanencia.
+
+---
+
+# LocationValidation
+
+Resultado de comparar:
+
+```
+Ubicación esperada
++
+Ubicación real
++
+Horario
+```
+
+---
+
+# 7. Reglas de negocio iniciales
+
+Definir:
+
+---
+
+## Regla de jornada
+
+La captura de ubicación solo debe ejecutarse dentro de una sesión activa.
+
+---
+
+## Regla de geocerca
+
+Una persona se considera presente cuando:
+
+```
+Distancia GPS <= radio permitido
+```
+
+---
+
+## Regla de tarea
+
+Una ubicación solo se valida si existe relación con:
+
+* orden;
+* servicio;
+* asignación.
+
+---
+
+## Regla de auditoría
+
+Toda acción debe registrar:
+
+* usuario;
+* fecha;
+* organización.
+
+---
+
+# 8. Privacidad y seguridad
+
+Definir arquitectura considerando:
+
+* uso corporativo del dispositivo;
+* transparencia hacia empleados;
+* permisos por rol;
+* acceso restringido;
+* trazabilidad.
+
+El sistema debe permitir:
+
+* activar/desactivar seguimiento;
+* definir horarios;
+* controlar quién visualiza ubicaciones.
+
+---
+
+# 9. Multi-tenancy
+
+El módulo debe soportar:
+
+* múltiples organizaciones;
+* separación de datos;
+* permisos por organización;
+* configuración independiente.
+
+---
+
+# 10. Arquitectura técnica esperada
+
+Definir:
+
+* Domain Layer.
+* Application Layer.
+* Infrastructure Layer.
+* API Layer.
+* Integraciones externas.
+
+Mantener compatibilidad con la arquitectura Charlie/FACILIA.
+
+---
+
+# 11. Eventos de dominio iniciales
+
+Definir conceptualmente:
+
+```
+TrackingSessionStarted
+
+TrackingSessionEnded
+
+LocationRecorded
+
+EmployeeArrivedLocation
+
+EmployeeLeftLocation
+
+PresenceValidated
+
+LocationDeviationDetected
+```
+
+---
+
+# 12. MVP recomendado
+
+La primera versión debe permitir:
+
+✅ registrar dispositivos
+✅ registrar ubicación
+✅ asociar usuario-dispositivo
+✅ crear geocercas
+✅ validar presencia básica
+✅ cruzar con órdenes asignadas
+
+---
+
+# 13. Fuera de alcance
+
+No implementar:
+
+* rutas;
+* navegación;
+* optimización;
+* IA;
+* reconocimiento facial;
+* biometría;
+* seguimiento permanente;
+* gestión de flota.
+
+---
+
+# Entregables
+
+Generar:
+
+1. Documento funcional completo.
+2. Arquitectura del módulo GEO.
+3. Modelo conceptual.
+4. Límites del dominio.
+5. Integraciones.
+6. Eventos.
+7. Roadmap GEO-01 a GEO-CLOSE.
+8. Decisiones arquitectónicas iniciales.
+
+---
+
+# Criterio de aceptación
+
+Al finalizar debe quedar claramente definido:
+
+* qué responsabilidad tiene GEO;
+* qué responsabilidades pertenecen a Operations y Directory;
+* cómo se cruza ubicación con tareas;
+* cómo se protege la información;
+* cómo evolucionará el módulo.
+
+---
+
+**Resultado esperado:** documento base oficial del módulo **GEO — Geopositioning & Workforce Control v1.0**.

@@ -1,0 +1,441 @@
+PROMPT LIB-00 — Arquitectura Funcional del Módulo Library
+
+Rol
+
+Actúa como un Arquitecto de Software Senior, especialista en DDD, Clean Architecture, Next.js 15, React 19, TypeScript, Supabase, PostgreSQL y la arquitectura Charlie Compliant utilizada en FACILIA.
+
+No generes código.
+
+En esta etapa debes diseñar completamente el módulo Library para que posteriormente pueda implementarse en varias etapas sin necesidad de rediseñar la arquitectura.
+
+Contexto
+
+FACILIA es un ERP/CMMS desarrollado sobre:
+
+Next.js App Router
+React
+TypeScript Strict
+TailwindCSS
+Supabase
+PostgreSQL
+Arquitectura DDD
+Clean Architecture
+Repository Pattern
+Casos de Uso
+RLS
+Charlie Compliant
+
+Todos los módulos deben ser independientes, desacoplados y reutilizables.
+
+El módulo Library será transversal a todo FACILIA.
+
+No pertenece al módulo Comercial.
+
+No pertenece al módulo Personas.
+
+No pertenece al módulo Organizaciones.
+
+Será utilizado por todos ellos.
+
+Objetivo
+
+Diseñar una Biblioteca documental empresarial para almacenar cualquier tipo de archivo.
+
+Ejemplos
+
+PDF
+DOCX
+XLSX
+JPG
+PNG
+ZIP
+DWG
+MP4
+etc.
+
+La biblioteca será utilizada por cualquier módulo del sistema.
+
+Requerimientos funcionales
+
+Diseñar la arquitectura para soportar:
+
+Repositorios
+
+Existen únicamente dos repositorios.
+
+Biblioteca Pública
+
+Visible para las organizaciones autorizadas.
+
+Ejemplos
+
+Manuales
+Catálogos
+Fichas técnicas
+Procedimientos
+Documentación comercial
+Biblioteca Privada
+
+Visible únicamente para la organización propietaria.
+
+Ejemplos
+
+Contratos
+Facturas
+Informes
+Fotos
+Auditorías
+RRHH
+Carpetas
+
+Cada repositorio admite carpetas.
+
+Las carpetas pueden contener
+
+carpetas hijas
+documentos
+
+No existe límite de profundidad.
+
+Documentos
+
+Cada documento debe contemplar como mínimo
+
+nombre
+descripción
+formato
+tamaño
+tipo MIME
+organización propietaria
+repositorio
+carpeta
+fecha de creación
+fecha de modificación
+usuario creador
+usuario modificador
+estado
+Asociación con otros módulos
+
+La Library debe poder asociar documentos a cualquier entidad del sistema.
+
+Ejemplos
+
+Organización
+
+Cliente
+
+Persona
+
+Proveedor
+
+Presupuesto
+
+Contrato
+
+Activo
+
+Orden de Trabajo
+
+Ticket
+
+Factura
+
+Cotización
+
+Proyecto
+
+No debe duplicar archivos.
+
+Un mismo documento puede asociarse a múltiples entidades.
+
+Tabla principal
+
+La pantalla principal utilizará exactamente la tabla estándar de FACILIA.
+
+Columnas
+
+Icono
+Nombre
+Descripción
+Formato
+Tamaño
+Público
+Organización
+Fecha
+Usuario
+
+Debe soportar
+
+búsqueda
+ordenamiento
+filtros
+selección múltiple
+Carga de archivos
+
+Debe soportar
+
+Drag & Drop
+Selector de archivos
+Carga múltiple
+Vista previa
+
+Definir arquitectura para preview de
+
+PDF
+imágenes
+
+El resto podrá descargarse.
+
+Seguridad
+
+El documento puede ser
+
+Público
+Privado
+
+Además debe poder compartirse posteriormente por
+
+organización
+usuario
+rol
+
+En esta primera versión únicamente dejar preparada la arquitectura.
+
+Permisos
+
+Diseñar un modelo ACL desacoplado.
+
+No implementarlo.
+
+Debe poder crecer hacia
+
+lectura
+escritura
+eliminación
+compartir
+propietario
+Versionado
+
+No implementar.
+
+Únicamente dejar preparada la arquitectura para soportar versiones futuras.
+
+Auditoría
+
+Diseñar el modelo para registrar
+
+visualizaciones
+descargas
+modificaciones
+eliminaciones
+
+No implementar.
+
+Integración con Storage
+
+La arquitectura debe contemplar
+
+Supabase Storage
+
+Buckets separados
+
+public-library
+private-library
+
+Definir estrategia de almacenamiento.
+
+Modelo DDD
+
+Diseñar completamente
+
+Entidades
+
+Ejemplo
+
+Document
+
+Folder
+
+Repository
+
+DocumentReference
+
+Tag
+
+ACL
+
+etc.
+
+Value Objects
+
+Definir cuáles corresponden.
+
+Repositories
+
+Definir interfaces.
+
+Casos de uso
+
+Enumerar todos.
+
+Ejemplos
+
+UploadDocument
+
+DeleteDocument
+
+MoveDocument
+
+SearchDocument
+
+DownloadDocument
+
+LinkDocument
+
+etc.
+
+Servicios de dominio
+
+Definir si son necesarios.
+
+Modelo ER
+
+Diseñar todas las tablas necesarias.
+
+No escribir SQL.
+
+Solo el modelo conceptual.
+
+APIs
+
+Diseñar todos los endpoints REST.
+
+Ejemplo
+
+GET
+
+POST
+
+PATCH
+
+DELETE
+
+Uploads
+
+Downloads
+
+Preview
+
+Búsquedas
+
+UI
+
+Diseñar la experiencia de usuario.
+
+Debe incluir
+
+Biblioteca
+
+Carpetas
+
+Tabla
+
+Preview
+
+Upload
+
+Toolbar
+
+Filtros
+
+Navegación
+
+Proponer estructura.
+
+Ejemplo
+
+Biblioteca
+
+    Pública
+
+    Privada
+Integración con FACILIA
+
+Explicar cómo cualquier módulo podrá abrir la Library para seleccionar documentos sin conocer su implementación.
+
+Ejemplo
+
+Adjuntar documentos
+
+Seleccionar documento existente
+
+Crear vínculo
+
+Exclusiones
+
+No diseñar todavía
+
+OCR
+
+Firma Digital
+
+Workflow
+
+Contratos
+
+Renovaciones
+
+Alertas
+
+Aprobaciones
+
+IA
+
+Versionado
+
+Watermarks
+
+Estas funcionalidades serán desarrolladas en etapas futuras.
+
+Entregables
+
+Generar un documento técnico completo con
+
+Objetivos
+Casos de uso
+Arquitectura
+DDD
+Modelo ER
+Navegación
+APIs
+Storage
+Seguridad
+Permisos
+Integración
+Roadmap técnico para implementación.
+
+No escribir código.
+
+No escribir SQL.
+
+No crear componentes React.
+
+No generar archivos.
+
+Solo arquitectura funcional y técnica.
+
+Criterios de aceptación
+
+La arquitectura debe permitir que en las siguientes etapas se implemente el módulo sin modificar el diseño.
+
+Debe ser escalable.
+
+Debe seguir los principios DDD.
+
+Debe ser Charlie Compliant.
+
+Debe ser consistente con el resto de FACILIA.
+
+Instrucción final
+
+Cuando finalices el documento, genera un apartado llamado "Contexto para LIB-01", resumiendo toda la arquitectura y dejando un prompt de continuidad para que otro agente pueda comenzar inmediatamente la implementación del Dominio, Base de Datos y Backend, sin perder contexto y sin repetir el análisis realizado en esta etapa.

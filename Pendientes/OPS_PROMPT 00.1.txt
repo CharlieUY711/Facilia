@@ -1,0 +1,482 @@
+# PROMPT OPS-00.1 — Integración Arquitectónica del Módulo Operations con FACILIA
+
+> **Rol**
+>
+> Actúa como un **Enterprise Solution Architect** especializado en ERP, Facility Management (FM), Field Service Management (FSM), DDD, Event-Driven Architecture y Clean Architecture.
+>
+> Este documento continúa **OPS-00**.
+>
+> **No generar código.**
+>
+> **No generar SQL.**
+>
+> **No generar componentes React.**
+>
+> El objetivo es definir cómo **Operations** se integra con el resto de FACILIA y establecer los contratos de integración que permanecerán estables durante la evolución del sistema.
+
+---
+
+# Contexto
+
+El módulo **Operations** ya posee una arquitectura funcional definida en **OPS-00**.
+
+Ahora debe definirse cómo interactúa con todos los módulos existentes y futuros de FACILIA.
+
+Operations será el motor de ejecución de la plataforma.
+
+No será propietario de la información comercial, contractual o documental.
+
+---
+
+# Objetivo
+
+Diseñar la arquitectura de integración completa entre Operations y los demás módulos.
+
+Operations debe ser capaz de consumir información de otros dominios sin generar dependencias fuertes.
+
+Toda integración deberá realizarse mediante APIs públicas, servicios de aplicación o eventos de dominio.
+
+---
+
+# Arquitectura General
+
+La arquitectura conceptual de FACILIA será:
+
+```text
+DIRECTORY
+    │
+    ▼
+LEADS
+    │
+    ▼
+QUOTATIONS
+    │
+    ▼
+CONTRACT MANAGEMENT
+    │
+    ▼
+OPERATIONS
+    │
+    ▼
+LIBRARY
+    │
+    ▼
+FINANCE (Futuro)
+```
+
+Cada módulo mantiene la propiedad de sus datos.
+
+Operations nunca duplicará información.
+
+---
+
+# Principios de integración
+
+Definir como reglas obligatorias:
+
+1. Operations consume información.
+2. Operations no modifica contratos.
+3. Operations no modifica organizaciones.
+4. Operations no almacena documentos.
+5. Operations nunca genera cotizaciones.
+6. Operations nunca crea clientes.
+7. Toda ejecución debe poder rastrearse hasta un contrato.
+
+---
+
+# Integración con Directory
+
+Directory es la fuente oficial para:
+
+* Organizaciones.
+* Personas.
+* Empleados.
+* Equipos.
+* Ubicaciones.
+* Relaciones.
+
+Operations únicamente referencia estas entidades.
+
+Nunca crear copias.
+
+---
+
+# Integración con Contract Management
+
+Esta es la integración más importante.
+
+Operations deberá consumir únicamente:
+
+## Contrato
+
+* estado;
+* vigencia;
+* organización.
+
+## Servicios
+
+* frecuencia;
+* alcance;
+* horarios;
+* SLA.
+
+## Ubicaciones
+
+* sedes;
+* sectores.
+
+## Restricciones
+
+* horarios permitidos;
+* personal mínimo;
+* recursos necesarios.
+
+Operations nunca modificará el contrato.
+
+---
+
+# Integración con Library
+
+Library es propietaria absoluta del contenido documental.
+
+Operations podrá:
+
+* adjuntar evidencia;
+* consultar documentos;
+* abrir archivos;
+* vincular fotografías;
+* asociar informes.
+
+Nunca acceder directamente al Storage.
+
+---
+
+# Integración con Finance (Futuro)
+
+Preparar eventos para:
+
+* servicios extraordinarios;
+* horas adicionales;
+* penalizaciones;
+* bonificaciones;
+* cumplimiento SLA.
+
+No implementar lógica financiera.
+
+---
+
+# Integración con Assets (Futuro)
+
+Preparar el diseño para consumir:
+
+* equipos;
+* maquinaria;
+* herramientas;
+* vehículos.
+
+Operations únicamente los utilizará.
+
+No administrará inventario.
+
+---
+
+# Integración con Mobile (Futuro)
+
+Preparar interfaces para una futura aplicación móvil.
+
+Casos previstos:
+
+* recepción de órdenes;
+* inicio de tareas;
+* checklist;
+* carga de fotografías;
+* firma del cliente;
+* cierre.
+
+No implementar.
+
+---
+
+# Integración con IA (Futuro)
+
+Preparar eventos para:
+
+* optimización de rutas;
+* predicción de carga de trabajo;
+* planificación inteligente;
+* análisis de incidencias.
+
+No implementar.
+
+---
+
+# Modelo de Integración
+
+Diseñar interfaces conceptuales entre módulos.
+
+Ejemplo:
+
+```text
+Contract Management
+
+↓
+
+OperationalPlanFactory
+
+↓
+
+Operations
+```
+
+Operations nunca debe conocer la estructura interna de Contract Management.
+
+---
+
+# Eventos de dominio
+
+Definir los eventos consumidos.
+
+Como mínimo:
+
+```text
+ContractActivated
+
+ContractRenewed
+
+ContractExtended
+
+ContractCancelled
+
+ContractExpired
+
+ContractServiceUpdated
+
+ContractLocationUpdated
+```
+
+Definir también los eventos publicados por Operations.
+
+Ejemplo:
+
+```text
+OperationalPlanCreated
+
+WorkOrderCreated
+
+ExecutionStarted
+
+ExecutionCompleted
+
+ExecutionValidated
+
+IncidentRegistered
+
+EvidenceAttached
+
+SLAExceeded
+
+WorkOrderClosed
+```
+
+---
+
+# APIs públicas consumidas
+
+Definir las APIs conceptuales que Operations utilizará.
+
+Ejemplos:
+
+```text
+GET /contracts/{id}
+
+GET /contracts/{id}/services
+
+GET /contracts/{id}/locations
+
+GET /contracts/{id}/schedule
+
+GET /contracts/{id}/sla
+
+GET /directory/organizations/{id}
+
+GET /library/documents/{id}
+```
+
+Operations nunca consultará tablas directamente.
+
+---
+
+# APIs públicas expuestas
+
+Definir las APIs que otros módulos consumirán.
+
+Ejemplos:
+
+```text
+GET /operations/plans
+
+GET /operations/work-orders
+
+GET /operations/calendar
+
+GET /operations/dashboard
+
+GET /operations/incidents
+```
+
+---
+
+# Responsabilidades por módulo
+
+Generar una matriz RACI indicando qué módulo es responsable de cada concepto:
+
+* Cliente.
+* Organización.
+* Contrato.
+* Servicio.
+* Plan Operativo.
+* Orden de Trabajo.
+* Evidencia.
+* Documento.
+* SLA.
+* Facturación.
+* Incidencia.
+
+Debe quedar absolutamente claro quién es el propietario de cada dato.
+
+---
+
+# Seguridad
+
+Diseñar la estrategia de permisos.
+
+Ejemplos:
+
+Supervisor Operativo.
+
+Planificador.
+
+Técnico.
+
+Inspector.
+
+Administrador.
+
+Director.
+
+Indicar qué operaciones puede realizar cada uno.
+
+---
+
+# Auditoría
+
+Todas las acciones deberán registrar:
+
+* usuario;
+* fecha;
+* organización;
+* operación realizada;
+* entidad afectada.
+
+Preparar integración futura con un Audit Log corporativo.
+
+---
+
+# Estrategia de sincronización
+
+Definir cuándo Operations debe:
+
+* consultar datos en tiempo real;
+* utilizar eventos;
+* almacenar referencias.
+
+Justificar cada decisión.
+
+---
+
+# Riesgos arquitectónicos
+
+Identificar:
+
+* dependencias circulares;
+* duplicación de datos;
+* inconsistencias;
+* acoplamiento entre módulos;
+* sincronización de estados.
+
+Proponer mitigaciones.
+
+---
+
+# Escalabilidad
+
+Diseñar pensando en:
+
+* múltiples organizaciones;
+* miles de contratos;
+* decenas de miles de órdenes;
+* cientos de usuarios concurrentes;
+* futuras sedes internacionales.
+
+---
+
+# Entregables
+
+Generar un documento técnico completo que incluya:
+
+1. Arquitectura de integración.
+2. Interfaces entre módulos.
+3. APIs públicas.
+4. Eventos de dominio.
+5. Matriz RACI.
+6. Estrategia de sincronización.
+7. Seguridad.
+8. Auditoría.
+9. Riesgos.
+10. Decisiones arquitectónicas.
+
+---
+
+# Restricciones
+
+No generar:
+
+* código.
+* SQL.
+* React.
+* APIs implementadas.
+
+Únicamente arquitectura.
+
+---
+
+# Criterios de aceptación
+
+Al finalizar debe quedar completamente definido:
+
+* cómo Operations consume información del resto de FACILIA;
+* cómo expone su propia información;
+* qué módulo es propietario de cada dato;
+* cómo se sincronizan los estados entre dominios;
+* cómo evitar dependencias y duplicaciones.
+
+---
+
+# Contexto para OPS-01
+
+Finalizar el documento con una sección titulada:
+
+## **"Contexto para OPS-01"**
+
+Debe contener un resumen ejecutivo para el equipo de desarrollo indicando:
+
+* entidades que deberán implementarse;
+* agregados principales;
+* value objects;
+* repositorios;
+* casos de uso;
+* APIs previstas;
+* migraciones esperadas;
+* restricciones arquitectónicas obligatorias.
+
+Este contexto será utilizado como base para implementar el **backend completo del módulo Operations** en la siguiente etapa.

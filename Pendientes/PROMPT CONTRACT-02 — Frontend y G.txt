@@ -1,0 +1,551 @@
+# PROMPT CONTRACT-02 — Frontend y Gestión del Ciclo Contractual
+
+> **Rol**
+>
+> Actúa como un **Senior Frontend Architect** especializado en Next.js 15 App Router, React 19, TypeScript Strict, TailwindCSS, UX para aplicaciones empresariales (ERP/CRM/CLM), Clean Architecture y diseño Charlie Compliant.
+>
+> El backend del módulo **Contract Management** ya fue implementado en **CONTRACT-01**.
+>
+> **No modificar la base de datos.**
+>
+> **No modificar APIs existentes.**
+>
+> **No modificar el dominio.**
+>
+> Implementar únicamente el frontend.
+
+---
+
+# Objetivo
+
+Construir la interfaz completa del módulo **Contract Management** integrada visual y funcionalmente con FACILIA.
+
+El módulo debe seguir el mismo diseño utilizado en Directory, Quotations y Library:
+
+* Layout consistente.
+* Componentes reutilizables.
+* Tabla estándar.
+* Panel lateral.
+* Formularios homogéneos.
+* Navegación uniforme.
+
+---
+
+# Principios UX
+
+El usuario debe entender rápidamente:
+
+* qué contratos existen;
+* de dónde provienen;
+* en qué estado están;
+* cuándo vencen;
+* qué servicios incluyen;
+* qué documentos tienen asociados;
+* cuál es su historial.
+
+El contrato es el centro del ciclo comercial y operativo.
+
+---
+
+# Navegación
+
+Agregar el módulo:
+
+```text
+FACILIA
+
+Comercial
+    Leads
+    Cotizaciones
+    Contratos
+
+Operaciones
+
+Biblioteca
+
+Administración
+```
+
+---
+
+# Pantallas
+
+Implementar las siguientes vistas.
+
+---
+
+# 1. Listado de Contratos
+
+Ruta:
+
+```text
+/contracts
+```
+
+Vista principal tipo tabla.
+
+Columnas:
+
+* Número
+* Cliente
+* Origen
+* Estado
+* Inicio
+* Fin
+* Próximo vencimiento
+* Valor
+* Moneda
+* Responsable
+* Fecha creación
+
+Acciones:
+
+* Ver
+* Editar
+* Timeline
+* Documentos
+* Renovar
+* Extender
+* Cancelar
+
+---
+
+# Búsqueda
+
+Implementar búsqueda por:
+
+* Número
+* Cliente
+* Organización
+* Estado
+* Servicio contratado
+
+---
+
+# Filtros
+
+Filtros rápidos:
+
+* Activos
+* Próximos a vencer
+* Renovados
+* Cancelados
+* Borradores
+* Pendientes de firma
+
+---
+
+# Ordenamiento
+
+Ordenar por:
+
+* Número
+* Fecha
+* Cliente
+* Inicio
+* Fin
+* Estado
+
+---
+
+# Indicadores visuales
+
+Mostrar badges.
+
+Ejemplo:
+
+🟢 Activo
+
+🟡 Próximo a vencer
+
+🔵 Renovado
+
+🔴 Cancelado
+
+⚪ Borrador
+
+---
+
+# 2. Detalle del Contrato
+
+Ruta:
+
+```text
+/contracts/[id]
+```
+
+Organizar mediante pestañas.
+
+---
+
+## Información General
+
+Mostrar:
+
+* Cliente
+* Organización
+* Estado
+* Número
+* Origen
+* Valor
+* Moneda
+* Inicio
+* Fin
+* Renovación
+* Responsable
+
+---
+
+## Servicios
+
+Tabla:
+
+* Servicio
+* Ubicación
+* Frecuencia
+* Cantidad
+* Valor
+
+---
+
+## Documentos
+
+Consumir Library.
+
+Mostrar:
+
+* Nombre
+* Tipo
+* Fecha
+* Usuario
+
+Acciones:
+
+* Abrir
+* Descargar
+* Adjuntar
+* Desvincular
+
+No implementar almacenamiento propio.
+
+---
+
+## Timeline
+
+Mostrar eventos cronológicos.
+
+Ejemplo:
+
+```text
+Contrato creado
+
+↓
+
+Aprobado
+
+↓
+
+Firma pendiente
+
+↓
+
+Firmado
+
+↓
+
+Activo
+
+↓
+
+Renovación
+```
+
+---
+
+## Renovaciones
+
+Mostrar:
+
+Contrato original
+
+↓
+
+Renovación 2027
+
+↓
+
+Renovación 2028
+
+Visualizar árbol de versiones contractuales.
+
+---
+
+## Extensiones
+
+Mostrar todas las extensiones asociadas.
+
+Ejemplo:
+
+* Nueva sede
+* Servicio adicional
+* Cambio de frecuencia
+
+---
+
+# 3. Crear Contrato
+
+Importante.
+
+No debe existir:
+
+```text
+Nuevo Contrato
+```
+
+Libre.
+
+Debe existir:
+
+```text
+Generar contrato desde cotización
+```
+
+El formulario debe recibir:
+
+QuotationId
+
+Validar:
+
+Estado permitido.
+
+---
+
+# 4. Crear Renovación
+
+Botón:
+
+Renovar contrato.
+
+Asistente:
+
+Seleccionar:
+
+* nueva vigencia;
+* ajustes;
+* observaciones.
+
+---
+
+# 5. Crear Extensión
+
+Botón:
+
+Extender contrato.
+
+Permitir agregar:
+
+* nuevos servicios;
+* nuevas ubicaciones;
+* nuevas condiciones.
+
+---
+
+# Dashboard
+
+Crear indicadores.
+
+Cards:
+
+Contratos activos
+
+Próximos a vencer
+
+Pendientes de firma
+
+Renovaciones este mes
+
+Valor total contratado
+
+---
+
+# Calendario
+
+Vista opcional.
+
+Mostrar:
+
+Vencimientos.
+
+Renovaciones.
+
+---
+
+# Integración con Library
+
+Cada contrato debe mostrar un panel documental.
+
+No almacenar archivos.
+
+Consumir Library.
+
+---
+
+# Integración con Quotations
+
+Mostrar:
+
+Cotización origen.
+
+Botón:
+
+Abrir cotización.
+
+---
+
+# Integración futura con Operations
+
+Preparar botón:
+
+```text
+Ver Plan Operativo
+```
+
+Aunque aún no exista.
+
+---
+
+# Componentes reutilizables
+
+Crear:
+
+ContractTable
+
+ContractCard
+
+ContractHeader
+
+ContractTimeline
+
+ContractServicesTable
+
+ContractStatusBadge
+
+ContractOriginBadge
+
+ContractRenewalTree
+
+ContractDocumentsPanel
+
+ContractSummary
+
+ContractValueCard
+
+ContractFilters
+
+---
+
+# Diseño
+
+Utilizar:
+
+* TailwindCSS
+* Componentes reutilizables
+* Responsive
+* Dark Mode compatible
+* Diseño consistente con FACILIA
+
+---
+
+# Accesibilidad
+
+Cumplir:
+
+* navegación por teclado;
+* contraste adecuado;
+* etiquetas ARIA;
+* focus visible.
+
+---
+
+# Rendimiento
+
+Implementar:
+
+* paginación;
+* carga diferida;
+* skeletons;
+* búsqueda optimizada.
+
+---
+
+# Exclusiones
+
+No implementar:
+
+* firma digital;
+* OCR;
+* IA;
+* facturación;
+* generación automática de PDF.
+
+---
+
+# Calidad
+
+Todo debe:
+
+Compilar.
+
+Sin warnings.
+
+Sin `any`.
+
+Sin código duplicado.
+
+Sin componentes muertos.
+
+---
+
+# Entregables
+
+Generar:
+
+* Todas las páginas.
+* Todos los componentes.
+* Hooks.
+* Tipos.
+* Formularios.
+* Validaciones del frontend.
+* Navegación.
+* Integración con APIs existentes.
+
+No modificar backend.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+* Consultar contratos.
+* Ver detalle.
+* Navegar el timeline.
+* Consultar servicios.
+* Consultar documentos de Library.
+* Crear contratos desde cotizaciones aprobadas.
+* Crear renovaciones.
+* Crear extensiones.
+* Filtrar.
+* Buscar.
+* Navegar entre módulos.
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar que toda la interfaz compile sin errores.
+2. Listar todos los archivos creados.
+3. Confirmar que no se modificó el backend de **CONTRACT-01**.
+4. Generar la sección **"Contexto para CONTRACT-03"** con un resumen técnico para implementar la gestión avanzada de **vencimientos, renovaciones, extensiones, alertas y seguimiento contractual**, reutilizando toda la infraestructura ya construida.

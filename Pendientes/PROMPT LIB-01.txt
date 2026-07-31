@@ -1,0 +1,488 @@
+# PROMPT LIB-01 — Implementación del Dominio, Base de Datos y Backend
+
+> **Rol**
+>
+> Actúa como un **Senior Software Engineer** especializado en DDD, Clean Architecture, Next.js 15 App Router, React 19, TypeScript Strict, Supabase y PostgreSQL.
+>
+> Este proyecto forma parte de **FACILIA** y debe respetar completamente la arquitectura Charlie Compliant existente.
+
+---
+
+# Contexto
+
+Ya existe el documento **LIB-00**, donde quedó definida toda la arquitectura funcional del módulo Library.
+
+Esta etapa consiste exclusivamente en implementar el **backend y el dominio**.
+
+No diseñes nuevamente la arquitectura.
+
+No cambies el modelo definido.
+
+Simplemente impleméntalo.
+
+---
+
+# Objetivo
+
+Construir el núcleo del módulo Library completamente funcional.
+
+Debe quedar compilando.
+
+Debe ser reutilizable.
+
+Debe respetar DDD.
+
+---
+
+# Alcance
+
+Esta etapa incluye únicamente
+
+* Dominio
+* SQL
+* Supabase Storage
+* Backend
+* APIs
+* Casos de uso
+* Repositorios
+* Validaciones
+
+No implementar frontend.
+
+---
+
+# Stack
+
+Next.js App Router
+
+TypeScript Strict
+
+Supabase
+
+PostgreSQL
+
+Server Actions
+
+DDD
+
+Repository Pattern
+
+Charlie Compliant
+
+---
+
+# Storage
+
+Crear la infraestructura para dos buckets
+
+```text
+public-library
+
+private-library
+```
+
+No hardcodear nombres.
+
+Crear constantes.
+
+Crear servicios.
+
+---
+
+# Base de datos
+
+Generar las migraciones SQL necesarias.
+
+Como mínimo:
+
+## library_documents
+
+Debe almacenar
+
+* id
+* organization_id
+* folder_id
+* repository_type
+* storage_bucket
+* storage_path
+* file_name
+* original_name
+* extension
+* mime_type
+* file_size
+* title
+* description
+* visibility
+* created_by
+* updated_by
+* created_at
+* updated_at
+* deleted_at
+
+---
+
+## library_folders
+
+Debe soportar
+
+* carpetas padre
+* organización
+* repositorio
+* nombre
+* descripción
+* orden
+* timestamps
+
+---
+
+## library_document_links
+
+Tabla polimórfica.
+
+Debe permitir relacionar un documento con cualquier entidad.
+
+Campos mínimos
+
+* document_id
+* entity_type
+* entity_id
+* created_at
+* created_by
+
+Ejemplos
+
+Ticket
+
+Organization
+
+Person
+
+Quotation
+
+Contract
+
+Asset
+
+Invoice
+
+Project
+
+etc.
+
+---
+
+No implementar ACL todavía.
+
+No implementar versiones.
+
+---
+
+# Dominio
+
+Crear las entidades
+
+Document
+
+Folder
+
+DocumentReference
+
+Repository
+
+RepositoryType
+
+Visibility
+
+DocumentType
+
+Value Objects necesarios.
+
+---
+
+# Repositories
+
+Crear interfaces
+
+DocumentRepository
+
+FolderRepository
+
+StorageRepository
+
+---
+
+Crear implementación Supabase.
+
+---
+
+# Casos de uso
+
+Implementar
+
+CreateFolder
+
+RenameFolder
+
+DeleteFolder
+
+UploadDocument
+
+DeleteDocument
+
+MoveDocument
+
+SearchDocuments
+
+DownloadDocument
+
+LinkDocument
+
+UnlinkDocument
+
+GetDocument
+
+ListDocuments
+
+ListFolders
+
+---
+
+Cada caso de uso debe vivir en Application.
+
+---
+
+# Infraestructura
+
+Crear
+
+SupabaseDocumentRepository
+
+SupabaseFolderRepository
+
+SupabaseStorageRepository
+
+---
+
+No acceder directamente desde los endpoints.
+
+Siempre utilizar Use Cases.
+
+---
+
+# APIs
+
+Crear endpoints REST.
+
+Ejemplos
+
+GET /api/library/documents
+
+POST /api/library/documents
+
+PATCH /api/library/documents/:id
+
+DELETE /api/library/documents/:id
+
+GET /api/library/folders
+
+POST /api/library/folders
+
+PATCH /api/library/folders/:id
+
+DELETE /api/library/folders/:id
+
+POST /api/library/upload
+
+GET /api/library/download/:id
+
+POST /api/library/link
+
+DELETE /api/library/link
+
+---
+
+Todos deben utilizar
+
+Use Cases
+
+Nunca acceder directamente al repositorio.
+
+---
+
+# Validaciones
+
+Validar
+
+archivo existente
+
+extensión
+
+tamaño
+
+nombre
+
+organización
+
+repositorio
+
+carpeta
+
+---
+
+Preparar el sistema para restricciones futuras.
+
+---
+
+# Seguridad
+
+Implementar
+
+Organization Isolation
+
+Soft Delete
+
+Timestamps
+
+UUID
+
+No implementar todavía ACL.
+
+---
+
+# Storage
+
+Implementar servicio para
+
+Upload
+
+Delete
+
+Move
+
+Download URL
+
+Signed URL
+
+No implementar preview.
+
+---
+
+# Estructura de carpetas
+
+Seguir la estructura Charlie.
+
+Ejemplo
+
+```text
+modules/
+
+   library/
+
+      domain/
+
+      application/
+
+      infrastructure/
+
+      presentation/
+```
+
+Separar correctamente
+
+Entities
+
+Repositories
+
+Use Cases
+
+DTO
+
+Services
+
+Types
+
+Enums
+
+---
+
+# Calidad
+
+Todo debe compilar.
+
+No usar any.
+
+No dejar TODO.
+
+No dejar código muerto.
+
+No dejar mocks.
+
+No usar datos de prueba.
+
+No duplicar lógica.
+
+---
+
+# Entregables
+
+Generar todos los archivos completos.
+
+No omitir implementaciones.
+
+No generar pseudocódigo.
+
+No explicar.
+
+Generar únicamente código.
+
+---
+
+# Exclusiones
+
+No implementar
+
+Frontend
+
+Tabla
+
+Drag & Drop
+
+Preview
+
+ACL
+
+Versionado
+
+Auditoría
+
+OCR
+
+Firma digital
+
+Contratos
+
+---
+
+# Criterios de aceptación
+
+El módulo debe permitir
+
+* Crear carpetas.
+* Eliminar carpetas.
+* Subir documentos.
+* Descargar documentos.
+* Buscar documentos.
+* Asociar documentos con cualquier entidad.
+* Almacenar archivos en Supabase Storage.
+* Compilar sin errores.
+
+---
+
+# Instrucción final
+
+Cuando finalices:
+
+1. Verifica que todo compile.
+2. Lista los archivos creados.
+3. Indica las migraciones SQL generadas.
+4. Genera un apartado llamado **"Contexto para LIB-02"** con un resumen técnico y un prompt de continuidad para implementar la interfaz de usuario (tabla estándar de FACILIA, drag & drop, carga múltiple, navegación por carpetas, preview de imágenes y PDF, filtros y búsqueda), sin volver a analizar la arquitectura ni modificar el backend implementado.

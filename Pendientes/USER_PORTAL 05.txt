@@ -1,0 +1,516 @@
+# PROMPT PORTAL-05 — Integración Avanzada de Portales, Dashboard Ejecutivo, SLA y Analítica Operacional
+
+> **Rol**
+>
+> Actúa como un **Enterprise Product Architect** especializado en plataformas SaaS B2B, Facility Management, Customer Experience, Business Intelligence, SLA Management, Data Analytics y arquitectura modular empresarial.
+>
+> El ecosistema:
+>
+> # FACILIA Portal Platform
+>
+> cuenta con:
+>
+> * PORTAL-00 — Documento Maestro Portal.
+> * PORTAL-01 — Identidad, Usuarios, Roles y Acceso.
+> * PORTAL-02 — Arquitectura Base del Portal FACILIA.
+> * PORTAL-03 — Employee Portal MVP.
+> * PORTAL-04 — Customer Portal MVP.
+>
+> Esta etapa integra capacidades avanzadas de visibilidad, control y análisis.
+>
+> **No reemplazar Quality.**
+>
+> **No crear un ERP.**
+>
+> **No modificar dominios existentes.**
+>
+> Esta etapa agrega una capa de información y experiencia.
+
+---
+
+# Objetivo
+
+Transformar los portales FACILIA en una plataforma de gestión de continuidad operativa donde cada usuario pueda visualizar información relevante según su rol.
+
+---
+
+# Principio fundamental
+
+Cada portal muestra una vista diferente del mismo dato.
+
+Ejemplo:
+
+```text id="x5d8m2"
+Operations ejecuta
+
+↓
+
+COM comunica
+
+↓
+
+GEO valida
+
+↓
+
+Library evidencia
+
+↓
+
+Portal muestra
+```
+
+---
+
+# 1. Dashboard Ejecutivo FACILIA
+
+Crear una vista interna para responsables FACILIA.
+
+Ruta:
+
+```text
+/admin/dashboard
+```
+
+---
+
+Mostrar:
+
+## Operación actual
+
+Indicadores:
+
+* servicios programados hoy;
+* servicios ejecutados;
+* servicios pendientes;
+* incidencias abiertas.
+
+---
+
+## Cumplimiento
+
+Indicadores:
+
+* cumplimiento horario;
+* tareas completadas;
+* evidencias cargadas;
+* comunicaciones exitosas.
+
+---
+
+## Alertas
+
+Ejemplos:
+
+* servicios sin confirmar;
+* incidencias críticas;
+* recursos no disponibles.
+
+---
+
+# 2. Dashboard Supervisor Operativo
+
+Orientado a gestión diaria.
+
+Ruta:
+
+```text
+/supervisor/dashboard
+```
+
+---
+
+Mostrar:
+
+## Equipo
+
+* empleados activos;
+* tareas asignadas;
+* carga de trabajo.
+
+---
+
+## Servicios
+
+* iniciados;
+* pendientes;
+* retrasados.
+
+---
+
+## Incidentes
+
+* abiertos;
+* críticos;
+* pendientes.
+
+---
+
+# 3. Dashboard Cliente Ejecutivo
+
+Ampliar Customer Portal.
+
+Agregar:
+
+Ruta:
+
+```text
+/customer/dashboard/executive
+```
+
+---
+
+Mostrar:
+
+## Estado del servicio
+
+Ejemplo:
+
+```text id="a8x9z1"
+Continuidad Operativa
+
+Estado:
+OK
+
+Cumplimiento:
+98%
+```
+
+---
+
+# 4. SLA Management
+
+Preparar integración con módulo Quality futuro.
+
+No crear Quality.
+
+Crear capa de consulta.
+
+---
+
+Indicadores preparados:
+
+## Tiempo de respuesta
+
+```text id="g7m2f4"
+Solicitud creada
+
+↓
+
+Primera respuesta
+```
+
+---
+
+## Cumplimiento servicio
+
+```text id="k8v5z2"
+Servicios realizados
+
+/
+
+Servicios contratados
+```
+
+---
+
+## Incidentes
+
+* cantidad;
+* tiempo resolución;
+* recurrencia.
+
+---
+
+# 5. Centro de actividad
+
+Crear vista consolidada:
+
+```text id="n4p7x8"
+Activity Timeline
+```
+
+---
+
+Mostrar:
+
+Ejemplo:
+
+```text
+08:00
+
+Empleado llegó al sitio
+
+
+08:05
+
+Servicio iniciado
+
+
+10:30
+
+Evidencia cargada
+
+
+10:40
+
+Servicio cerrado
+```
+
+---
+
+Integraciones:
+
+* Operations;
+* GEO;
+* COM;
+* Library.
+
+---
+
+# 6. Reportes
+
+Crear estructura para reportes:
+
+---
+
+## Operativos
+
+* servicios realizados;
+* cumplimiento;
+* incidencias.
+
+---
+
+## Cliente
+
+* actividad;
+* evidencias;
+* solicitudes.
+
+---
+
+## Personal
+
+* tareas;
+* ejecución;
+* productividad.
+
+---
+
+# 7. Notificaciones inteligentes básicas
+
+No IA.
+
+Reglas simples:
+
+Ejemplo:
+
+```text id="v8k2p3"
+Si servicio retrasado
+
+↓
+
+Crear alerta
+```
+
+---
+
+Tipos:
+
+* operación;
+* cliente;
+* supervisor.
+
+---
+
+# 8. Centro de permisos avanzado
+
+Ampliar:
+
+```text
+Role
+
++
+
+Permission
+
++
+
+Dashboard Access
+```
+
+---
+
+Ejemplo:
+
+Cliente administrador:
+
+Puede ver:
+
+* SLA;
+* contratos;
+* evidencias.
+
+Usuario cliente:
+
+Solo:
+
+* servicios propios.
+
+---
+
+# 9. Componentes nuevos
+
+Crear:
+
+```text
+ExecutiveDashboard
+
+KpiCard
+
+ActivityTimeline
+
+SlaIndicator
+
+AlertPanel
+
+ReportViewer
+
+NotificationCenter
+```
+
+---
+
+# 10. APIs
+
+Crear:
+
+```http id="q6m8s4"
+GET /api/dashboard/executive
+
+GET /api/dashboard/supervisor
+
+GET /api/customer/kpis
+
+GET /api/activity/timeline
+
+GET /api/alerts
+
+GET /api/reports
+```
+
+---
+
+# 11. Preparación Analytics
+
+No implementar Data Warehouse.
+
+Preparar eventos:
+
+```text id="m2r8y6"
+ServiceCompleted
+
+EvidenceUploaded
+
+IncidentClosed
+
+CommunicationDelivered
+
+EmployeeArrived
+```
+
+---
+
+# 12. Arquitectura de datos futura
+
+Preparar:
+
+```text
+Transactional Database
+
+        |
+
+Event Layer
+
+        |
+
+Analytics Platform
+```
+
+---
+
+# 13. Experiencia final
+
+El ecosistema debe permitir:
+
+## Empleado
+
+"Qué tengo que hacer."
+
+---
+
+## Supervisor
+
+"Qué está pasando."
+
+---
+
+## Cliente
+
+"Qué estoy recibiendo."
+
+---
+
+## Dirección FACILIA
+
+"Qué tan bien estamos operando."
+
+---
+
+# Entregables
+
+Generar:
+
+1. Dashboards.
+2. KPIs.
+3. Timeline operacional.
+4. Alertas.
+5. Reportes.
+6. Integración SLA.
+7. Permisos avanzados.
+8. Documentación.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+✅ visualizar operación en tiempo real
+✅ medir cumplimiento
+✅ consultar historial completo
+✅ mostrar valor al cliente
+✅ preparar Quality y Analytics
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar compilación.
+2. Listar archivos creados/modificados.
+3. Confirmar compatibilidad con PORTAL-00 a PORTAL-04.
+4. Generar sección:
+
+# "Contexto para PORTAL-CLOSE"
+
+Incluyendo:
+
+* arquitectura final de portales FACILIA;
+* módulos integrados;
+* responsabilidades;
+* límites;
+* versión 1.0;
+* roadmap futuro.

@@ -1,0 +1,466 @@
+# PROMPT GEO-CLOSE — Cierre y Congelamiento Arquitectónico del Módulo GEO
+
+> **Rol**
+>
+> Actúa como un **Principal Enterprise Software Architect** especializado en SaaS empresarial, DDD, Clean Architecture, Workforce Management, Field Service Management (FSM), sistemas geoespaciales y arquitectura modular.
+>
+> El módulo:
+>
+> # GEO — Geopositioning & Workforce Control
+>
+> ha completado su primera versión funcional.
+>
+> Etapas realizadas:
+>
+> * GEO-00 — Documento funcional y arquitectura.
+> * GEO-01 — Modelo de dominio y persistencia.
+> * GEO-02 — Backend Core y APIs.
+> * GEO-03 — Integración Directory + Operations.
+> * GEO-04 — Agente Móvil / PWA de captura GPS.
+> * GEO-05 — Motor de Geocercas y Validaciones.
+> * GEO-06 — Panel Supervisor.
+>
+> Esta etapa tiene como objetivo cerrar formalmente el módulo.
+>
+> **No generar nuevas funcionalidades.**
+>
+> **No crear nuevas entidades.**
+>
+> **No modificar módulos existentes.**
+>
+> **No generar código nuevo salvo correcciones estrictamente necesarias para consistencia arquitectónica.**
+
+---
+
+# Objetivo
+
+Generar la documentación final oficial del módulo GEO versión 1.0.
+
+El resultado debe permitir:
+
+* comprender el propósito del módulo;
+* mantenerlo;
+* integrarlo;
+* evolucionarlo sin romper arquitectura.
+
+---
+
+# 1. Resumen ejecutivo
+
+Documentar:
+
+* qué problema resuelve GEO;
+* qué valor aporta a FACILIA;
+* qué procesos soporta;
+* qué procesos quedan fuera.
+
+---
+
+# 2. Alcance final GEO 1.0
+
+Documentar capacidades implementadas:
+
+## Gestión de dispositivos
+
+* registro;
+* asociación;
+* estados.
+
+---
+
+## Tracking
+
+* inicio;
+* fin;
+* sesiones activas.
+
+---
+
+## Captura GPS
+
+* posiciones;
+* histórico;
+* sincronización.
+
+---
+
+## Geocercas
+
+* creación;
+* validación;
+* eventos.
+
+---
+
+## Presencia
+
+* entrada;
+* salida;
+* permanencia.
+
+---
+
+## Validación operativa
+
+Cruce:
+
+```text id="r7n1py"
+Ubicación
+
++
+
+Horario
+
++
+
+Orden de Trabajo
+
++
+
+Cliente
+```
+
+---
+
+## Supervisión
+
+* monitor operativo;
+* alertas;
+* historial.
+
+---
+
+# 3. Arquitectura definitiva
+
+Documentar:
+
+```text id="2n9w4b"
+FACILIA
+
+Directory
+    |
+    |
+Operations
+    |
+    |
+GEO
+    |
+    |
+Library / BI / Quality (futuro)
+```
+
+---
+
+# 4. Límites del dominio
+
+Declarar oficialmente:
+
+## GEO es responsable de:
+
+* ubicación;
+* tracking;
+* geocercas;
+* eventos geográficos;
+* validaciones.
+
+---
+
+## GEO NO es responsable de:
+
+* empleados;
+* contratos;
+* clientes;
+* órdenes;
+* planificación;
+* pagos;
+* inventarios.
+
+---
+
+# 5. Modelo de dominio final
+
+Documentar todas las entidades:
+
+* Device.
+* TrackingSession.
+* LocationRecord.
+* Geofence.
+* PresenceEvent.
+* LocationValidation.
+* WorkOrderTrackingContext.
+
+Para cada una indicar:
+
+* responsabilidad;
+* relaciones;
+* propietario del dato.
+
+---
+
+# 6. Integraciones finales
+
+Documentar:
+
+---
+
+# Directory
+
+Consume:
+
+* usuarios;
+* organizaciones;
+* referencias de empleados.
+
+---
+
+# Operations
+
+Consume:
+
+* órdenes;
+* horarios;
+* asignaciones.
+
+Produce:
+
+* validaciones;
+* eventos geográficos.
+
+---
+
+# Library
+
+Preparada para:
+
+* evidencias;
+* reportes.
+
+---
+
+# 7. APIs definitivas
+
+Generar catálogo:
+
+* endpoint;
+* propósito;
+* consumidor;
+* estado.
+
+Clasificar:
+
+* públicas;
+* internas.
+
+---
+
+# 8. Eventos de dominio
+
+Catálogo final:
+
+```text id="j8g2j5"
+DeviceRegistered
+
+DeviceAssigned
+
+TrackingSessionStarted
+
+TrackingSessionEnded
+
+LocationRecorded
+
+EmployeeArrivedLocation
+
+EmployeeLeftLocation
+
+EmployeeStayedLocation
+
+PresenceValidated
+
+LocationDeviationDetected
+```
+
+---
+
+# 9. Seguridad y privacidad
+
+Documentar:
+
+* permisos;
+* roles;
+* aislamiento multi-tenant;
+* auditoría;
+* políticas de acceso.
+
+Definir:
+
+* quién puede ver ubicación;
+* cuándo puede verla;
+* durante cuánto tiempo.
+
+---
+
+# 10. Performance y escalabilidad
+
+Documentar estrategia:
+
+* almacenamiento histórico;
+* crecimiento de LocationRecord;
+* índices;
+* particionamiento futuro;
+* retención.
+
+---
+
+# 11. Roadmap futuro GEO 2.0
+
+Documentar únicamente como futuras extensiones.
+
+No implementar.
+
+---
+
+## GEO 2.0 — Tiempo Real
+
+* WebSockets;
+* actualización instantánea;
+* mapas dinámicos.
+
+---
+
+## GEO 2.1 — Optimización
+
+* rutas;
+* tiempos estimados;
+* eficiencia.
+
+---
+
+## GEO 2.2 — Analítica
+
+* productividad;
+* tendencias;
+* cumplimiento SLA.
+
+---
+
+## GEO 2.3 — IA
+
+* predicción de atrasos;
+* anomalías;
+* recomendaciones.
+
+---
+
+# 12. Checklist de calidad
+
+Verificar:
+
+✅ Clean Architecture
+✅ DDD
+✅ Multi-tenant
+✅ TypeScript Strict
+✅ Separación de dominios
+✅ APIs documentadas
+✅ Auditoría
+✅ Seguridad
+✅ Compatibilidad FACILIA
+
+---
+
+# 13. Declaración de arquitectura congelada
+
+Generar sección:
+
+# GEO — ARQUITECTURA CONGELADA v1.0
+
+Declarar:
+
+* el modelo de dominio queda estabilizado;
+* las entidades principales no deben modificarse;
+* las APIs públicas quedan versionadas;
+* los eventos quedan definidos;
+* las integraciones quedan documentadas.
+
+Cualquier nueva capacidad deberá agregarse mediante:
+
+* nuevos servicios;
+* nuevos módulos;
+* extensiones compatibles.
+
+No mediante modificaciones destructivas.
+
+---
+
+# 14. Documento final de operación
+
+Generar un flujo completo:
+
+```text id="w4zz6c"
+Empleado recibe dispositivo
+
+↓
+
+Inicia jornada
+
+↓
+
+GEO inicia tracking
+
+↓
+
+Captura ubicación
+
+↓
+
+Empleado llega al cliente
+
+↓
+
+Geocerca valida presencia
+
+↓
+
+Operations recibe validación
+
+↓
+
+Supervisor visualiza cumplimiento
+
+↓
+
+Servicio queda respaldado
+```
+
+---
+
+# Entregables finales
+
+Generar:
+
+1. Documento técnico GEO v1.0.
+2. Arquitectura definitiva.
+3. Inventario de componentes.
+4. Inventario de APIs.
+5. Inventario de eventos.
+6. Matriz de integraciones.
+7. Roadmap futuro.
+8. Estado de congelamiento.
+
+---
+
+# Criterio de aceptación final
+
+El módulo GEO debe quedar en condición:
+
+**"Production Ready — Version 1.0"**
+
+Listo para operar dentro de FACILIA junto con:
+
+* Directory.
+* Operations.
+* Library.
+* Contract Management.
+
+---
+
+Con este cierre, GEO queda oficialmente terminado como módulo independiente y puede pasar a una etapa posterior de evolución sin bloquear el desarrollo de otros dominios de FACILIA.

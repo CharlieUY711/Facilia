@@ -1,0 +1,441 @@
+FACILIA — Documento Maestro
+Portal de Usuarios: Employee Portal + Customer Portal
+
+Versión: 1.0
+Estado: Diseño funcional inicial
+
+1. Visión general
+
+FACILIA tendrá una capa de portales digitales que permitirá conectar a los actores principales del ecosistema:
+
+colaboradores operativos;
+supervisores;
+clientes;
+administradores.
+
+Los portales no son sistemas independientes.
+
+Son interfaces especializadas sobre los módulos centrales:
+
+                         FACILIA PLATFORM
+
+
+                         DIRECTORY
+                             |
+        ---------------------------------------------
+        |                    |                      |
+   OPERATIONS             CONTRACTS              LIBRARY
+        |                    |                      |
+        |                    |                      |
+        ---------------------------------------------
+                             |
+                          PORTALS
+                             |
+              --------------------------------
+              |                              |
+      EMPLOYEE PORTAL               CUSTOMER PORTAL
+              |
+          COM + GEO
+2. Objetivo estratégico
+
+Transformar FACILIA desde un proveedor operativo hacia una plataforma de gestión de continuidad.
+
+El empleado obtiene:
+
+claridad sobre qué hacer, dónde hacerlo y cómo reportarlo.
+
+El cliente obtiene:
+
+visibilidad sobre qué contrató, qué se ejecutó y cuál es el estado.
+
+3. Principios de diseño
+3.1 Una única identidad
+
+No crear usuarios duplicados.
+
+Todos pertenecen a:
+
+Directory
+
+Ejemplo:
+
+Persona
+
+↓
+
+Usuario
+
+↓
+
+Organización
+
+↓
+
+Rol
+3.2 Cada portal tiene una experiencia distinta
+
+No mezclar interfaces.
+
+Employee Portal
+
+Orientado a:
+
+velocidad;
+simplicidad;
+ejecución.
+Customer Portal
+
+Orientado a:
+
+transparencia;
+control;
+información.
+3.3 Mobile First
+
+Especialmente:
+
+Employee Portal.
+
+El empleado utilizará:
+
+celular corporativo;
+navegador móvil;
+PWA.
+4. Modelo de usuarios
+
+Roles iniciales:
+
+Internos FACILIA
+Administrador
+
+Acceso completo.
+
+Supervisor Operativo
+
+Puede:
+
+ver equipos;
+supervisar servicios;
+revisar incidencias.
+Operario
+
+Puede:
+
+ver tareas asignadas;
+ejecutar servicios;
+reportar información.
+Cliente
+Administrador Cliente
+
+Puede:
+
+ver contratos;
+ver servicios;
+administrar usuarios propios.
+Usuario Cliente
+
+Puede:
+
+consultar información autorizada.
+5. Employee Portal
+Objetivo
+
+Ser la herramienta diaria del colaborador.
+
+Módulos iniciales
+5.1 Inicio
+
+Dashboard personal:
+
+Mostrar:
+
+próxima tarea;
+estado de jornada;
+alertas;
+comunicaciones pendientes.
+
+Ejemplo:
+
+Buenos días Carlos
+
+Próximo servicio:
+
+Cliente:
+Empresa ABC
+
+Hora:
+08:00
+
+Estado:
+Confirmar asistencia
+5.2 Mis tareas
+
+Lista:
+
+fecha;
+cliente;
+servicio;
+horario;
+estado.
+
+Estados:
+
+Asignada
+
+Confirmada
+
+En ejecución
+
+Finalizada
+
+Con incidencia
+5.3 Detalle de tarea
+
+Información:
+
+cliente;
+dirección;
+instrucciones;
+checklist;
+recursos.
+
+Acciones:
+
+aceptar;
+iniciar;
+finalizar;
+reportar.
+5.4 Evidencias
+
+Integración:
+
+Employee Portal
+
+↓
+
+Library
+
+Permitir:
+
+fotos;
+comentarios;
+documentos.
+5.5 Incidentes
+
+Crear reportes:
+
+Ejemplos:
+
+falta insumos;
+problema acceso;
+herramienta rota;
+riesgo operativo.
+5.6 Comunicaciones
+
+Integración:
+
+Portal
+
++
+
+COM WhatsApp
+
+Mostrar:
+
+mensajes;
+instrucciones;
+avisos.
+6. Customer Portal
+Objetivo
+
+Dar al cliente control y transparencia.
+
+6.1 Dashboard
+
+Mostrar:
+
+servicios activos;
+estado operativo;
+próximas visitas;
+alertas.
+6.2 Contratos
+
+Integración:
+
+Contracts
+
+Mostrar:
+
+contrato vigente;
+alcance;
+anexos;
+fechas;
+renovaciones.
+6.3 Servicios
+
+Mostrar:
+
+calendario;
+historial;
+cumplimiento.
+6.4 Evidencias
+
+Integración:
+
+Library
+
+Mostrar:
+
+fotos;
+reportes;
+documentos autorizados.
+6.5 Solicitudes
+
+Permitir:
+
+pedido adicional;
+consulta;
+reclamo.
+6.6 Calidad (futuro)
+
+Preparar:
+
+SLA;
+indicadores;
+evaluaciones.
+7. Integraciones
+Directory
+
+Identidad y permisos.
+
+Operations
+
+Datos operativos.
+
+Contracts
+
+Compromisos comerciales.
+
+Library
+
+Documentación y evidencias.
+
+COM
+
+Comunicación.
+
+GEO
+
+Validaciones de ejecución.
+
+8. Arquitectura técnica
+
+Mantener:
+
+Next.js App Router
+
++
+
+Design System FACILIA
+
++
+
+Supabase Auth
+
++
+
+PostgreSQL
+
++
+
+APIs internas
+9. Seguridad
+
+Debe soportar:
+
+multi-tenant;
+aislamiento por organización;
+permisos por rol;
+auditoría.
+
+Ejemplo:
+
+Un cliente nunca puede:
+
+ver otro cliente;
+ver otros empleados;
+acceder a evidencias no autorizadas.
+10. Roadmap
+PORTAL-00
+
+Documento maestro conjunto
+
+Estado:
+Actual
+
+PORTAL-01
+
+Modelo de identidad, acceso y permisos
+
+Incluye:
+
+usuarios;
+roles;
+invitaciones;
+organizaciones.
+PORTAL-02
+
+Arquitectura base Portal FACILIA
+
+Incluye:
+
+layout;
+navegación;
+componentes;
+seguridad.
+PORTAL-03
+
+Employee Portal MVP
+
+Incluye:
+
+tareas;
+ejecución;
+evidencias;
+incidencias.
+PORTAL-04
+
+Customer Portal MVP
+
+Incluye:
+
+servicios;
+contratos;
+evidencias;
+solicitudes.
+PORTAL-05
+
+Integraciones avanzadas
+
+Incluye:
+
+COM;
+GEO;
+Quality.
+PORTAL-CLOSE
+
+Congelamiento versión 1.0.
+
+11. Resultado esperado
+
+Al finalizar:
+
+Un empleado podrá:
+
+recibir, ejecutar y documentar su trabajo.
+
+Un cliente podrá:
+
+comprobar que el servicio contratado fue ejecutado correctamente.
+
+FACILIA pasará de ser una empresa con sistemas internos a una plataforma operacional con interacción completa entre proveedor, colaborador y cliente.

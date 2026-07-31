@@ -1,0 +1,557 @@
+# PROMPT COM-03 — Motor de Plantillas, Reglas y Automatizaciones Operacionales
+
+> **Rol**
+>
+> Actúa como un **Enterprise Automation Architect** especializado en sistemas SaaS, motores de reglas, workflow engines, comunicaciones empresariales, DDD y Field Service Management.
+>
+> El módulo:
+>
+> # COM — Communications Hub
+>
+> ya cuenta con:
+>
+> * COM-00 — Documento Maestro Funcional.
+> * COM-01 — Modelo de Dominio y Persistencia.
+> * COM-02 — Backend Core + Integración Twilio WhatsApp API.
+>
+> Esta etapa implementa el motor encargado de decidir:
+>
+> * cuándo comunicar;
+> * qué comunicar;
+> * a quién comunicar;
+> * qué plantilla utilizar.
+>
+> **No modificar Twilio.**
+>
+> **No crear lógica dentro de Operations.**
+>
+> **No implementar chatbot inteligente.**
+>
+> Mantener arquitectura Charlie Compliant.
+
+---
+
+# Objetivo
+
+Crear un motor de automatización operacional basado en eventos.
+
+El sistema debe transformar:
+
+```text id="1q6z1a"
+Evento del negocio
+
+↓
+
+Regla COM
+
+↓
+
+Plantilla
+
+↓
+
+Mensaje WhatsApp
+
+↓
+
+Respuesta
+```
+
+---
+
+# Principio fundamental
+
+COM no decide la operación.
+
+COM reacciona a eventos.
+
+Ejemplo:
+
+Operations:
+
+```text
+WorkOrderAssigned
+```
+
+COM:
+
+```text
+Enviar mensaje al empleado
+```
+
+---
+
+# Arquitectura
+
+Implementar:
+
+```text id="q0x2d4"
+Event Source
+
+    |
+
+COM Event Listener
+
+    |
+
+Rule Engine
+
+    |
+
+Template Renderer
+
+    |
+
+Communication Service
+
+    |
+
+Twilio
+```
+
+---
+
+# 1. Eventos de entrada
+
+Preparar consumo de eventos:
+
+---
+
+## Operations
+
+Eventos:
+
+```text id="w1ys5r"
+WorkOrderCreated
+
+WorkOrderAssigned
+
+WorkOrderUpdated
+
+WorkOrderCancelled
+
+WorkOrderCompleted
+```
+
+---
+
+## GEO
+
+Eventos futuros:
+
+```text id="o7h7s9"
+EmployeeArrivedLocation
+
+EmployeeLeftLocation
+
+LocationDeviationDetected
+```
+
+---
+
+## Directory
+
+Eventos:
+
+```text id="2s9f31"
+EmployeeCreated
+
+PhoneUpdated
+
+EmployeeDisabled
+```
+
+---
+
+# 2. CommunicationRule
+
+Implementar motor de reglas.
+
+Ejemplo:
+
+```text id="1g0j8s"
+Cuando:
+
+WorkOrderAssigned
+
+
+Condición:
+
+Empleado tiene WhatsApp activo
+
+
+Acción:
+
+Enviar Template Assignment
+```
+
+---
+
+# Estados
+
+```text id="w7t5di"
+ACTIVE
+
+INACTIVE
+
+DRAFT
+```
+
+---
+
+# 3. Template Engine
+
+Crear renderizador de plantillas.
+
+Ejemplo:
+
+Plantilla:
+
+```
+Hola {{employee_name}}
+
+Tenés asignado un servicio en {{customer_name}}
+
+Horario:
+{{scheduled_time}}
+```
+
+Resultado:
+
+```
+Hola Juan
+
+Tenés asignado un servicio en ABC SA
+
+Horario:
+08:00
+```
+
+---
+
+# Variables dinámicas
+
+Preparar:
+
+## Empleado
+
+```text id="x83h9j"
+employee_name
+
+phone
+```
+
+---
+
+## Cliente
+
+```text id="0g7a3x"
+customer_name
+
+address
+```
+
+---
+
+## Orden
+
+```text id="27j0cv"
+work_order_id
+
+service_name
+
+scheduled_date
+
+scheduled_time
+```
+
+---
+
+# 4. Biblioteca de plantillas
+
+Crear administración de:
+
+* nombre;
+* categoría;
+* contenido;
+* variables;
+* idioma;
+* estado.
+
+---
+
+# Categorías iniciales
+
+```text id="fz2vcl"
+TASK_ASSIGNMENT
+
+TASK_REMINDER
+
+TASK_CONFIRMATION
+
+TASK_REJECTION
+
+EVIDENCE_REQUEST
+
+INCIDENT_NOTIFICATION
+
+SERVICE_COMPLETED
+```
+
+---
+
+# 5. Automatizaciones iniciales MVP
+
+Implementar:
+
+---
+
+# Nueva asignación
+
+Evento:
+
+```text id="h5rjmm"
+WorkOrderAssigned
+```
+
+Enviar:
+
+```text id="hz9vqh"
+Asignación de tarea
+```
+
+---
+
+# Recordatorio previo
+
+Ejemplo:
+
+60 minutos antes.
+
+Mensaje:
+
+```
+Recordatorio:
+Tu servicio comienza a las 08:00.
+```
+
+---
+
+# Confirmación pendiente
+
+Si no responde:
+
+Enviar seguimiento.
+
+---
+
+# Rechazo
+
+Si responde:
+
+NO PUEDO
+
+Notificar supervisor.
+
+---
+
+# Finalización
+
+Enviar:
+
+```
+Confirmá finalización del servicio.
+```
+
+---
+
+# 6. Programador de comunicaciones
+
+Crear servicio preparado para:
+
+* mensajes inmediatos;
+* mensajes programados.
+
+Concepto:
+
+```text id="o3tdqf"
+ScheduledCommunication
+```
+
+---
+
+Campos:
+
+* fecha ejecución;
+* plantilla;
+* destinatario;
+* estado.
+
+---
+
+Estados:
+
+```text id="8x6x9s"
+PENDING
+
+PROCESSING
+
+SENT
+
+FAILED
+
+CANCELLED
+```
+
+---
+
+# 7. Motor de condiciones
+
+Preparar reglas simples:
+
+Ejemplos:
+
+```text id="0x4xgk"
+SI empleado tiene WhatsApp
+
+ENVIAR
+```
+
+---
+
+```text id="py2l0m"
+SI servicio comienza mañana
+
+PROGRAMAR RECORDATORIO
+```
+
+---
+
+# 8. APIs
+
+Crear:
+
+---
+
+## Plantillas
+
+```http id="3f8r7f"
+GET /api/com/templates
+
+POST /api/com/templates
+
+PATCH /api/com/templates/{id}
+```
+
+---
+
+## Reglas
+
+```http id="u7t4hf"
+GET /api/com/rules
+
+POST /api/com/rules
+```
+
+---
+
+## Programaciones
+
+```http id="9l8k3h"
+GET /api/com/scheduled
+
+POST /api/com/scheduled
+```
+
+---
+
+# 9. Auditoría
+
+Registrar:
+
+* regla ejecutada;
+* plantilla utilizada;
+* destinatario;
+* resultado.
+
+Ejemplo:
+
+```text id="w8s4k9"
+Regla:
+WorkOrderAssigned
+
+Resultado:
+Mensaje enviado
+```
+
+---
+
+# 10. Seguridad
+
+Garantizar:
+
+* reglas por organización;
+* plantillas separadas;
+* permisos administrativos.
+
+---
+
+# 11. Futuro preparado
+
+No implementar:
+
+* IA;
+* NLP;
+* chatbot;
+* respuestas inteligentes.
+
+Preparar interfaces para evolución futura.
+
+---
+
+# Entregables
+
+Generar:
+
+1. Motor de reglas.
+2. Template Engine.
+3. Variables dinámicas.
+4. Programador.
+5. APIs administrativas.
+6. Integración eventos.
+7. Documentación.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+✅ crear plantillas
+✅ crear reglas
+✅ reaccionar a eventos
+✅ enviar comunicaciones automáticas
+✅ programar recordatorios
+✅ auditar comunicaciones generadas
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar compilación.
+2. Listar archivos creados/modificados.
+3. Confirmar compatibilidad con COM-01 y COM-02.
+4. Generar sección:
+
+# "Contexto para COM-04"
+
+Incluyendo:
+
+* recepción de respuestas del personal;
+* interpretación de comandos simples;
+* carga de fotos;
+* evidencias;
+* reportes de incidentes;
+* creación de requerimientos operativos desde WhatsApp.

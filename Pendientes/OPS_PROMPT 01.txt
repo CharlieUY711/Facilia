@@ -1,0 +1,583 @@
+# PROMPT OPS-01 — Implementación del Dominio, Base de Datos y Backend del Módulo Operations
+
+> **Rol**
+>
+> Actúa como un **Staff Software Engineer** especializado en Facility Management (FM), Field Service Management (FSM), DDD, Clean Architecture, Next.js 15 App Router, React 19, TypeScript Strict, Supabase y PostgreSQL.
+>
+> La arquitectura funcional (**OPS-00**) y la arquitectura de integración (**OPS-00.1**) ya fueron aprobadas.
+>
+> **No rediseñar el dominio.**
+>
+> **No modificar la arquitectura.**
+>
+> Implementar únicamente el backend del módulo Operations respetando la arquitectura Charlie Compliant.
+
+---
+
+# Objetivo
+
+Implementar completamente el núcleo operativo de FACILIA.
+
+Debe quedar listo para administrar:
+
+* planes operativos;
+* programación de servicios;
+* órdenes de trabajo;
+* asignaciones;
+* ejecución;
+* incidencias;
+* SLA;
+* evidencias.
+
+Todo debe integrarse con:
+
+* Directory.
+* Contract Management.
+* Library.
+
+Y dejar preparado:
+
+* Assets.
+* Finance.
+* Mobile.
+
+---
+
+# Stack
+
+Implementar utilizando:
+
+* Next.js App Router
+* TypeScript Strict
+* PostgreSQL
+* Supabase
+* DDD
+* Repository Pattern
+* Clean Architecture
+* Charlie Compliant
+
+---
+
+# Principio fundamental
+
+Operations nunca crea información comercial.
+
+Toda operación debe originarse desde un contrato activo.
+
+No permitir crear Planes Operativos sin contrato.
+
+---
+
+# Base de datos
+
+Generar todas las migraciones SQL necesarias.
+
+Como mínimo crear:
+
+---
+
+## operational_plans
+
+Representa la planificación derivada de un contrato.
+
+Campos mínimos:
+
+* id
+* organization_id
+* contract_id
+* plan_number
+* status
+* start_date
+* end_date
+* notes
+* created_by
+* updated_by
+* created_at
+* updated_at
+
+---
+
+## service_schedules
+
+Servicios programados.
+
+Campos:
+
+* id
+* operational_plan_id
+* contract_service_id
+* frequency
+* weekday
+* scheduled_start
+* scheduled_end
+* estimated_duration
+* recurrence_rule
+* status
+
+---
+
+## work_orders
+
+Entidad principal.
+
+Campos:
+
+* id
+* work_order_number
+* operational_plan_id
+* service_schedule_id
+* organization_id
+* location_id
+* title
+* description
+* priority
+* status
+* planned_start
+* planned_end
+* actual_start
+* actual_end
+* estimated_duration
+* created_by
+* updated_by
+* created_at
+* updated_at
+
+---
+
+## work_order_assignments
+
+Campos:
+
+* id
+* work_order_id
+* employee_id
+* team_id
+* assigned_at
+* assigned_by
+* accepted_at
+* completed_at
+
+---
+
+## work_order_executions
+
+Representa la ejecución real.
+
+Campos:
+
+* id
+* work_order_id
+* started_at
+* finished_at
+* execution_notes
+* execution_status
+* duration_minutes
+
+---
+
+## work_order_checklists
+
+Campos:
+
+* id
+* work_order_id
+* checklist_template_id
+* completed
+* completed_at
+
+---
+
+## work_order_incidents
+
+Campos:
+
+* id
+* work_order_id
+* incident_type
+* severity
+* description
+* resolved
+* resolved_at
+
+---
+
+## work_order_evidence
+
+No almacenar archivos.
+
+Únicamente referencias hacia Library.
+
+Campos:
+
+* id
+* work_order_id
+* library_document_id
+* evidence_type
+
+---
+
+# Dominio
+
+Implementar:
+
+OperationalPlan
+
+ServiceSchedule
+
+WorkOrder
+
+Assignment
+
+Execution
+
+Checklist
+
+Incident
+
+EvidenceReference
+
+SLAStatus
+
+---
+
+# Aggregate Root
+
+Aggregate principal:
+
+```text
+OperationalPlan
+```
+
+Debe controlar:
+
+* programación;
+* órdenes;
+* estados;
+* servicios.
+
+---
+
+# Repositories
+
+Crear interfaces e implementación Supabase para:
+
+OperationalPlanRepository
+
+WorkOrderRepository
+
+ScheduleRepository
+
+ExecutionRepository
+
+IncidentRepository
+
+ChecklistRepository
+
+EvidenceRepository
+
+AssignmentRepository
+
+---
+
+# Casos de uso
+
+Implementar como mínimo:
+
+CreateOperationalPlan
+
+GenerateSchedules
+
+CreateWorkOrder
+
+AssignEmployee
+
+AssignTeam
+
+StartExecution
+
+PauseExecution
+
+ResumeExecution
+
+CompleteExecution
+
+ValidateExecution
+
+CloseWorkOrder
+
+RegisterIncident
+
+ResolveIncident
+
+AttachEvidence
+
+RemoveEvidence
+
+GetOperationalPlan
+
+ListOperationalPlans
+
+ListWorkOrders
+
+ListPendingWorkOrders
+
+ListCalendar
+
+GetDashboard
+
+---
+
+# Máquina de estados
+
+Implementar validaciones.
+
+OperationalPlan:
+
+DRAFT
+
+ACTIVE
+
+PAUSED
+
+FINISHED
+
+CANCELLED
+
+---
+
+WorkOrder:
+
+PLANNED
+
+ASSIGNED
+
+IN_PROGRESS
+
+PAUSED
+
+COMPLETED
+
+VALIDATED
+
+CLOSED
+
+CANCELLED
+
+No permitir transiciones inválidas.
+
+---
+
+# Numeración
+
+Implementar numeración automática.
+
+Ejemplos:
+
+```text
+PLAN-2026-000001
+
+WO-2026-000001
+```
+
+Configurables.
+
+No hardcodear.
+
+---
+
+# Integración con Contract Management
+
+Validar:
+
+El contrato:
+
+* existe;
+* pertenece a la organización;
+* está ACTIVO.
+
+Consumir únicamente APIs públicas o servicios de aplicación.
+
+Nunca acceder directamente a tablas internas.
+
+---
+
+# Integración con Library
+
+Implementar únicamente:
+
+AttachEvidence()
+
+DetachEvidence()
+
+ListEvidence()
+
+Toda la documentación continúa viviendo en Library.
+
+---
+
+# Integración con Directory
+
+Consumir:
+
+* empleados;
+* organizaciones;
+* ubicaciones;
+* equipos.
+
+No duplicar información.
+
+---
+
+# Eventos de dominio
+
+Emitir:
+
+OperationalPlanCreated
+
+SchedulesGenerated
+
+WorkOrderCreated
+
+WorkOrderAssigned
+
+ExecutionStarted
+
+ExecutionCompleted
+
+ExecutionValidated
+
+IncidentRegistered
+
+EvidenceAttached
+
+WorkOrderClosed
+
+---
+
+# APIs
+
+Implementar:
+
+GET /api/operations/plans
+
+POST /api/operations/plans
+
+GET /api/operations/plans/:id
+
+GET /api/work-orders
+
+POST /api/work-orders
+
+GET /api/work-orders/:id
+
+POST /api/work-orders/:id/assign
+
+POST /api/work-orders/:id/start
+
+POST /api/work-orders/:id/pause
+
+POST /api/work-orders/:id/resume
+
+POST /api/work-orders/:id/complete
+
+POST /api/work-orders/:id/validate
+
+POST /api/work-orders/:id/close
+
+POST /api/work-orders/:id/incidents
+
+GET /api/work-orders/:id/incidents
+
+POST /api/work-orders/:id/evidence
+
+DELETE /api/work-orders/:id/evidence/:documentId
+
+GET /api/dashboard/operations
+
+---
+
+# Seguridad
+
+Implementar:
+
+* RLS.
+* UUID.
+* Auditoría.
+* Soft Delete.
+* Multi-tenant.
+
+Preparar ACL futura.
+
+---
+
+# Calidad
+
+Todo debe:
+
+* compilar;
+* no contener `any`;
+* no contener `TODO`;
+* no contener mocks;
+* seguir TypeScript Strict;
+* respetar Clean Architecture.
+
+---
+
+# Exclusiones
+
+No implementar todavía:
+
+* interfaz gráfica;
+* aplicación móvil;
+* GPS;
+* geolocalización;
+* firma del cliente;
+* IA;
+* optimización automática;
+* inventario;
+* activos.
+
+---
+
+# Entregables
+
+Generar:
+
+* migraciones SQL;
+* entidades del dominio;
+* value objects;
+* repositories;
+* casos de uso;
+* DTOs;
+* validaciones;
+* APIs;
+* eventos de dominio.
+
+Todo el código debe ser completamente funcional.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+* generar un Plan Operativo desde un contrato activo;
+* crear automáticamente Servicios Programados;
+* generar Órdenes de Trabajo;
+* asignar personas o equipos;
+* iniciar, pausar y finalizar ejecuciones;
+* registrar incidencias;
+* asociar evidencias desde Library;
+* consultar el dashboard operativo.
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar que toda la solución compile sin errores.
+2. Listar todos los archivos creados.
+3. Listar las migraciones SQL generadas.
+4. Confirmar que no existen dependencias circulares con Contract Management ni Library.
+5. Generar la sección **"Contexto para OPS-02"**, que servirá como base para construir el **Centro de Operaciones**, incluyendo el calendario operativo, panel de órdenes de trabajo, agenda, dashboard y vistas de seguimiento, reutilizando completamente el backend implementado en esta etapa.

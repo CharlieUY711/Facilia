@@ -1,0 +1,546 @@
+Perfecto. Siguiendo el roadmap, **LIB-04 y LIB-05** serían la evolución natural después del MVP. Aquí ya no estamos construyendo la biblioteca básica, sino agregando capacidades empresariales.
+
+---
+
+# PROMPT LIB-04 — Versionado Documental y Gobierno de Información
+
+> **Rol**
+>
+> Actúa como un **Software Architect Senior** especializado en DDD, gestión documental empresarial (EDM), control de versiones, Next.js 15, TypeScript, Supabase y PostgreSQL.
+>
+> El módulo FACILIA Library ya está implementado hasta LIB-03:
+>
+> * Repositorios público y privado.
+> * Gestión de documentos.
+> * Carpetas.
+> * Storage.
+> * Permisos.
+> * Compartición.
+> * Auditoría.
+> * Integración transversal.
+>
+> Esta etapa debe extender la arquitectura existente sin rediseñarla.
+
+---
+
+# Objetivo
+
+Implementar un sistema profesional de **versionado documental** que permita conservar la historia completa de cada documento.
+
+Un documento nunca debe perder información histórica.
+
+Cada modificación debe generar una nueva versión.
+
+---
+
+# Concepto
+
+Separar:
+
+## Documento lógico
+
+Representa la entidad documental.
+
+Ejemplo:
+
+```
+Manual de Limpieza Industrial
+```
+
+---
+
+## Versiones
+
+Representan sus estados históricos.
+
+Ejemplo:
+
+```
+Manual de Limpieza Industrial
+
+v1
+Creado 01/01/2026
+
+v2
+Actualizado 15/03/2026
+
+v3
+Actualizado 20/06/2026
+```
+
+---
+
+# Funcionalidades
+
+Implementar:
+
+## Crear versión
+
+Cuando un documento cambia:
+
+* conservar versión anterior;
+* almacenar nuevo archivo;
+* incrementar versión;
+* registrar autor;
+* registrar fecha.
+
+---
+
+## Historial
+
+Mostrar:
+
+* número de versión;
+* fecha;
+* usuario;
+* comentario;
+* tamaño;
+* estado.
+
+---
+
+## Comparación
+
+Preparar arquitectura para:
+
+* comparación de metadatos;
+* comparación futura de contenido.
+
+---
+
+## Restauración
+
+Permitir:
+
+```
+Versión actual v3
+
+Restaurar v2
+
+Resultado:
+
+Nueva versión v4 basada en v2
+```
+
+Nunca eliminar historial.
+
+---
+
+# Modelo de datos
+
+Crear:
+
+## document_versions
+
+Campos mínimos:
+
+* id
+* document_id
+* version_number
+* storage_path
+* file_size
+* checksum
+* created_by
+* comment
+* created_at
+
+---
+
+# Auditoría
+
+Cada acción debe generar evento:
+
+* nueva versión;
+* restauración;
+* descarga;
+* publicación.
+
+---
+
+# Seguridad
+
+Mantener:
+
+* RLS.
+* ACL existente.
+* permisos heredados.
+
+---
+
+# UI
+
+Agregar:
+
+Panel:
+
+"Historial de versiones"
+
+Ejemplo:
+
+```
+Documento:
+
+Contrato Cliente ABC.pdf
+
+
+Versión | Usuario | Fecha | Acción
+
+v3       Carlos    20/06  Actual
+
+v2       Ana       10/04  Restaurar
+
+v1       Carlos    01/01  Inicial
+```
+
+---
+
+# Integración
+
+Preparar uso desde:
+
+* Cotizaciones.
+* Contratos.
+* Activos.
+* Procedimientos.
+* Ordenes de trabajo.
+
+---
+
+# Exclusiones
+
+No implementar:
+
+* Firma digital.
+* OCR.
+* IA.
+* Flujos aprobación.
+
+---
+
+# Entregables
+
+* Código completo.
+* Migraciones.
+* Casos de uso.
+* APIs.
+* Componentes UI.
+* Documentación.
+
+---
+
+# Criterios aceptación
+
+Debe ser posible:
+
+* Crear versiones.
+* Ver historial.
+* Descargar versión específica.
+* Restaurar versión.
+* Auditar cambios.
+
+---
+
+# Contexto para LIB-05
+
+Preparar continuidad para implementar:
+
+**Workflows documentales, aprobaciones y gobierno documental empresarial.**
+
+---
+
+---
+
+# PROMPT LIB-05 — Workflows Documentales y Aprobaciones
+
+> **Rol**
+>
+> Actúa como un **Enterprise Software Architect** especialista en Document Management Systems, BPM, workflows, DDD y FACILIA.
+
+---
+
+# Contexto
+
+FACILIA Library dispone de:
+
+* documentos;
+* permisos;
+* auditoría;
+* versionado;
+* integración transversal.
+
+Esta etapa incorpora procesos de aprobación documental.
+
+---
+
+# Objetivo
+
+Permitir que ciertos documentos tengan un ciclo de revisión y aprobación antes de ser considerados oficiales.
+
+---
+
+# Casos de uso
+
+Ejemplos:
+
+## Procedimientos internos
+
+```
+Borrador
+
+↓
+
+Revisión Operativa
+
+↓
+
+Aprobación Gerencia
+
+↓
+
+Publicado
+```
+
+---
+
+## Contratos
+
+```
+Generado
+
+↓
+
+Revisión Comercial
+
+↓
+
+Aprobación Cliente
+
+↓
+
+Firmado
+```
+
+---
+
+## Documentación técnica
+
+```
+Creado
+
+↓
+
+Validación Técnica
+
+↓
+
+Publicado
+```
+
+---
+
+# Estados documentales
+
+Implementar:
+
+```
+Draft
+
+Review
+
+Approved
+
+Rejected
+
+Published
+
+Archived
+```
+
+---
+
+# Workflow
+
+Crear entidad:
+
+## DocumentWorkflow
+
+Debe permitir:
+
+* documento;
+* pasos;
+* responsables;
+* estado;
+* fechas;
+* comentarios.
+
+---
+
+# Aprobadores
+
+Puede ser:
+
+* usuario;
+* rol;
+* organización.
+
+Ejemplo:
+
+```
+Documento:
+
+Procedimiento Limpieza
+
+
+Paso 1:
+
+Supervisor Operativo
+
+↓
+
+Paso 2:
+
+Gerente Operaciones
+```
+
+---
+
+# Comentarios
+
+Cada paso puede tener:
+
+* comentario;
+* observación;
+* rechazo;
+* aprobación.
+
+---
+
+# Notificaciones
+
+Preparar arquitectura para:
+
+* email;
+* WhatsApp;
+* notificaciones internas.
+
+No implementar proveedores todavía.
+
+---
+
+# UI
+
+Agregar:
+
+## Timeline documental
+
+Ejemplo:
+
+```
+Documento
+
+● Creado
+ |
+● En revisión
+ |
+● Aprobado
+ |
+● Publicado
+```
+
+---
+
+## Panel aprobación
+
+Mostrar:
+
+Pendientes:
+
+* Revisar
+* Aprobar
+* Rechazar
+
+---
+
+# Seguridad
+
+Un documento aprobado:
+
+* puede bloquear edición;
+* requiere nueva versión para modificar.
+
+---
+
+# Integración FACILIA
+
+Aplicaciones:
+
+## Calidad
+
+Procedimientos aprobados.
+
+## Operaciones
+
+Manuales vigentes.
+
+## Contratos
+
+Documentos revisados antes de firma.
+
+## Clientes
+
+Documentación oficial.
+
+---
+
+# Exclusiones
+
+No implementar:
+
+* Firma electrónica.
+* Certificados digitales.
+* OCR.
+* IA.
+
+---
+
+# Entregables
+
+* Modelo de workflow.
+* SQL.
+* Casos de uso.
+* APIs.
+* UI.
+* Documentación.
+
+---
+
+# Criterios de aceptación
+
+Debe permitir:
+
+* Crear flujo.
+* Asignar revisores.
+* Aprobar.
+* Rechazar.
+* Publicar.
+* Mantener historial.
+
+---
+
+# Resultado después de LIB-05
+
+FACILIA Library se convierte en un sistema documental empresarial:
+
+✅ Gestión documental
+✅ Seguridad
+✅ Versionado
+✅ Auditoría
+✅ Aprobaciones
+✅ Gobierno documental
+
+Preparado para evolucionar hacia:
+
+* contratos;
+* firma digital;
+* OCR;
+* IA documental.

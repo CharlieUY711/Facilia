@@ -1,0 +1,396 @@
+# PROMPT GEO-04 — Agente Móvil / PWA de Captura GPS
+
+> **Rol**
+>
+> Actúa como un **Senior Mobile Workforce Architect** especializado en Progressive Web Apps (PWA), aplicaciones móviles empresariales, geolocalización, sincronización offline, consumo eficiente de batería y sistemas Field Service Management (FSM).
+>
+> El módulo **GEO — Geopositioning & Workforce Control** ya cuenta con:
+>
+> * GEO-00 — Documento funcional y arquitectura.
+> * GEO-01 — Modelo de dominio.
+> * GEO-02 — Backend Core y APIs.
+> * GEO-03 — Integración con Directory y Operations.
+>
+> Esta etapa implementa el componente móvil encargado de capturar ubicación de los colaboradores.
+>
+> **No desarrollar aplicación nativa Android/iOS.**
+>
+> **No implementar mapas.**
+>
+> **No implementar optimización de rutas.**
+>
+> La solución debe ser una **PWA empresarial** preparada para funcionar en celulares provistos por FACILIA.
+
+---
+
+# Objetivo
+
+Crear un agente móvil que permita:
+
+* identificar al empleado;
+* vincular el dispositivo;
+* iniciar sesión operativa;
+* capturar ubicación;
+* enviar posiciones al backend GEO;
+* funcionar con conectividad limitada.
+
+---
+
+# Principio fundamental
+
+El dispositivo no es el dueño de la información.
+
+El dispositivo solamente captura.
+
+El backend GEO es la fuente de verdad.
+
+---
+
+# Plataforma
+
+Implementar como:
+
+* Progressive Web App.
+* Responsive.
+* Mobile First.
+
+Preparada para:
+
+* Android corporativo;
+* Chrome Mobile;
+* instalación como aplicación.
+
+---
+
+# Flujo de usuario
+
+## Primer ingreso
+
+Empleado:
+
+1. Accede a la aplicación.
+2. Inicia sesión.
+3. Autoriza permisos de ubicación.
+4. Vincula dispositivo.
+5. Inicia jornada.
+
+---
+
+# Autenticación
+
+Utilizar el sistema existente FACILIA.
+
+No crear usuarios nuevos.
+
+Debe validar:
+
+* identidad;
+* organización;
+* permisos.
+
+---
+
+# Registro del dispositivo
+
+Al primer inicio:
+
+Registrar:
+
+* identificador del dispositivo;
+* sistema operativo;
+* navegador;
+* versión aplicación;
+* usuario asociado.
+
+Enviar:
+
+```text id="o2q4la"
+POST /api/geo/devices/register
+```
+
+---
+
+# Sesión de tracking
+
+Implementar:
+
+## Iniciar seguimiento
+
+Acción:
+
+"Comenzar jornada"
+
+Resultado:
+
+```text id="rx6kbi"
+TrackingSessionStarted
+```
+
+---
+
+## Finalizar seguimiento
+
+Acción:
+
+"Finalizar jornada"
+
+Resultado:
+
+```text id="7d3bck"
+TrackingSessionEnded
+```
+
+---
+
+# Captura GPS
+
+Implementar captura periódica.
+
+Registrar:
+
+* latitud;
+* longitud;
+* precisión;
+* timestamp;
+* estado conexión.
+
+---
+
+# Frecuencia configurable
+
+No fijar valores rígidos.
+
+Permitir configuración:
+
+Ejemplo:
+
+* cada 1 minuto;
+* cada 5 minutos;
+* cada 15 minutos.
+
+La configuración debe venir del backend.
+
+---
+
+# Optimización de batería
+
+Implementar buenas prácticas:
+
+* evitar GPS permanente;
+* aumentar intervalo cuando no hay movimiento;
+* enviar paquetes agrupados;
+* utilizar sincronización inteligente.
+
+---
+
+# Funcionamiento Offline
+
+Implementar almacenamiento local.
+
+Cuando no existe conexión:
+
+Guardar:
+
+* ubicaciones pendientes;
+* timestamps;
+* sesión activa.
+
+Al recuperar conexión:
+
+Sincronizar automáticamente.
+
+---
+
+# Cola de sincronización
+
+Crear:
+
+```text id="knv1b5"
+PendingLocations
+```
+
+Estados:
+
+```text id="gqum4m"
+PENDING
+
+SENT
+
+FAILED
+```
+
+---
+
+# Manejo de errores
+
+Controlar:
+
+* GPS desactivado;
+* permisos rechazados;
+* batería baja;
+* sin conexión;
+* sesión expirada.
+
+---
+
+# Pantallas mínimas
+
+---
+
+# Login
+
+Permitir autenticación.
+
+---
+
+# Inicio
+
+Mostrar:
+
+* usuario;
+* organización;
+* dispositivo;
+* estado tracking.
+
+---
+
+# Jornada
+
+Mostrar:
+
+* hora inicio;
+* estado GPS;
+* última sincronización;
+* cantidad de registros enviados.
+
+---
+
+# Estado
+
+Indicadores:
+
+🟢 Tracking activo
+
+🟡 Sin conexión
+
+🔴 GPS deshabilitado
+
+---
+
+# Seguridad
+
+Implementar:
+
+* token seguro;
+* expiración;
+* comunicación HTTPS;
+* no almacenar credenciales sensibles.
+
+---
+
+# Integración Backend GEO
+
+Consumir:
+
+```text id="k6zj0q"
+POST /api/geo/tracking/start
+
+POST /api/geo/tracking/end
+
+POST /api/geo/locations
+
+POST /api/geo/sync
+```
+
+---
+
+# Eventos generados
+
+El dispositivo NO genera eventos de negocio.
+
+Solo envía datos.
+
+Los eventos son responsabilidad del backend:
+
+```text id="ncv7ak"
+LocationRecorded
+
+EmployeeArrivedLocation
+
+EmployeeLeftLocation
+```
+
+---
+
+# Configuración remota
+
+Preparar:
+
+* intervalo GPS;
+* horario permitido;
+* política offline;
+* versión mínima.
+
+---
+
+# Administración futura
+
+Preparar para:
+
+* bloqueo remoto;
+* desvinculación;
+* actualización obligatoria.
+
+No implementar todavía.
+
+---
+
+# Calidad
+
+Todo debe:
+
+* compilar;
+* respetar TypeScript Strict;
+* funcionar en móvil;
+* manejar pérdida de conectividad;
+* evitar consumo excesivo de batería.
+
+---
+
+# Entregables
+
+Generar:
+
+* PWA GEO Agent.
+* Pantallas móviles.
+* Servicios de ubicación.
+* Cola offline.
+* Sincronización.
+* Integración API.
+* Documentación técnica.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+✅ ingresar con usuario FACILIA
+✅ registrar dispositivo
+✅ iniciar jornada
+✅ capturar ubicación
+✅ enviar posiciones
+✅ trabajar sin conexión
+✅ sincronizar automáticamente
+✅ finalizar jornada
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar compilación.
+2. Listar archivos creados/modificados.
+3. Confirmar compatibilidad con GEO-02 y GEO-03.
+4. Generar sección **"Contexto para GEO-05"** explicando la implementación del **Motor de Geocercas y Validaciones**, incluyendo cálculo de distancia, entrada/salida de zonas, permanencia, alertas y cruce con horarios y órdenes asignadas.

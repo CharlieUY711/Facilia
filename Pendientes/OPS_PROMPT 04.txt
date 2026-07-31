@@ -1,0 +1,485 @@
+# PROMPT OPS-04 — Gestión Integral de Órdenes de Trabajo (Work Order Management)
+
+> **Rol**
+>
+> Actúa como un **Enterprise Software Architect** especializado en Field Service Management (FSM), Computerized Maintenance Management Systems (CMMS), Facility Management, ERP empresariales, DDD y Clean Architecture.
+>
+> El módulo **Operations** ya cuenta con:
+>
+> * Arquitectura aprobada (OPS-00 y OPS-00.1).
+> * Backend implementado (OPS-01).
+> * Centro de Operaciones (OPS-02).
+> * Motor de Planificación (OPS-03).
+>
+> Esta etapa desarrolla el núcleo operativo diario: la **Gestión Integral de Órdenes de Trabajo (Work Orders)**.
+>
+> **No rediseñar el dominio existente.**
+>
+> **No romper compatibilidad con las etapas anteriores.**
+
+---
+
+# Objetivo
+
+Implementar el ciclo de vida completo de una Orden de Trabajo, desde su generación hasta su cierre, permitiendo controlar:
+
+* asignación de recursos;
+* prioridades;
+* dependencias;
+* ejecución;
+* validación;
+* cierre administrativo.
+
+La Orden de Trabajo es la unidad mínima de ejecución en FACILIA.
+
+---
+
+# Principio fundamental
+
+## Toda Orden de Trabajo debe derivar de un Servicio Programado o de un Contrato.
+
+No se permiten Órdenes de Trabajo "huérfanas".
+
+Solo se admitirán excepciones configuradas para:
+
+* emergencias;
+* servicios extraordinarios;
+* trabajos correctivos autorizados.
+
+Toda excepción debe quedar auditada.
+
+---
+
+# Ciclo de vida
+
+Implementar la siguiente máquina de estados:
+
+```text
+PLANNED
+    ↓
+READY
+    ↓
+ASSIGNED
+    ↓
+ACCEPTED
+    ↓
+IN_PROGRESS
+    ↓
+PAUSED
+    ↓
+RESUMED
+    ↓
+COMPLETED
+    ↓
+VALIDATED
+    ↓
+CLOSED
+```
+
+Estados alternativos:
+
+```text
+CANCELLED
+
+REJECTED
+
+FAILED
+```
+
+No permitir transiciones inválidas.
+
+---
+
+# Tipos de Orden
+
+Agregar soporte para:
+
+* Limpieza programada.
+* Mantenimiento preventivo.
+* Mantenimiento correctivo.
+* Inspección.
+* Reposición de insumos.
+* Servicio extraordinario.
+* Emergencia.
+* Auditoría.
+* Visita técnica.
+
+El catálogo debe ser configurable.
+
+---
+
+# Prioridades
+
+Implementar:
+
+```text
+LOW
+
+NORMAL
+
+HIGH
+
+URGENT
+
+CRITICAL
+```
+
+Las prioridades podrán modificar:
+
+* tiempos SLA;
+* orden de planificación;
+* visibilidad en dashboard.
+
+---
+
+# Recursos asignables
+
+Permitir asignar:
+
+* un empleado;
+* una cuadrilla;
+* un proveedor externo;
+* múltiples recursos.
+
+Registrar:
+
+* fecha de asignación;
+* usuario asignador;
+* aceptación;
+* rechazo;
+* reasignaciones.
+
+---
+
+# Dependencias entre órdenes
+
+Permitir definir relaciones:
+
+* bloquea;
+* depende de;
+* se ejecuta después de;
+* ejecución paralela.
+
+Una orden podrá impedir el inicio de otra si existe una dependencia activa.
+
+---
+
+# Ventanas de ejecución
+
+Cada Orden podrá definir:
+
+* fecha planificada;
+* hora de inicio;
+* hora límite;
+* duración estimada;
+* ventana permitida de ejecución.
+
+El sistema debe advertir incumplimientos.
+
+---
+
+# Validaciones de inicio
+
+Antes de iniciar una Orden verificar:
+
+* contrato activo;
+* servicio vigente;
+* recurso asignado;
+* estado correcto;
+* ventana de ejecución válida.
+
+En futuras versiones podrán añadirse validaciones de geolocalización y presencia.
+
+---
+
+# Gestión de tiempos
+
+Registrar automáticamente:
+
+* fecha de creación;
+* primera asignación;
+* aceptación;
+* inicio;
+* pausas;
+* reanudaciones;
+* finalización;
+* validación;
+* cierre.
+
+Calcular:
+
+* tiempo estimado;
+* tiempo real;
+* desviación;
+* productividad.
+
+---
+
+# Incidencias asociadas
+
+Permitir registrar incidencias durante la ejecución.
+
+Cada incidencia podrá:
+
+* afectar SLA;
+* generar seguimiento;
+* requerir aprobación;
+* escalarse.
+
+Integrar con el módulo de Incidencias desarrollado posteriormente.
+
+---
+
+# Evidencias
+
+Toda evidencia deberá almacenarse en **Library**.
+
+La Orden únicamente mantendrá referencias.
+
+Tipos soportados:
+
+* fotografías;
+* videos;
+* informes;
+* actas;
+* certificados;
+* documentos PDF;
+* firmas del cliente (preparado para OPS-05).
+
+---
+
+# Timeline
+
+Implementar un historial cronológico.
+
+Ejemplo:
+
+```text
+Orden creada
+
+↓
+
+Asignada
+
+↓
+
+Aceptada
+
+↓
+
+Inicio
+
+↓
+
+Pausa
+
+↓
+
+Reanudación
+
+↓
+
+Incidencia
+
+↓
+
+Finalización
+
+↓
+
+Validación
+
+↓
+
+Cierre
+```
+
+Todas las acciones deben quedar auditadas.
+
+---
+
+# Dashboard
+
+Agregar indicadores específicos:
+
+* Órdenes creadas.
+* Órdenes pendientes.
+* Órdenes en ejecución.
+* Órdenes atrasadas.
+* Órdenes vencidas.
+* Órdenes cerradas.
+* Tiempo promedio de ejecución.
+* Cumplimiento SLA.
+
+---
+
+# Integración con Planning
+
+Toda Orden deberá indicar claramente:
+
+* Plan Operativo.
+* Servicio Programado.
+* Frecuencia.
+* Próxima ejecución.
+
+---
+
+# Integración con Contract Management
+
+Mostrar:
+
+* contrato;
+* cliente;
+* ubicación;
+* SLA;
+* vigencia.
+
+Solo lectura.
+
+---
+
+# Integración con Directory
+
+Consumir:
+
+* empleados;
+* cuadrillas;
+* organizaciones;
+* ubicaciones.
+
+Nunca duplicar datos.
+
+---
+
+# APIs
+
+Agregar únicamente las necesarias.
+
+Ejemplos:
+
+```text
+POST /api/work-orders/{id}/ready
+
+POST /api/work-orders/{id}/accept
+
+POST /api/work-orders/{id}/reject
+
+POST /api/work-orders/{id}/assign
+
+POST /api/work-orders/{id}/reassign
+
+POST /api/work-orders/{id}/pause
+
+POST /api/work-orders/{id}/resume
+
+POST /api/work-orders/{id}/validate
+
+POST /api/work-orders/{id}/close
+
+GET /api/work-orders/{id}/timeline
+```
+
+Mantener compatibilidad con OPS-01.
+
+---
+
+# Frontend
+
+Ampliar el Centro de Operaciones.
+
+Agregar:
+
+* Panel de detalle avanzado de la Orden.
+* Gestión de asignaciones.
+* Dependencias.
+* Timeline.
+* Control de tiempos.
+* Indicadores SLA.
+* Historial de cambios.
+
+Reutilizar los componentes creados en OPS-02.
+
+---
+
+# Seguridad
+
+Todas las acciones deben registrar:
+
+* usuario;
+* fecha;
+* organización;
+* acción realizada;
+* estado anterior;
+* estado nuevo.
+
+Preparar integración futura con el Audit Log corporativo.
+
+---
+
+# Calidad
+
+Todo debe:
+
+* compilar sin errores;
+* respetar TypeScript Strict;
+* no utilizar `any`;
+* reutilizar componentes y servicios existentes;
+* mantener arquitectura Charlie Compliant.
+
+---
+
+# Exclusiones
+
+No implementar todavía:
+
+* aplicación móvil;
+* geolocalización;
+* firma del cliente;
+* checklists dinámicos avanzados;
+* optimización automática;
+* IA;
+* gestión de activos.
+
+---
+
+# Entregables
+
+Generar:
+
+* ampliaciones del modelo de dominio;
+* migraciones SQL necesarias;
+* nuevos casos de uso;
+* repositorios adicionales;
+* APIs;
+* componentes frontend;
+* timeline;
+* gestión de dependencias;
+* dashboard ampliado;
+* documentación técnica.
+
+Todo el código debe ser completamente funcional.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+* generar y administrar Órdenes de Trabajo;
+* asignar y reasignar recursos;
+* controlar prioridades y dependencias;
+* registrar tiempos e incidencias;
+* consultar el historial completo;
+* validar y cerrar órdenes;
+* mantener trazabilidad completa desde el contrato hasta la ejecución.
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar que toda la solución compile correctamente.
+2. Listar los archivos creados o modificados.
+3. Confirmar compatibilidad con **OPS-01**, **OPS-02** y **OPS-03**.
+4. Generar la sección **"Contexto para OPS-05"** con un resumen técnico para implementar la **Ejecución en Campo**, incluyendo aplicación móvil/PWA, checklists dinámicos, captura de evidencias, firma del cliente, trabajo offline y sincronización diferida, reutilizando toda la infraestructura construida hasta este punto.

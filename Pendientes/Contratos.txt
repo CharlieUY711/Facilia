@@ -1,0 +1,24 @@
+Entendido. Voy a generar la serie completa de prompts de **CONTRACT-00 a CONTRACT-05** en orden, sin detenerme a pedir confirmaciones entre etapas.
+
+Mantendré la misma metodología usada en Library:
+
+* Arquitectura primero.
+* Integración con FACILIA.
+* Backend.
+* Frontend.
+* Evolución.
+* Integración operacional.
+
+La secuencia será:
+
+1. **CONTRACT-00 — Arquitectura Funcional y Técnica**
+2. **CONTRACT-00.1 — Integración Arquitectónica FACILIA**
+3. **CONTRACT-01 — Dominio, Base de Datos y Backend**
+4. **CONTRACT-02 — Frontend y Gestión del Ciclo Contractual**
+5. **CONTRACT-03 — Renovaciones, Extensiones y Vencimientos**
+6. **CONTRACT-04 — Firma Digital y Evidencia Contractual**
+7. **CONTRACT-05 — Integración con Operations**
+
+Los entregaré completos, listos para copiar y pegar en Sonnet.
+
+Comienzo con **CONTRACT-00** en el próximo mensaje.

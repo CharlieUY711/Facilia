@@ -18,7 +18,7 @@ export default function CotizadorFormularioPage() {
 
   return (
     <div className="min-h-screen bg-paper">
-      <header className="bg-white border-b border-navy-100 sticky top-0 z-30">
+      <header className="bg-white border-b border-navy-100 sticky top-0 z-30 safe-top">
         <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Image src="/FACILIA_By.png" alt="FACILIA" width={138} height={35} />

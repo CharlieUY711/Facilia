@@ -1,0 +1,431 @@
+# PROMPT LIB-03 — Seguridad, Compartición, Auditoría e Integración Global del Módulo Library
+
+> **Rol**
+>
+> Actúa como un **Senior Software Architect / Full Stack Engineer** especializado en DDD, Clean Architecture, Next.js 15, React 19, TypeScript Strict, Supabase y PostgreSQL.
+>
+> El módulo **Library** ya fue implementado en:
+>
+> * **LIB-01** → Dominio, Base de Datos y Backend.
+> * **LIB-02** → Interfaz de Usuario.
+>
+> En esta etapa **no debes rediseñar ni reestructurar el módulo**. Debes extender la solución existente respetando completamente la arquitectura ya implementada.
+
+---
+
+# Objetivo
+
+Completar el módulo **Library** dejándolo listo para ser utilizado por todos los módulos de FACILIA.
+
+Esta etapa incorpora:
+
+* ACL
+* Compartición
+* Auditoría
+* Preparación para versionado
+* Integración transversal
+* Hardening
+* Optimización
+
+Al finalizar, el módulo deberá considerarse **MVP Finalizado**.
+
+---
+
+# Alcance
+
+Implementar únicamente:
+
+* Seguridad
+* Permisos
+* Compartición
+* Auditoría
+* Optimización
+* Integraciones
+
+No modificar el diseño del frontend.
+
+No cambiar el dominio existente.
+
+---
+
+# ACL (Access Control List)
+
+Implementar una arquitectura desacoplada para permisos.
+
+Crear las tablas necesarias.
+
+Como mínimo:
+
+## library_acl
+
+Debe permitir asignar permisos a:
+
+* Usuario
+* Rol
+* Organización
+
+Permisos soportados:
+
+* READ
+* WRITE
+* DELETE
+* SHARE
+* OWNER
+
+Cada documento podrá tener múltiples reglas.
+
+No hardcodear permisos.
+
+Utilizar enums y Value Objects.
+
+---
+
+# Compartición
+
+Implementar los casos de uso:
+
+ShareDocument
+
+UnshareDocument
+
+ListShares
+
+UpdateShare
+
+El documento podrá compartirse con:
+
+* Organizaciones
+* Roles
+* Usuarios
+
+Mantener siempre el propietario original.
+
+---
+
+# Herencia
+
+Definir una estrategia de herencia para permisos.
+
+Por ejemplo:
+
+Carpeta
+
+↓
+
+Subcarpeta
+
+↓
+
+Documento
+
+Debe poder sobreescribirse.
+
+---
+
+# Auditoría
+
+Crear infraestructura para registrar:
+
+Visualización
+
+Descarga
+
+Creación
+
+Edición
+
+Eliminación
+
+Compartición
+
+Mover
+
+Renombrar
+
+Cada registro debe almacenar:
+
+* usuario
+* organización
+* documento
+* acción
+* fecha
+* IP (si está disponible)
+* User-Agent (si está disponible)
+
+Implementar como servicio independiente.
+
+No mezclar con el dominio.
+
+---
+
+# Versionado
+
+No implementar versiones.
+
+Únicamente preparar la arquitectura.
+
+Agregar:
+
+DocumentVersionRepository
+
+VersionService
+
+VersionUseCases (vacíos o preparados)
+
+Modelo de datos preparado.
+
+---
+
+# Integración transversal
+
+Crear componente reutilizable:
+
+DocumentLinkService
+
+Debe permitir que cualquier módulo haga:
+
+```typescript
+attachDocument(entityType, entityId, documentId)
+
+detachDocument(entityType, entityId, documentId)
+
+listDocuments(entityType, entityId)
+```
+
+Sin conocer la implementación de Library.
+
+---
+
+# Library Picker
+
+Ampliar el componente creado en LIB-02.
+
+Agregar:
+
+Filtro por tipo
+
+Filtro por organización
+
+Filtro por carpeta
+
+Favoritos (preparado)
+
+Recientes (preparado)
+
+---
+
+# Organización
+
+Permitir que cada Organización tenga:
+
+Repositorio Privado
+
+Repositorio Público
+
+No permitir acceso cruzado al privado.
+
+Respetar RLS.
+
+---
+
+# Optimización
+
+Revisar:
+
+Queries
+
+Índices
+
+Storage
+
+Descargas
+
+Uploads
+
+Paginación
+
+Lazy Loading
+
+Virtualización de tablas (si corresponde)
+
+---
+
+# Hardening
+
+Revisar completamente:
+
+Errores
+
+Excepciones
+
+Validaciones
+
+Seguridad
+
+Tipos
+
+Imports
+
+Duplicaciones
+
+Código muerto
+
+Warnings
+
+---
+
+# Logging
+
+Agregar logging estructurado.
+
+No usar console.log.
+
+Utilizar el sistema estándar de FACILIA.
+
+Registrar únicamente eventos relevantes.
+
+---
+
+# Integración con módulos
+
+Preparar Library para utilizarse desde:
+
+* Organizaciones
+* Personas
+* Clientes
+* Proveedores
+* Presupuestos
+* Contratos (preparado)
+* Activos
+* Tickets
+* Órdenes de Trabajo
+* Facturación
+* Proyectos
+
+No modificar dichos módulos.
+
+Solo exponer servicios reutilizables.
+
+---
+
+# APIs
+
+Agregar únicamente las APIs faltantes:
+
+Compartir documento
+
+Revocar acceso
+
+Consultar permisos
+
+Consultar auditoría
+
+Listar documentos vinculados
+
+No romper compatibilidad.
+
+---
+
+# Calidad
+
+Todo debe:
+
+Compilar
+
+Sin warnings
+
+Sin `any`
+
+Sin código comentado
+
+Sin mocks
+
+Sin TODO
+
+Sin duplicación
+
+---
+
+# Exclusiones
+
+No implementar todavía:
+
+* OCR
+* Firma electrónica
+* Contratos
+* Renovaciones
+* Alertas
+* Flujos de aprobación
+* IA
+* Watermarks
+* Búsqueda Full Text
+* Indexación de contenido
+
+Dejar únicamente la arquitectura preparada para futuras etapas.
+
+---
+
+# Documentación
+
+Actualizar la documentación técnica del módulo con:
+
+* Arquitectura final.
+* Estructura de carpetas.
+* Modelo DDD.
+* APIs disponibles.
+* Casos de uso implementados.
+* Diagrama de dependencias.
+* Guía para integrar Library desde otros módulos.
+
+---
+
+# Entregables
+
+Generar todos los archivos completos.
+
+No generar pseudocódigo.
+
+No omitir implementaciones.
+
+No modificar funcionalidades existentes.
+
+Generar únicamente código.
+
+---
+
+# Criterios de aceptación
+
+Al finalizar:
+
+* Library debe funcionar completamente.
+* Debe existir repositorio Público y Privado.
+* Deben funcionar los permisos básicos mediante ACL.
+* Debe existir auditoría de acciones.
+* Debe poder compartirse un documento con usuarios, roles y organizaciones.
+* Debe existir un servicio transversal para asociar documentos a cualquier entidad del sistema.
+* Todo debe compilar sin errores.
+* Todo debe respetar la arquitectura Charlie Compliant.
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Ejecuta una revisión completa del módulo.
+2. Corrige automáticamente cualquier inconsistencia detectada.
+3. Elimina código duplicado o innecesario.
+4. Verifica que el módulo compile completamente.
+5. Lista todos los archivos creados o modificados.
+6. Genera un documento **LIBRARY-README.md** con la documentación funcional y técnica del módulo.
+7. Genera un apartado **"Preparado para Fase 2"** describiendo qué componentes y puntos de extensión quedaron listos para incorporar, en futuras iteraciones:
+
+   * Versionado de documentos.
+   * Gestión de contratos.
+   * Firma electrónica.
+   * OCR.
+   * Indexación y búsqueda semántica.
+   * Flujos de aprobación.
+   * Integración con IA.
+
+**No implementes esas funcionalidades; únicamente deja el módulo preparado para evolucionar sin cambios de arquitectura.**

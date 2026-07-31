@@ -1,0 +1,714 @@
+# PROMPT CONTRACT-00 — Arquitectura Funcional y Técnica del Módulo Contract Management
+
+> **Rol**
+>
+> Actúa como un **Enterprise Software Architect Senior**, especialista en DDD, Clean Architecture, Contract Lifecycle Management (CLM), plataformas SaaS multi-tenant, ERP empresarial y arquitectura modular.
+>
+> Tu objetivo en esta etapa es diseñar completamente el módulo **FACILIA Contract Management**.
+>
+> **No generes código.**
+>
+> **No generes SQL.**
+>
+> **No generes componentes frontend.**
+>
+> Esta etapa es exclusivamente de arquitectura funcional y técnica.
+
+---
+
+# Contexto
+
+FACILIA es una plataforma empresarial para gestión de servicios:
+
+* limpieza profesional;
+* mantenimiento;
+* continuidad operativa;
+* clientes;
+* operaciones;
+* documentación empresarial.
+
+Arquitectura base:
+
+* Next.js App Router.
+* TypeScript Strict.
+* Supabase.
+* PostgreSQL.
+* DDD.
+* Clean Architecture.
+* Repository Pattern.
+* Arquitectura modular Charlie Compliant.
+
+Los módulos principales son:
+
+```text
+FACILIA
+
+├── Directory
+├── Library
+├── Leads
+├── Quotations
+├── Contract Management
+├── Operations
+├── Assets
+└── Finance
+```
+
+---
+
+# Objetivo del módulo
+
+Crear el módulo responsable de administrar el ciclo de vida contractual de FACILIA.
+
+Contract Management no es un repositorio de documentos.
+
+El contrato es una entidad de negocio.
+
+Los documentos asociados viven en Library.
+
+---
+
+# Principio fundamental
+
+## Un contrato nunca nace aislado.
+
+Todo contrato debe ser consecuencia de un elemento existente dentro de FACILIA.
+
+Orígenes válidos:
+
+---
+
+## 1. Lead convertido
+
+Flujo:
+
+```text
+Lead
+
+↓
+
+Calificación
+
+↓
+
+Cotización
+
+↓
+
+Aceptación
+
+↓
+
+Contrato
+```
+
+---
+
+## 2. Extensión contractual
+
+Un cliente existente solicita ampliar:
+
+* servicios;
+* alcance;
+* ubicación;
+* frecuencia;
+* cobertura.
+
+Flujo:
+
+```text
+Contrato activo
+
+↓
+
+Solicitud extensión
+
+↓
+
+Nueva propuesta
+
+↓
+
+Extensión contractual
+```
+
+---
+
+## 3. Renovación
+
+Un contrato próximo a vencer genera una renovación.
+
+Flujo:
+
+```text
+Contrato vigente
+
+↓
+
+Renovación
+
+↓
+
+Nuevo período contractual
+```
+
+---
+
+# Restricción principal
+
+No debe existir:
+
+```text
+Crear contrato manual
+```
+
+sin referencia a una entidad origen.
+
+Todo contrato debe tener:
+
+* origen;
+* entidad origen;
+* historial.
+
+---
+
+# Concepto de contrato
+
+Un contrato representa:
+
+* quién contrata;
+* qué servicios recibe;
+* durante cuánto tiempo;
+* bajo qué condiciones;
+* con qué obligaciones;
+* cuál es su estado actual.
+
+---
+
+# Relación con otros módulos
+
+Definir arquitectura:
+
+```text
+                 Directory
+
+                    |
+                    |
+
+Leads → Quotations → Contracts → Operations
+
+                    |
+
+                 Library
+```
+
+---
+
+# Integración con Directory
+
+Directory administra:
+
+* Organizaciones.
+* Personas.
+* Relaciones.
+
+Contract Management consume esa información.
+
+No debe duplicar:
+
+* clientes;
+* contactos;
+* organizaciones.
+
+---
+
+# Integración con Quotations
+
+La cotización es el origen comercial.
+
+Debe existir trazabilidad:
+
+```text
+Quotation
+
+↓
+
+Contract
+```
+
+El contrato debe poder conocer:
+
+* cotización origen;
+* fecha aceptación;
+* valor aprobado;
+* servicios incluidos.
+
+---
+
+# Integración con Library
+
+Library administra documentos.
+
+Contract Management administra contexto.
+
+Ejemplo:
+
+```text
+Contrato Cliente ABC
+
+Documentos:
+
+Contrato firmado.pdf
+
+Anexo técnico.pdf
+
+SLA.pdf
+
+Acta inicio.pdf
+```
+
+---
+
+# Integración futura con Operations
+
+El contrato será la fuente para crear operación.
+
+Ejemplo:
+
+Contrato:
+
+```text
+Servicio:
+Limpieza oficinas
+
+Frecuencia:
+Lunes a viernes
+
+Horario:
+18:00 - 22:00
+
+Ubicación:
+Sucursal Centro
+
+SLA:
+24 horas
+```
+
+Operations utilizará esa información.
+
+---
+
+# Modelo conceptual del dominio
+
+Diseñar entidades:
+
+## Contract
+
+Entidad principal.
+
+Debe contemplar:
+
+* identificación;
+* organización cliente;
+* origen;
+* estado;
+* vigencia;
+* condiciones;
+* valor;
+* moneda;
+* fechas.
+
+---
+
+## ContractOrigin
+
+Representa cómo nació.
+
+Tipos:
+
+```text
+QUOTE
+
+EXTENSION
+
+RENEWAL
+```
+
+---
+
+## ContractService
+
+Representa servicios contratados.
+
+Ejemplo:
+
+Contrato:
+
+```text
+Cliente ABC
+
+Servicios:
+
+Limpieza diaria
+
+Mantenimiento preventivo
+
+Gestión insumos
+```
+
+---
+
+## ContractLocation
+
+Porque un cliente puede tener varias ubicaciones.
+
+---
+
+## ContractEvent
+
+Historial del ciclo.
+
+Ejemplo:
+
+```text
+Creado
+
+Aprobado
+
+Firmado
+
+Activado
+
+Renovado
+
+Cancelado
+```
+
+---
+
+# Estados del contrato
+
+Diseñar máquina de estados.
+
+Inicialmente:
+
+```text
+DRAFT
+
+REVIEW
+
+APPROVED
+
+SIGN_PENDING
+
+ACTIVE
+
+EXPIRING
+
+RENEWED
+
+EXPIRED
+
+CANCELLED
+```
+
+Definir:
+
+* transiciones válidas;
+* quién puede cambiar estados;
+* eventos generados.
+
+---
+
+# Ciclo de vida esperado
+
+Diseñar:
+
+```text
+Cotización aceptada
+
+↓
+
+Generación contrato
+
+↓
+
+Revisión
+
+↓
+
+Aprobación
+
+↓
+
+Firma
+
+↓
+
+Activo
+
+↓
+
+Operación
+
+↓
+
+Renovación / Finalización
+```
+
+---
+
+# Fechas importantes
+
+Definir:
+
+* fecha creación;
+* fecha aprobación;
+* fecha firma;
+* fecha inicio;
+* fecha fin;
+* fecha renovación;
+* fecha finalización.
+
+---
+
+# Renovaciones
+
+No diseñar todavía lógica avanzada.
+
+Pero dejar preparado:
+
+Un contrato puede generar nuevos períodos.
+
+Ejemplo:
+
+```text
+Contrato 2026
+
+↓
+
+Renovación 2027
+
+↓
+
+Renovación 2028
+```
+
+Manteniendo historia.
+
+---
+
+# Extensiones
+
+Una extensión no reemplaza el contrato original.
+
+Debe mantener:
+
+* contrato padre;
+* motivo;
+* cambios;
+* fecha efectiva.
+
+---
+
+# Auditoría
+
+Diseñar preparación para:
+
+* cambios de estado;
+* modificaciones;
+* documentos;
+* firmas;
+* renovaciones.
+
+---
+
+# Seguridad
+
+Definir:
+
+Multi organización.
+
+Reglas:
+
+Una organización solo puede acceder a sus contratos.
+
+FACILIA puede tener roles internos:
+
+* comercial;
+* operaciones;
+* administración;
+* dirección.
+
+---
+
+# DDD
+
+Definir:
+
+## Bounded Context
+
+Contract Management.
+
+---
+
+## Aggregates
+
+Definir:
+
+* Contract Aggregate.
+* Renewal Aggregate.
+* Extension Aggregate.
+
+---
+
+## Value Objects
+
+Identificar:
+
+* ContractNumber.
+* ContractStatus.
+* Money.
+* DateRange.
+
+---
+
+# Casos de uso
+
+Diseñar:
+
+Ejemplos:
+
+CreateContractFromQuotation
+
+CreateExtension
+
+CreateRenewal
+
+ApproveContract
+
+ActivateContract
+
+CancelContract
+
+GetContract
+
+ListContracts
+
+AttachContractDocument
+
+---
+
+# APIs futuras
+
+Definir endpoints conceptuales.
+
+Ejemplo:
+
+```text
+/contracts
+
+/contracts/:id
+
+/contracts/:id/services
+
+/contracts/:id/events
+
+/contracts/:id/documents
+
+/contracts/:id/renew
+```
+
+---
+
+# UI conceptual
+
+Diseñar:
+
+## Lista contratos
+
+Columnas:
+
+* número;
+* cliente;
+* origen;
+* estado;
+* inicio;
+* vencimiento;
+* valor.
+
+---
+
+## Detalle contrato
+
+Debe mostrar:
+
+* información general;
+* servicios;
+* timeline;
+* documentos;
+* renovaciones;
+* extensiones.
+
+---
+
+# Exclusiones
+
+No implementar:
+
+* firma digital;
+* OCR;
+* IA;
+* generación automática de contratos;
+* facturación;
+* planificación operativa.
+
+Solo arquitectura.
+
+---
+
+# Entregable
+
+Generar un documento técnico completo:
+
+1. Visión del módulo.
+2. Objetivos.
+3. Alcance.
+4. Principios.
+5. Integraciones.
+6. Modelo de dominio.
+7. Estados.
+8. Ciclo de vida.
+9. Casos de uso.
+10. Seguridad.
+11. Roadmap técnico.
+12. Reglas arquitectónicas.
+
+---
+
+# Criterios de aceptación
+
+Al finalizar debe quedar completamente definido:
+
+* qué es un contrato dentro de FACILIA;
+* cómo nace;
+* de qué depende;
+* cómo evoluciona;
+* cómo se conecta con Library;
+* cómo alimentará Operations.
+
+---
+
+# Contexto para CONTRACT-00.1
+
+Al finalizar generar una sección llamada:
+
+## "Contexto para CONTRACT-00.1"
+
+Debe resumir:
+
+* decisiones arquitectónicas tomadas;
+* módulos relacionados;
+* contratos de integración necesarios;
+* reglas que no deben romperse.
+
+Esta sección será utilizada para diseñar la integración definitiva del módulo Contract Management dentro de FACILIA.

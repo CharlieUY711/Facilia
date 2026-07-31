@@ -45,38 +45,38 @@ export default function ProgramarVisitaPage() {
   }
 
   return (
-    <main className="min-h-screen bg-paper p-10">
+    <main className="min-h-screen-safe bg-paper p-4 sm:p-10 safe-x safe-bottom">
 
-      <div className="max-w-xl mx-auto bg-white rounded-xl p-6 space-y-5">
+      <div className="max-w-xl mx-auto bg-white rounded-xl p-5 sm:p-6 space-y-5">
 
-        <h1 className="text-2xl font-bold text-navy">
+        <h1 className="text-xl sm:text-2xl font-bold text-navy">
           Programar visita FACILIA
         </h1>
 
         <div>
-          <label>Fecha</label>
+          <label className="block text-sm font-medium text-navy/70 mb-1">Fecha</label>
           <input
             type="date"
-            className="border rounded p-2 w-full"
+            className="border rounded p-2.5 w-full text-base"
             value={fecha}
             onChange={e=>setFecha(e.target.value)}
           />
         </div>
 
         <div>
-          <label>Hora</label>
+          <label className="block text-sm font-medium text-navy/70 mb-1">Hora</label>
           <input
             type="time"
-            className="border rounded p-2 w-full"
+            className="border rounded p-2.5 w-full text-base"
             value={hora}
             onChange={e=>setHora(e.target.value)}
           />
         </div>
 
         <div>
-          <label>Responsable</label>
+          <label className="block text-sm font-medium text-navy/70 mb-1">Responsable</label>
           <input
-            className="border rounded p-2 w-full"
+            className="border rounded p-2.5 w-full text-base"
             placeholder="Responsable de visita"
             value={responsable}
             onChange={e=>setResponsable(e.target.value)}
@@ -84,9 +84,9 @@ export default function ProgramarVisitaPage() {
         </div>
 
         <div>
-          <label>Notas</label>
+          <label className="block text-sm font-medium text-navy/70 mb-1">Notas</label>
           <textarea
-            className="border rounded p-2 w-full"
+            className="border rounded p-2.5 w-full text-base"
             value={notas}
             onChange={e=>setNotas(e.target.value)}
           />
@@ -94,13 +94,13 @@ export default function ProgramarVisitaPage() {
 
         <button
           onClick={guardar}
-          className="bg-navy text-white px-5 py-3 rounded"
+          className="bg-navy text-white px-5 py-3 rounded w-full sm:w-auto font-medium"
         >
           Confirmar visita
         </button>
 
         {mensaje &&
-          <p>{mensaje}</p>
+          <p className="text-sm">{mensaje}</p>
         }
 
       </div>

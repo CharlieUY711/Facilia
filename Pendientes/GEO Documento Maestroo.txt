@@ -1,0 +1,304 @@
+GEO — Geopositioning & Workforce Control
+Documento General Descriptivo
+1. Objetivo del módulo
+
+GEO es un módulo transversal de FACILIA encargado de registrar, gestionar y analizar información de ubicación del personal operativo utilizando dispositivos móviles provistos por la empresa.
+
+Su objetivo es brindar trazabilidad operativa, relacionando:
+
+Persona
++
+Dispositivo
++
+Horario
++
+Ubicación
++
+Tarea asignada
++
+Orden de Trabajo
+
+para verificar la correcta ejecución de los servicios.
+
+2. Problema que resuelve
+
+En servicios de limpieza, mantenimiento y continuidad operativa existe una necesidad crítica:
+
+confirmar llegada del personal;
+verificar permanencia en instalaciones;
+validar cumplimiento horario;
+detectar desvíos;
+generar confianza hacia el cliente.
+
+GEO permite transformar una actividad tradicionalmente basada en confianza en una operación medible.
+
+3. Principios del módulo
+GEO no ejecuta operaciones.
+
+Operations sigue siendo dueño de:
+
+contratos;
+servicios;
+órdenes;
+planificación;
+ejecución.
+
+GEO únicamente aporta:
+
+posición;
+presencia;
+eventos geográficos;
+evidencias.
+GEO no reemplaza supervisión humana.
+
+Es una herramienta de control y mejora.
+
+4. Alcance MVP (Versión 1)
+
+El primer alcance será:
+
+Gestión de dispositivos
+
+Registrar:
+
+celular asignado;
+usuario asociado;
+estado;
+última conexión.
+Registro de ubicación
+
+Capturar:
+
+latitud;
+longitud;
+fecha;
+hora;
+precisión GPS.
+Jornada
+
+Relacionar:
+
+inicio laboral;
+fin laboral;
+período activo.
+Geocercas básicas
+
+Definir:
+
+ubicación del cliente;
+radio permitido.
+
+Ejemplo:
+
+Cliente X:
+
+Radio 100 metros
+Presencia
+
+Detectar:
+
+entrada a zona;
+salida de zona;
+permanencia.
+Integración con Operations
+
+Cruzar:
+
+Orden asignada
+
++
+
+Horario esperado
+
++
+
+Ubicación real
+
+Ejemplo:
+
+Orden:
+
+Cliente ABC
+
+08:00 - 12:00
+
+GEO:
+
+Llegada:
+
+08:05
+
+Salida:
+
+11:55
+
+Resultado:
+
+✅ Cumplimiento correcto
+
+5. Fuera de alcance inicial
+
+No implementar todavía:
+
+navegación GPS;
+cálculo de rutas;
+optimización;
+seguimiento segundo a segundo;
+reconocimiento facial;
+IA;
+predicciones;
+gestión de flotas.
+6. Integraciones
+Directory
+
+Fuente:
+
+empleados;
+usuarios;
+organizaciones.
+Operations
+
+Fuente:
+
+órdenes;
+horarios;
+ubicaciones;
+asignaciones.
+Contract Management
+
+Fuente:
+
+sedes del cliente;
+ubicaciones autorizadas.
+Library
+
+Futuro:
+
+evidencias geográficas;
+reportes.
+7. Roadmap GEO
+GEO-00
+Documento funcional y arquitectura
+
+Objetivo:
+
+Definir:
+
+alcance;
+límites;
+integraciones;
+modelo conceptual.
+GEO-01
+Modelo de dominio y base de datos
+
+Crear:
+
+entidades;
+relaciones;
+migraciones;
+repositorios.
+
+Incluye:
+
+Device
+LocationRecord
+TrackingSession
+Geofence
+PresenceEvent
+GEO-02
+Backend Core
+
+Implementar:
+
+APIs;
+servicios;
+validaciones;
+almacenamiento.
+GEO-03
+Integración con Directory y Operations
+
+Permitir:
+
+asociar dispositivos;
+obtener tareas;
+validar presencia.
+GEO-04
+Aplicación móvil / Agente GPS MVP
+
+Implementar:
+
+login;
+identificación del dispositivo;
+envío periódico de ubicación;
+estado online/offline.
+GEO-05
+Motor de Geocercas
+
+Implementar:
+
+entrada;
+salida;
+permanencia;
+alertas básicas.
+GEO-06
+Panel Supervisor
+
+Implementar:
+
+mapa;
+personal activo;
+última ubicación;
+estado;
+tareas relacionadas.
+GEO-CLOSE
+
+Cierre:
+
+auditoría;
+documentación;
+arquitectura congelada.
+Lista de Prompts
+GEO-00
+
+Documento funcional y arquitectura
+
+GEO-01
+
+Modelo de dominio + SQL + persistencia
+
+GEO-02
+
+Backend y APIs
+
+GEO-03
+
+Integración Directory + Operations
+
+GEO-04
+
+App móvil / agente GPS MVP
+
+GEO-05
+
+Geocercas y validaciones
+
+GEO-06
+
+Dashboard supervisor
+
+GEO-CLOSE
+
+Cierre arquitectónico
+
+Recomendación de implementación
+
+Para el MVP yo haría:
+
+Primera versión vendible:
+
+✅ GEO-00
+✅ GEO-01
+✅ GEO-02
+✅ GEO-03
+✅ GEO-04
+✅ GEO-05

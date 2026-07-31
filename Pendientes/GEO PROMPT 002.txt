@@ -1,0 +1,516 @@
+# PROMPT GEO-02 — Backend Core, Servicios y APIs del Módulo GEO
+
+> **Rol**
+>
+> Actúa como un **Senior Backend Architect** especializado en SaaS multi-tenant, DDD, Clean Architecture, APIs REST, PostgreSQL, sistemas de geolocalización y plataformas Workforce Management.
+>
+> El módulo **GEO — Geopositioning & Workforce Control** ya cuenta con:
+>
+> * GEO-00 — Documento funcional y arquitectura.
+> * GEO-01 — Modelo de dominio y persistencia.
+>
+> Esta etapa implementa el backend funcional del módulo.
+>
+> **No desarrollar frontend.**
+>
+> **No desarrollar aplicación móvil.**
+>
+> **No implementar mapas.**
+>
+> **No modificar Operations ni Directory.**
+>
+> Mantener la arquitectura existente de FACILIA.
+
+---
+
+# Objetivo
+
+Implementar el backend del módulo GEO permitiendo:
+
+* administrar dispositivos;
+* iniciar y cerrar sesiones de seguimiento;
+* registrar ubicaciones;
+* administrar geocercas;
+* detectar eventos básicos;
+* consultar información geográfica operacional.
+
+---
+
+# Arquitectura requerida
+
+Mantener separación:
+
+```text
+Domain
+
+Application
+
+Infrastructure
+
+API
+```
+
+---
+
+# Domain Layer
+
+Implementar:
+
+## Entidades
+
+* Device
+* TrackingSession
+* LocationRecord
+* Geofence
+* PresenceEvent
+* LocationValidation
+
+según GEO-01.
+
+---
+
+# Value Objects
+
+Crear:
+
+## Coordinates
+
+Representa:
+
+* latitud;
+* longitud.
+
+Validaciones:
+
+* rango válido;
+* precisión.
+
+---
+
+## GeoRadius
+
+Representa radio permitido.
+
+---
+
+## TrackingPeriod
+
+Representa período activo.
+
+---
+
+# Repositories
+
+Implementar interfaces:
+
+```text
+DeviceRepository
+
+TrackingSessionRepository
+
+LocationRepository
+
+GeofenceRepository
+
+PresenceEventRepository
+
+LocationValidationRepository
+```
+
+---
+
+# Application Layer
+
+Implementar casos de uso.
+
+---
+
+# Device Management
+
+## RegisterDevice
+
+Permitir registrar:
+
+* dispositivo;
+* organización;
+* usuario asociado.
+
+---
+
+## UpdateDeviceStatus
+
+Cambiar:
+
+* activo;
+* bloqueado;
+* retirado.
+
+---
+
+## AssignDevice
+
+Asociar dispositivo a usuario.
+
+---
+
+# Tracking Sessions
+
+## StartTrackingSession
+
+Debe:
+
+* validar usuario;
+* validar dispositivo;
+* crear sesión.
+
+Evento:
+
+```text
+TrackingSessionStarted
+```
+
+---
+
+## EndTrackingSession
+
+Finalizar seguimiento.
+
+Evento:
+
+```text
+TrackingSessionEnded
+```
+
+---
+
+# Location Capture
+
+## RecordLocation
+
+Registrar:
+
+* empleado;
+* dispositivo;
+* coordenadas;
+* precisión;
+* timestamp.
+
+Validar:
+
+* sesión activa;
+* dispositivo autorizado.
+
+Evento:
+
+```text
+LocationRecorded
+```
+
+---
+
+# Geofences
+
+## CreateGeofence
+
+Permitir crear:
+
+* cliente;
+* oficina;
+* depósito.
+
+Datos:
+
+* nombre;
+* coordenadas;
+* radio.
+
+---
+
+## UpdateGeofence
+
+Modificar configuración.
+
+---
+
+## DisableGeofence
+
+Desactivar zona.
+
+---
+
+# Presence Detection
+
+Implementar lógica básica:
+
+Cuando una posición registrada está dentro de una geocerca:
+
+Generar:
+
+```text
+EmployeeArrivedLocation
+```
+
+Cuando sale:
+
+Generar:
+
+```text
+EmployeeLeftLocation
+```
+
+---
+
+# Location Validation
+
+Crear servicio:
+
+## ValidateLocationAgainstTask
+
+Preparado para integración con Operations.
+
+Entrada:
+
+```text
+employee_id
+
+work_order_id
+
+timestamp
+
+coordinates
+```
+
+Resultado:
+
+```text
+VALIDATED
+
+PARTIAL
+
+FAILED
+```
+
+---
+
+# APIs REST
+
+Crear endpoints:
+
+---
+
+# Devices
+
+```http
+GET /api/geo/devices
+
+POST /api/geo/devices
+
+PATCH /api/geo/devices/{id}
+```
+
+---
+
+# Tracking
+
+```http
+POST /api/geo/tracking/start
+
+POST /api/geo/tracking/end
+
+GET /api/geo/tracking/active
+```
+
+---
+
+# Locations
+
+Endpoint utilizado por móviles:
+
+```http
+POST /api/geo/locations
+```
+
+Payload:
+
+```json
+{
+ "device_id":"",
+ "latitude":0,
+ "longitude":0,
+ "accuracy":10,
+ "timestamp":""
+}
+```
+
+---
+
+Consultas:
+
+```http
+GET /api/geo/locations/{employee_id}
+
+GET /api/geo/locations/history
+```
+
+---
+
+# Geofences
+
+```http
+GET /api/geo/geofences
+
+POST /api/geo/geofences
+
+PATCH /api/geo/geofences/{id}
+```
+
+---
+
+# Presence
+
+```http
+GET /api/geo/presence/events
+
+GET /api/geo/presence/current
+```
+
+---
+
+# Seguridad
+
+Implementar:
+
+* autenticación existente FACILIA;
+* autorización por organización;
+* RLS;
+* validación de permisos.
+
+---
+
+# Multi-tenancy
+
+Todas las operaciones deben validar:
+
+```text
+organization_id
+```
+
+Nunca permitir acceso cruzado.
+
+---
+
+# Auditoría
+
+Registrar:
+
+* creación de dispositivos;
+* asignaciones;
+* modificaciones;
+* creación de geocercas;
+* cambios administrativos.
+
+---
+
+# Integración preparada con Operations
+
+No implementar todavía.
+
+Solo dejar interfaces preparadas.
+
+Futuros datos:
+
+```text
+work_order_id
+
+service_id
+
+location_id
+```
+
+---
+
+# Eventos
+
+Publicar:
+
+```text
+DeviceRegistered
+
+DeviceAssigned
+
+TrackingSessionStarted
+
+TrackingSessionEnded
+
+LocationRecorded
+
+EmployeeArrivedLocation
+
+EmployeeLeftLocation
+
+LocationDeviationDetected
+```
+
+---
+
+# Manejo de volumen
+
+Considerar:
+
+* alta frecuencia de LocationRecord;
+* consultas por rango temporal;
+* crecimiento histórico.
+
+Implementar estructura preparada para escalar.
+
+---
+
+# Calidad
+
+Todo debe:
+
+* compilar;
+* respetar TypeScript Strict;
+* no usar any;
+* seguir arquitectura Charlie Compliant;
+* mantener separación de dominios.
+
+---
+
+# Entregables
+
+Generar:
+
+* entidades;
+* servicios;
+* repositorios;
+* migraciones necesarias;
+* APIs REST;
+* validaciones;
+* eventos;
+* documentación técnica.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+✅ registrar dispositivos
+✅ iniciar seguimiento
+✅ enviar ubicaciones
+✅ crear geocercas
+✅ detectar entradas y salidas
+✅ consultar historial
+✅ mantener aislamiento multi-tenant
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Ejecutar validaciones de compilación.
+2. Listar archivos creados y modificados.
+3. Confirmar compatibilidad con GEO-00 y GEO-01.
+4. Generar sección **"Contexto para GEO-03"** explicando cómo integrar GEO con Directory y Operations para relacionar empleados, dispositivos, órdenes de trabajo, horarios y validaciones de presencia.

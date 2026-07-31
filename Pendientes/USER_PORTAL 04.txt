@@ -1,0 +1,578 @@
+# PROMPT PORTAL-04 — Customer Portal MVP: Transparencia, Servicios y Relación con el Cliente
+
+> **Rol**
+>
+> Actúa como un **Enterprise Product Architect** especializado en plataformas SaaS B2B, Customer Portals, gestión contractual, Facility Management, experiencia digital del cliente, DDD y arquitectura multi-tenant.
+>
+> El ecosistema:
+>
+> # FACILIA Portal Platform
+>
+> cuenta con:
+>
+> * PORTAL-00 — Documento Maestro Portal.
+> * PORTAL-01 — Identidad, Usuarios, Roles y Acceso.
+> * PORTAL-02 — Arquitectura Base del Portal FACILIA.
+> * PORTAL-03 — Employee Portal MVP.
+>
+> Esta etapa implementa:
+>
+> # Customer Portal MVP
+>
+> para clientes corporativos de FACILIA.
+>
+> **No modificar Contracts.**
+>
+> **No modificar Operations.**
+>
+> **No duplicar información contractual u operativa.**
+>
+> El portal consume información existente y autorizada.
+
+---
+
+# Objetivo
+
+Crear un portal donde el cliente pueda consultar y gestionar la relación operativa con FACILIA.
+
+El cliente debe poder responder:
+
+* ¿Qué contraté?
+* ¿Qué servicios tengo activos?
+* ¿Cuándo se ejecutan?
+* ¿Qué se realizó?
+* ¿Qué evidencias existen?
+* ¿Qué solicitudes están abiertas?
+
+---
+
+# Principio fundamental
+
+El Customer Portal no reemplaza a FACILIA.
+
+Es una ventana controlada hacia los módulos internos.
+
+Fuentes de verdad:
+
+```text id="1gk4r2"
+Contracts
+
+Operations
+
+Library
+
+Quality (futuro)
+```
+
+---
+
+# Arquitectura
+
+Flujo:
+
+```text id="x8q1kz"
+Contracts
+
+↓
+
+Customer Portal
+
+↓
+
+Cliente
+
+↓
+
+Operations
+
+↓
+
+Library
+
+↓
+
+COM
+```
+
+---
+
+# 1. Dashboard Cliente
+
+Ruta:
+
+```text id="b2m7k9"
+/customer
+```
+
+---
+
+Mostrar:
+
+## Resumen del servicio
+
+Ejemplo:
+
+```text id="9w5s1p"
+Empresa ABC
+
+Servicios activos:
+
+Limpieza Corporativa
+
+Estado:
+
+Operación normal
+
+Próxima visita:
+
+Mañana 08:00
+```
+
+---
+
+Indicadores:
+
+* contratos activos;
+* servicios próximos;
+* incidencias abiertas;
+* últimas evidencias.
+
+---
+
+# 2. Servicios contratados
+
+Ruta:
+
+```text id="z9q2cx"
+/customer/services
+```
+
+---
+
+Mostrar:
+
+* servicio;
+* frecuencia;
+* alcance;
+* ubicación;
+* horario.
+
+---
+
+Ejemplo:
+
+```text id="h8x3m4"
+Servicio:
+
+Limpieza oficinas
+
+Frecuencia:
+
+Lunes a viernes
+
+Horario:
+
+08:00 - 12:00
+```
+
+---
+
+# 3. Calendario operativo
+
+Ruta:
+
+```text id="m6y8zp"
+/customer/calendar
+```
+
+---
+
+Mostrar:
+
+* próximas visitas;
+* servicios realizados;
+* cambios programados.
+
+---
+
+Estados:
+
+```text id="p5k2rz"
+PROGRAMMED
+
+IN_PROGRESS
+
+COMPLETED
+
+INCIDENT
+```
+
+---
+
+# 4. Historial de servicios
+
+Ruta:
+
+```text id="q7m9ab"
+/customer/history
+```
+
+---
+
+Mostrar:
+
+* fecha;
+* servicio;
+* estado;
+* responsable;
+* evidencias disponibles.
+
+---
+
+Ejemplo:
+
+```text id="s1n4kc"
+30/07/2026
+
+Limpieza diaria
+
+Completado
+
+Ver evidencia
+```
+
+---
+
+# 5. Evidencias
+
+Integración:
+
+```text id="c4x8vn"
+Library
+```
+
+---
+
+Mostrar documentos autorizados:
+
+* fotografías;
+* reportes;
+* certificados;
+* actas.
+
+---
+
+Permisos:
+
+El cliente solo ve:
+
+```text id="n9p2lm"
+OWN_ORGANIZATION
+```
+
+---
+
+# 6. Contratos
+
+Ruta:
+
+```text id="r8k3yf"
+/customer/contracts
+```
+
+---
+
+Mostrar:
+
+* contrato vigente;
+* fecha inicio;
+* fecha fin;
+* alcance;
+* anexos autorizados.
+
+---
+
+No permitir:
+
+* edición contractual;
+* modificación de condiciones.
+
+---
+
+Acciones:
+
+* visualizar;
+* descargar;
+* solicitar renovación.
+
+---
+
+# 7. Solicitudes del cliente
+
+Ruta:
+
+```text id="v6m2qs"
+/customer/requests
+```
+
+---
+
+Permitir crear:
+
+## Solicitud adicional
+
+Ejemplos:
+
+* servicio extra;
+* cambio horario;
+* consulta.
+
+---
+
+## Reclamo
+
+Ejemplos:
+
+* incumplimiento;
+* observación;
+* problema operativo.
+
+---
+
+Modelo:
+
+```text id="d3w8hx"
+CustomerRequest
+```
+
+---
+
+Estados:
+
+```text id="r2f5qa"
+OPEN
+
+IN_REVIEW
+
+ANSWERED
+
+CLOSED
+```
+
+---
+
+# 8. Comunicación
+
+Integración:
+
+```text id="k5y9sp"
+COM
+```
+
+---
+
+Mostrar:
+
+* mensajes importantes;
+* avisos;
+* comunicaciones operativas.
+
+---
+
+# 9. Perfil organización cliente
+
+Ruta:
+
+```text id="w7z1hc"
+/customer/profile
+```
+
+---
+
+Mostrar:
+
+* empresa;
+* usuarios autorizados;
+* ubicaciones.
+
+---
+
+Administradores cliente pueden:
+
+* invitar usuarios;
+* gestionar permisos internos.
+
+---
+
+# 10. Componentes
+
+Crear:
+
+```text id="m8x4qd"
+CustomerDashboard
+
+ServiceCard
+
+ContractCard
+
+CalendarView
+
+EvidenceGallery
+
+RequestForm
+
+RequestList
+
+CommunicationPanel
+
+CustomerProfile
+```
+
+---
+
+# 11. Hooks
+
+Crear:
+
+```text id="x6v2bz"
+useCustomerServices()
+
+useContracts()
+
+useEvidence()
+
+useCustomerRequests()
+
+useCustomerProfile()
+```
+
+---
+
+# 12. APIs
+
+Consumir:
+
+```http id="p9k7cw"
+GET /api/customer/dashboard
+
+GET /api/customer/services
+
+GET /api/customer/contracts
+
+GET /api/customer/evidences
+
+GET /api/customer/history
+
+POST /api/customer/requests
+
+GET /api/customer/requests
+```
+
+---
+
+# 13. Seguridad
+
+Validar:
+
+* usuario cliente autenticado;
+* organización correcta;
+* permisos del cliente.
+
+Nunca permitir:
+
+* ver otro cliente;
+* ver información interna;
+* acceder a comunicaciones privadas del personal.
+
+---
+
+# 14. Experiencia de usuario
+
+Prioridades:
+
+1. confianza.
+2. transparencia.
+3. información clara.
+4. acceso rápido.
+5. sensación de control.
+
+---
+
+# 15. Preparación futura
+
+No implementar todavía:
+
+## Quality Portal
+
+Mostrar:
+
+* SLA;
+* indicadores;
+* auditorías.
+
+---
+
+## Contract Management avanzado
+
+* renovaciones;
+* firmas;
+* vencimientos.
+
+---
+
+## Facturación
+
+* estados;
+* pagos;
+* documentos fiscales.
+
+---
+
+# Entregables
+
+Generar:
+
+1. Pantallas Customer Portal MVP.
+2. Componentes React.
+3. Hooks.
+4. Integración APIs.
+5. Control permisos.
+6. Documentación funcional.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+✅ ingresar como cliente
+✅ ver servicios contratados
+✅ consultar calendario
+✅ consultar historial
+✅ visualizar evidencias
+✅ consultar contratos
+✅ crear solicitudes
+✅ comunicarse con FACILIA
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar compilación completa.
+2. Listar archivos creados/modificados.
+3. Confirmar compatibilidad con PORTAL-00 a PORTAL-03.
+4. Generar sección:
+
+# "Contexto para PORTAL-05"
+
+Incluyendo:
+
+* integración avanzada de portales;
+* dashboard ejecutivo;
+* indicadores operativos;
+* SLA;
+* Quality;
+* analítica cliente/FACILIA;
+* evolución hacia plataforma completa de Continuidad Operativa.

@@ -1,0 +1,465 @@
+# PROMPT CONTRACT-04 — Firma Digital, Evidencia Jurídica y Trazabilidad Contractual
+
+> **Rol**
+>
+> Actúa como un **Enterprise Software Architect** especializado en Contract Lifecycle Management (CLM), firma electrónica, firma digital, cumplimiento normativo, evidencia jurídica, SaaS empresariales, DDD y Clean Architecture.
+>
+> El módulo **Contract Management** ya cuenta con:
+>
+> * Arquitectura completa.
+> * Integración con FACILIA.
+> * Backend.
+> * Frontend.
+> * Gestión de renovaciones, extensiones y vencimientos.
+>
+> Esta etapa incorpora la capacidad de gestionar la firma del contrato y la evidencia legal asociada.
+>
+> **No modificar la arquitectura existente.**
+>
+> **No romper compatibilidad con los módulos anteriores.**
+
+---
+
+# Objetivo
+
+Agregar el proceso completo de firma contractual.
+
+El contrato debe poder:
+
+* solicitar firma;
+* registrar firmantes;
+* conocer el estado de cada firma;
+* almacenar la evidencia legal;
+* mantener una trazabilidad completa del proceso.
+
+La firma es una etapa del ciclo contractual, no un documento aislado.
+
+---
+
+# Principio fundamental
+
+## El contrato existe antes de ser firmado.
+
+El flujo correcto es:
+
+```text
+Lead
+
+↓
+
+Cotización
+
+↓
+
+Contrato
+
+↓
+
+Revisión
+
+↓
+
+Solicitud de firma
+
+↓
+
+Firmado
+
+↓
+
+Activo
+
+↓
+
+Operación
+```
+
+No generar un contrato nuevo cuando se firma.
+
+---
+
+# Arquitectura
+
+La firma debe implementarse como un módulo desacoplado.
+
+```text
+Contract
+
+      │
+
+Signature Request
+
+      │
+
+Signature Provider
+
+      │
+
+Evidence
+
+      │
+
+Library
+```
+
+El proveedor de firma debe poder cambiarse sin modificar el dominio.
+
+---
+
+# Proveedores
+
+Diseñar una interfaz genérica.
+
+Ejemplo:
+
+```text
+SignatureProvider
+```
+
+Preparar soporte para múltiples proveedores.
+
+Ejemplos:
+
+* DocuSign
+* Adobe Acrobat Sign
+* Signaturit
+* Evicertia
+* Otros
+
+No integrar todavía un proveedor específico.
+
+---
+
+# Firmantes
+
+Un contrato podrá tener uno o varios firmantes.
+
+Cada firmante debe registrar:
+
+* persona;
+* organización;
+* correo electrónico;
+* rol;
+* orden de firma;
+* estado;
+* fecha;
+* dirección IP (si el proveedor la devuelve);
+* identificador del proveedor.
+
+---
+
+# Estados de firma
+
+Implementar:
+
+```text
+PENDING
+
+SENT
+
+VIEWED
+
+SIGNED
+
+REJECTED
+
+EXPIRED
+
+CANCELLED
+```
+
+Separar claramente:
+
+Estado del contrato.
+
+Estado del proceso de firma.
+
+---
+
+# Solicitud de firma
+
+Implementar un flujo conceptual.
+
+```text
+Contrato aprobado
+
+↓
+
+Generar solicitud
+
+↓
+
+Enviar al proveedor
+
+↓
+
+Esperar firmas
+
+↓
+
+Completo
+
+↓
+
+Activar contrato
+```
+
+El contrato no debe pasar automáticamente a ACTIVO sin cumplir las reglas definidas.
+
+---
+
+# Evidencia jurídica
+
+Guardar como evidencia:
+
+* documento firmado;
+* certificado de firma;
+* comprobante del proveedor;
+* hash (si está disponible);
+* identificador de transacción;
+* fecha y hora;
+* auditoría.
+
+Todos los archivos deben almacenarse mediante Library.
+
+---
+
+# Integración con Library
+
+Library almacenará:
+
+* contrato firmado;
+* certificado de firma;
+* comprobantes;
+* anexos firmados.
+
+Contract Management únicamente mantendrá las referencias.
+
+---
+
+# Timeline
+
+Agregar nuevos eventos.
+
+Ejemplos:
+
+```text
+Solicitud creada
+
+↓
+
+Correo enviado
+
+↓
+
+Documento abierto
+
+↓
+
+Primer firmante completó
+
+↓
+
+Segundo firmante completó
+
+↓
+
+Contrato firmado
+
+↓
+
+Contrato activado
+```
+
+---
+
+# Dashboard
+
+Agregar indicadores.
+
+Ejemplos:
+
+Firmas pendientes
+
+Contratos enviados
+
+Contratos firmados
+
+Firmas rechazadas
+
+Tiempo promedio de firma
+
+---
+
+# Reenvío
+
+Permitir:
+
+* reenviar solicitud;
+* cancelar solicitud;
+* reiniciar proceso;
+* reemplazar firmante.
+
+Todo auditado.
+
+---
+
+# Reglas de negocio
+
+Ejemplos:
+
+No activar contrato si la firma es obligatoria y aún está pendiente.
+
+Permitir contratos sin firma electrónica únicamente cuando la configuración del tipo de contrato lo permita.
+
+Preparar políticas configurables.
+
+---
+
+# Integración con Renovaciones
+
+Una renovación podrá:
+
+* reutilizar firmantes;
+* generar una nueva solicitud;
+* conservar el historial de firmas anteriores.
+
+Nunca sobrescribir evidencia.
+
+---
+
+# Integración con Extensiones y Adendas
+
+Cada extensión o adenda podrá requerir:
+
+* firma independiente;
+* firma conjunta;
+* o no requerir firma.
+
+El comportamiento debe ser configurable.
+
+---
+
+# Seguridad
+
+Registrar:
+
+* usuario;
+* fecha;
+* acción;
+* proveedor;
+* evidencia;
+* estado;
+* auditoría completa.
+
+---
+
+# APIs
+
+Agregar únicamente las APIs necesarias.
+
+Ejemplos:
+
+```text
+POST /contracts/:id/signature/request
+
+POST /contracts/:id/signature/resend
+
+POST /contracts/:id/signature/cancel
+
+GET /contracts/:id/signature
+
+GET /contracts/:id/signatures
+
+GET /contracts/:id/evidence
+```
+
+---
+
+# Frontend
+
+Agregar:
+
+Panel de firma.
+
+Mostrar:
+
+* estado;
+* firmantes;
+* progreso;
+* evidencia;
+* historial.
+
+Agregar acciones:
+
+* enviar;
+* reenviar;
+* cancelar;
+* descargar evidencia.
+
+---
+
+# Calidad
+
+Todo debe:
+
+* compilar;
+* mantener compatibilidad completa;
+* reutilizar componentes existentes;
+* respetar la arquitectura definida.
+
+---
+
+# Exclusiones
+
+No implementar:
+
+* integración real con un proveedor;
+* pagos;
+* facturación;
+* IA;
+* OCR.
+
+Diseñar la infraestructura y dejar puntos de integración preparados.
+
+---
+
+# Entregables
+
+Generar:
+
+* ampliación del dominio;
+* migraciones necesarias;
+* entidades;
+* servicios;
+* repositorios;
+* APIs;
+* componentes frontend;
+* documentación técnica;
+* diagramas de flujo;
+* puntos de extensión para proveedores.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+* solicitar firmas;
+* consultar estado;
+* administrar firmantes;
+* registrar evidencia;
+* visualizar el proceso completo;
+* almacenar documentos firmados en Library;
+* activar el contrato una vez cumplidas las condiciones definidas.
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar que toda la solución compile.
+2. Listar archivos creados y modificados.
+3. Confirmar que la integración con Library continúa siendo la única responsable del almacenamiento documental.
+4. Generar la sección **"Contexto para CONTRACT-05"** con un resumen técnico para implementar la integración entre **Contract Management y Operations**, de forma que los contratos activos generen automáticamente los servicios operativos, planes de trabajo y órdenes de servicio correspondientes, sin duplicar información ni romper la arquitectura modular de FACILIA.

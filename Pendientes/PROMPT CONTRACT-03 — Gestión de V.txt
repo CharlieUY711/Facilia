@@ -1,0 +1,464 @@
+# PROMPT CONTRACT-03 — Gestión de Vencimientos, Renovaciones, Extensiones y Seguimiento Contractual
+
+> **Rol**
+>
+> Actúa como un **Enterprise Software Architect** especializado en Contract Lifecycle Management (CLM), SaaS B2B, ERP, gestión de servicios recurrentes, DDD y Clean Architecture.
+>
+> El módulo **Contract Management** ya dispone de:
+>
+> * Arquitectura aprobada.
+> * Integración con FACILIA.
+> * Backend implementado.
+> * Frontend operativo.
+>
+> Esta etapa agrega inteligencia de negocio al ciclo contractual.
+>
+> **No rediseñar el dominio existente.**
+>
+> **No modificar las APIs existentes salvo que sea estrictamente necesario.**
+>
+> Extender la solución respetando toda la arquitectura previamente implementada.
+
+---
+
+# Objetivo
+
+Convertir el contrato en una entidad viva que gestione automáticamente:
+
+* vencimientos;
+* renovaciones;
+* extensiones;
+* adendas;
+* seguimiento comercial;
+* alertas.
+
+El sistema debe ayudar al equipo comercial a que ningún contrato llegue a vencer sin seguimiento.
+
+---
+
+# Principio fundamental
+
+## Un contrato nunca debe "desaparecer".
+
+Durante toda su vida útil debe encontrarse en alguno de estos estados:
+
+```text
+Borrador
+
+↓
+
+Revisión
+
+↓
+
+Activo
+
+↓
+
+Próximo a vencer
+
+↓
+
+En negociación
+
+↓
+
+Renovado
+
+o
+
+Finalizado
+
+o
+
+Cancelado
+```
+
+Siempre debe existir trazabilidad.
+
+---
+
+# Gestión de vencimientos
+
+Implementar cálculo automático de:
+
+* días restantes;
+* meses restantes;
+* porcentaje consumido de la vigencia;
+* estado del contrato.
+
+---
+
+## Estados automáticos
+
+Ejemplo:
+
+Más de 90 días
+
+🟢 Vigente
+
+---
+
+Entre 90 y 60
+
+🟡 Seguimiento
+
+---
+
+Entre 60 y 30
+
+🟠 Renovación recomendada
+
+---
+
+Menos de 30
+
+🔴 Vencimiento inminente
+
+---
+
+Vencido
+
+⚫ Expirado
+
+---
+
+# Renovaciones
+
+Implementar el proceso de renovación.
+
+No reemplazar el contrato original.
+
+Crear una nueva instancia vinculada.
+
+Ejemplo:
+
+```text
+CTR-2026-000015
+
+↓
+
+Renovación
+
+↓
+
+CTR-2027-000003
+```
+
+Mantener:
+
+* historial;
+* documentos;
+* origen;
+* relación padre-hijo.
+
+---
+
+# Extensiones
+
+Permitir extender un contrato existente.
+
+Ejemplos:
+
+* nuevo edificio;
+* nuevo servicio;
+* aumento de frecuencia;
+* incorporación de personal.
+
+Registrar:
+
+* motivo;
+* fecha efectiva;
+* usuario;
+* impacto económico.
+
+---
+
+# Adendas
+
+Agregar soporte para adendas.
+
+Una adenda puede modificar:
+
+* alcance;
+* condiciones;
+* horarios;
+* SLA;
+* precios;
+* servicios.
+
+Las adendas deben quedar vinculadas al contrato y sus documentos deben almacenarse en Library.
+
+---
+
+# Seguimiento comercial
+
+Crear una sección específica para seguimiento.
+
+Registrar:
+
+* llamadas;
+* reuniones;
+* correos;
+* acuerdos;
+* observaciones.
+
+No sustituye un CRM, pero permite mantener el contexto contractual.
+
+---
+
+# Alertas
+
+Implementar alertas configurables.
+
+Ejemplos:
+
+90 días antes
+
+60 días antes
+
+30 días antes
+
+15 días antes
+
+7 días antes
+
+1 día antes
+
+Las alertas deben poder activarse o desactivarse por organización o por contrato.
+
+Preparar la arquitectura para futuras notificaciones por correo y dentro de la aplicación.
+
+---
+
+# Dashboard contractual
+
+Agregar indicadores.
+
+Ejemplos:
+
+Contratos activos
+
+Contratos próximos a vencer
+
+Contratos renovados este año
+
+Contratos cancelados
+
+Valor anual contratado
+
+Valor próximo a renovarse
+
+Tasa de renovación
+
+---
+
+# Timeline
+
+Extender el historial.
+
+Registrar automáticamente:
+
+Contrato creado
+
+↓
+
+Firmado
+
+↓
+
+Activado
+
+↓
+
+Primera renovación
+
+↓
+
+Segunda renovación
+
+↓
+
+Adenda
+
+↓
+
+Extensión
+
+↓
+
+Finalización
+
+---
+
+# Árbol contractual
+
+Implementar una visualización del árbol de evolución.
+
+Ejemplo:
+
+```text
+Contrato Inicial
+
+├── Adenda 1
+
+├── Adenda 2
+
+├── Extensión
+
+└── Renovación 2027
+
+      ├── Adenda
+
+      └── Renovación 2028
+```
+
+---
+
+# Indicadores visuales
+
+Mostrar badges.
+
+Ejemplos:
+
+Renovable
+
+Renovado
+
+Con adendas
+
+Con extensiones
+
+Firma pendiente
+
+Seguimiento pendiente
+
+---
+
+# Integración con Library
+
+Mostrar automáticamente:
+
+Contrato
+
+Adendas
+
+Anexos
+
+Actas
+
+Correspondencia
+
+Todos administrados por Library.
+
+---
+
+# Integración con Quotations
+
+Cuando una extensión implique cambios comerciales importantes, permitir generar una nueva cotización vinculada.
+
+No crear contratos sin referencia.
+
+---
+
+# Integración futura con Operations
+
+Preparar la posibilidad de que una renovación actualice automáticamente el plan operativo asociado.
+
+No implementar todavía.
+
+---
+
+# Integración futura con Finance
+
+Preparar eventos para:
+
+* actualización de valores;
+* reajustes;
+* indexaciones;
+* facturación recurrente.
+
+No implementar.
+
+---
+
+# Seguridad
+
+Todas las acciones deben quedar auditadas.
+
+Registrar:
+
+* usuario;
+* fecha;
+* motivo;
+* cambios realizados.
+
+---
+
+# Calidad
+
+Todo debe:
+
+* compilar sin errores;
+* mantener compatibilidad con CONTRACT-01 y CONTRACT-02;
+* reutilizar componentes existentes;
+* evitar duplicación de lógica.
+
+---
+
+# Exclusiones
+
+No implementar todavía:
+
+* firma digital;
+* OCR;
+* IA;
+* generación automática de contratos;
+* facturación;
+* workflows externos.
+
+---
+
+# Entregables
+
+Generar:
+
+* ampliaciones del modelo de dominio;
+* migraciones SQL necesarias;
+* nuevos casos de uso;
+* repositorios adicionales si son necesarios;
+* APIs nuevas;
+* modificaciones del frontend;
+* dashboard;
+* timeline extendido;
+* árbol contractual;
+* alertas;
+* documentación técnica.
+
+Todo el código debe ser completamente funcional.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+* identificar contratos próximos a vencer;
+* generar renovaciones;
+* crear extensiones;
+* registrar adendas;
+* visualizar el historial completo;
+* consultar el árbol de evolución contractual;
+* administrar alertas;
+* mantener trazabilidad desde la cotización original hasta la última renovación.
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar que toda la solución compile correctamente.
+2. Listar los archivos creados o modificados.
+3. Confirmar compatibilidad con CONTRACT-01 y CONTRACT-02.
+4. Generar la sección **"Contexto para CONTRACT-04"** con un resumen técnico para implementar la **firma digital, evidencia jurídica, trazabilidad de firmas y proveedores externos**, sin alterar el modelo contractual existente.

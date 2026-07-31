@@ -1,0 +1,597 @@
+# PROMPT PORTAL-CLOSE — Cierre y Congelamiento Arquitectónico de FACILIA Portal Platform v1.0
+
+> **Rol**
+>
+> Actúa como un **Principal Enterprise Software Architect** especializado en plataformas SaaS B2B, arquitectura modular, DDD, Clean Architecture, Facility Management, Customer Experience y plataformas digitales empresariales.
+>
+> El ecosistema:
+>
+> # FACILIA Portal Platform
+>
+> completó su primera versión arquitectónica.
+>
+> Etapas realizadas:
+>
+> * PORTAL-00 — Documento Maestro Portal.
+> * PORTAL-01 — Identidad, Usuarios, Roles y Acceso.
+> * PORTAL-02 — Arquitectura Base del Portal FACILIA.
+> * PORTAL-03 — Employee Portal MVP.
+> * PORTAL-04 — Customer Portal MVP.
+> * PORTAL-05 — Integración Avanzada, Dashboards, SLA y Analítica.
+>
+> Esta etapa tiene como objetivo cerrar formalmente la plataforma de portales FACILIA versión 1.0.
+>
+> **No agregar nuevas funcionalidades.**
+>
+> **No modificar dominios existentes.**
+>
+> **No ampliar alcance.**
+>
+> Realizar únicamente documentación final, validación arquitectónica y congelamiento.
+
+---
+
+# Objetivo
+
+Generar la documentación oficial:
+
+# FACILIA Portal Platform v1.0
+
+Definiendo:
+
+* arquitectura final;
+* responsabilidades;
+* integraciones;
+* límites;
+* roadmap futuro.
+
+---
+
+# 1. Visión final
+
+Documentar que FACILIA Portal Platform es la capa de interacción humana del ecosistema.
+
+Permite conectar:
+
+```text
+ id="1v0nqz"
+Cliente
+
+↓
+
+FACILIA
+
+↓
+
+Supervisor
+
+↓
+
+Empleado operativo
+```
+
+---
+
+# 2. Arquitectura final
+
+Documentar:
+
+```text
+ id="h7f4mz"
+
+                         FACILIA PLATFORM
+
+
+                          DIRECTORY
+                              |
+                              |
+        ------------------------------------------------
+        |                     |                        |
+   CONTRACTS            OPERATIONS                  LIBRARY
+        |                     |                        |
+        |                     |                        |
+        ------------------------------------------------
+                              |
+                           PORTALS
+                              |
+             ----------------------------------
+             |                                |
+     EMPLOYEE PORTAL                  CUSTOMER PORTAL
+             |
+             |
+       ----------------
+       |              |
+      COM            GEO
+```
+
+---
+
+# 3. Responsabilidad de cada portal
+
+---
+
+# Employee Portal
+
+Responsabilidad:
+
+Permitir ejecución operacional.
+
+Debe resolver:
+
+* qué tarea realizar;
+* cuándo realizarla;
+* dónde realizarla;
+* cómo reportarla.
+
+---
+
+Consume:
+
+* Operations;
+* COM;
+* GEO;
+* Library.
+
+---
+
+# Customer Portal
+
+Responsabilidad:
+
+Dar transparencia y control al cliente.
+
+Debe resolver:
+
+* qué contrató;
+* qué servicios tiene;
+* qué se realizó;
+* qué evidencia existe.
+
+---
+
+Consume:
+
+* Contracts;
+* Operations;
+* Library;
+* Quality futuro.
+
+---
+
+# 4. Modelo de acceso definitivo
+
+Documentar:
+
+```text
+ id="9a2m6c"
+
+Directory
+
+    |
+
+Person
+
+    |
+
+Portal User
+
+    |
+
+Organization Membership
+
+    |
+
+Role
+
+    |
+
+Permission
+
+    |
+
+Portal
+```
+
+---
+
+# 5. Roles finales
+
+## Internos FACILIA
+
+* Platform Admin.
+* Operations Manager.
+* Supervisor.
+* Employee.
+
+---
+
+## Clientes
+
+* Customer Admin.
+* Customer User.
+
+---
+
+# 6. Integraciones definitivas
+
+## Directory
+
+Responsable:
+
+Identidad.
+
+---
+
+## Operations
+
+Responsable:
+
+Servicios y ejecución.
+
+---
+
+## Contracts
+
+Responsable:
+
+Compromiso comercial.
+
+---
+
+## Library
+
+Responsable:
+
+Documentos y evidencias.
+
+---
+
+## COM
+
+Responsable:
+
+Comunicación operacional.
+
+---
+
+## GEO
+
+Responsable:
+
+Validación espacial y temporal.
+
+---
+
+# 7. Flujos completos
+
+## Ejecución de servicio
+
+```text
+ id="8y6p4a"
+
+Contrato activo
+
+↓
+
+Planificación
+
+↓
+
+Orden de trabajo
+
+↓
+
+Asignación empleado
+
+↓
+
+Comunicación WhatsApp
+
+↓
+
+Confirmación
+
+↓
+
+Llegada al sitio
+
+↓
+
+Ejecución
+
+↓
+
+Fotos/evidencias
+
+↓
+
+Cierre
+
+↓
+
+Cliente visualiza resultado
+```
+
+---
+
+# 8. Employee Journey
+
+Documentar:
+
+```text
+ id="q2v9ms"
+
+Login
+
+↓
+
+Ve tareas
+
+↓
+
+Confirma
+
+↓
+
+Ejecuta
+
+↓
+
+Carga evidencia
+
+↓
+
+Reporta incidentes
+
+↓
+
+Finaliza
+```
+
+---
+
+# 9. Customer Journey
+
+Documentar:
+
+```text
+ id="m5w8za"
+
+Login
+
+↓
+
+Ve servicios
+
+↓
+
+Consulta calendario
+
+↓
+
+Revisa ejecución
+
+↓
+
+Consulta evidencias
+
+↓
+
+Realiza solicitudes
+
+```
+
+---
+
+# 10. Arquitectura técnica final
+
+Confirmar:
+
+```text
+ id="3n5k8p"
+
+Next.js App Router
+
+React
+
+TypeScript Strict
+
+Tailwind CSS
+
+Supabase Auth
+
+PostgreSQL
+
+APIs internas
+
+Arquitectura modular
+```
+
+---
+
+# 11. Componentes compartidos
+
+Documentar:
+
+* Layouts.
+* Navegación.
+* Guards.
+* Permisos.
+* Componentes UI.
+* Hooks.
+* Servicios frontend.
+
+---
+
+# 12. Seguridad final
+
+Confirmar:
+
+✅ Multi-tenant
+✅ Separación organizaciones
+✅ Control por roles
+✅ Auditoría
+✅ Protección evidencias
+✅ Protección datos clientes
+
+---
+
+# 13. Indicadores disponibles
+
+## Operación
+
+* servicios realizados;
+* pendientes;
+* incidencias;
+* evidencias.
+
+---
+
+## Comunicación
+
+* mensajes enviados;
+* confirmaciones;
+* entregas.
+
+---
+
+## Cliente
+
+* cumplimiento;
+* actividad;
+* solicitudes.
+
+---
+
+# 14. Límites arquitectónicos
+
+Declarar:
+
+Los portales:
+
+NO administran:
+
+* contratos;
+* empleados;
+* órdenes;
+* archivos;
+* inventarios;
+* ubicación.
+
+Solo presentan y permiten interactuar con capacidades existentes.
+
+---
+
+# 15. Roadmap futuro
+
+No implementar.
+
+Documentar:
+
+---
+
+# Portal 2.0
+
+## Cliente avanzado
+
+* aprobación digital;
+* firmas;
+* SLA;
+* evaluaciones.
+
+---
+
+## Empleado avanzado
+
+* capacitación;
+* certificaciones;
+* comunicación interna.
+
+---
+
+## Analytics
+
+* indicadores históricos;
+* tendencias;
+* predicciones.
+
+---
+
+## Mobile App
+
+* aplicación nativa;
+* modo offline;
+* gestión avanzada.
+
+---
+
+# 16. Declaración de congelamiento
+
+Generar:
+
+# FACILIA Portal Platform v1.0 — ARCHITECTURE FROZEN
+
+Estado:
+
+✅ Arquitectura definida
+✅ Usuarios definidos
+✅ Roles definidos
+✅ Portales definidos
+✅ Integraciones definidas
+✅ Límites establecidos
+
+Toda evolución futura deberá:
+
+* extender capacidades;
+* crear nuevas versiones;
+* mantener compatibilidad.
+
+No realizar cambios destructivos.
+
+---
+
+# 17. Resultado final
+
+Con Portal Platform cerrado, FACILIA dispone de:
+
+## Una plataforma donde:
+
+El empleado:
+
+> recibe, ejecuta y demuestra su trabajo.
+
+El supervisor:
+
+> controla la operación.
+
+El cliente:
+
+> visualiza y valida el servicio recibido.
+
+FACILIA:
+
+> transforma una prestación operativa en una experiencia digital de continuidad operativa.
+
+---
+
+## Estado final del ecosistema FACILIA
+
+```text
+DIRECTORY
+    |
+CONTRACTS
+    |
+OPERATIONS
+    |
+COM
+    |
+GEO
+    |
+LIBRARY
+    |
+PORTALS
+    |
+CUSTOMER EXPERIENCE
+```
+
+**Módulo PORTALS cerrado versión 1.0.**

@@ -1,0 +1,581 @@
+# PROMPT OPS-00 — Arquitectura Funcional y Técnica del Módulo Operations
+
+> **Rol**
+>
+> Actúa como un **Enterprise Software Architect Senior**, especializado en Facility Management, Field Service Management (FSM), ERP empresariales, DDD, Event-Driven Architecture y Clean Architecture.
+>
+> Tu misión es diseñar completamente el módulo **FACILIA Operations**.
+>
+> **No generar código.**
+>
+> **No generar SQL.**
+>
+> **No generar componentes React.**
+>
+> Esta etapa es exclusivamente de arquitectura funcional y técnica.
+
+---
+
+# Contexto
+
+FACILIA ya dispone de los siguientes módulos:
+
+* Directory
+* Leads
+* Quotations
+* Library
+* Contract Management
+
+Operations será el núcleo operativo de la plataforma.
+
+Su función es transformar los servicios contratados en actividades planificadas, ejecutadas, auditables y medibles.
+
+---
+
+# Objetivo del módulo
+
+Diseñar un sistema que permita administrar integralmente la operación de FACILIA, desde la generación del plan operativo hasta el cierre del servicio.
+
+Operations debe responder a cuatro preguntas fundamentales:
+
+* **¿Qué** hay que hacer?
+* **¿Cuándo** hay que hacerlo?
+* **¿Quién** lo hará?
+* **¿Cómo sabemos que se hizo correctamente?**
+
+---
+
+# Principio fundamental
+
+## Ninguna operación existe sin contrato.
+
+Todo el trabajo operativo debe originarse en un contrato vigente.
+
+El flujo oficial de FACILIA será:
+
+```text
+Lead
+    ↓
+Cotización
+    ↓
+Contrato Activo
+    ↓
+Plan Operativo
+    ↓
+Servicios Programados
+    ↓
+Órdenes de Trabajo
+    ↓
+Ejecución
+    ↓
+Evidencias
+    ↓
+Indicadores
+```
+
+Operations nunca crea contratos.
+
+---
+
+# Alcance
+
+Operations administrará:
+
+* planes operativos;
+* programación de servicios;
+* órdenes de trabajo;
+* asignación de recursos;
+* ejecución;
+* checklists;
+* incidencias;
+* control de SLA;
+* seguimiento operativo;
+* indicadores.
+
+---
+
+# Exclusiones
+
+Operations NO administra:
+
+* clientes (Directory);
+* contratos (Contract Management);
+* documentos (Library);
+* cotizaciones;
+* facturación;
+* inventario financiero.
+
+---
+
+# Integraciones
+
+Definir la arquitectura con:
+
+## Directory
+
+Consumir:
+
+* organizaciones;
+* personas;
+* ubicaciones;
+* empleados.
+
+Nunca duplicar datos.
+
+---
+
+## Contract Management
+
+Consumir:
+
+* servicios contratados;
+* frecuencias;
+* horarios;
+* SLA;
+* sedes;
+* restricciones.
+
+El contrato será la única fuente de verdad contractual.
+
+---
+
+## Library
+
+Toda evidencia generada durante la ejecución deberá almacenarse en Library.
+
+Operations únicamente mantendrá referencias.
+
+Ejemplos:
+
+* fotografías;
+* videos;
+* informes;
+* firmas del cliente;
+* certificados.
+
+---
+
+## Finance (futuro)
+
+Preparar eventos para:
+
+* servicios extraordinarios;
+* horas adicionales;
+* penalizaciones;
+* cumplimiento de SLA;
+* servicios no ejecutados.
+
+No implementar.
+
+---
+
+# Modelo conceptual
+
+Diseñar las entidades principales.
+
+Como mínimo:
+
+## OperationalPlan
+
+Representa la planificación derivada del contrato.
+
+---
+
+## ServiceSchedule
+
+Representa una programación específica.
+
+Ejemplo:
+
+Limpieza diaria.
+
+Todos los lunes.
+
+18:00.
+
+---
+
+## WorkOrder
+
+Unidad operativa ejecutable.
+
+Debe representar una actividad concreta.
+
+---
+
+## Assignment
+
+Asignación de personas o equipos.
+
+---
+
+## Execution
+
+Resultado de la ejecución.
+
+---
+
+## Checklist
+
+Lista de verificación.
+
+---
+
+## Evidence
+
+Referencia a documentos almacenados en Library.
+
+---
+
+## Incident
+
+Incidencias ocurridas durante la ejecución.
+
+---
+
+## SLA
+
+Cumplimiento contractual.
+
+---
+
+# Ciclo operativo
+
+Diseñar el ciclo completo.
+
+Ejemplo:
+
+```text
+Plan Operativo
+
+↓
+
+Servicio Programado
+
+↓
+
+Orden de Trabajo
+
+↓
+
+Asignación
+
+↓
+
+Inicio
+
+↓
+
+Ejecución
+
+↓
+
+Checklist
+
+↓
+
+Evidencias
+
+↓
+
+Validación
+
+↓
+
+Cierre
+```
+
+---
+
+# Estados
+
+Diseñar la máquina de estados.
+
+Como mínimo:
+
+```text
+PLANNED
+
+SCHEDULED
+
+ASSIGNED
+
+IN_PROGRESS
+
+PAUSED
+
+COMPLETED
+
+VALIDATED
+
+CLOSED
+
+CANCELLED
+```
+
+Definir transiciones válidas.
+
+---
+
+# Recursos
+
+Diseñar cómo representar:
+
+* empleados;
+* cuadrillas;
+* proveedores externos;
+* equipos de trabajo.
+
+Sin implementar RRHH.
+
+---
+
+# Frecuencias
+
+Preparar soporte para:
+
+* diaria;
+* semanal;
+* quincenal;
+* mensual;
+* anual;
+* personalizada.
+
+---
+
+# SLA
+
+Diseñar el modelo conceptual.
+
+Ejemplos:
+
+* tiempo máximo de respuesta;
+* tiempo máximo de resolución;
+* frecuencia mínima;
+* porcentaje de cumplimiento.
+
+---
+
+# Incidencias
+
+Definir el modelo para registrar:
+
+* desvíos;
+* problemas;
+* observaciones;
+* reclamos;
+* acciones correctivas.
+
+---
+
+# Evidencias
+
+Operations no almacena archivos.
+
+Toda evidencia deberá registrarse mediante referencias a Library.
+
+---
+
+# Dashboard
+
+Definir indicadores.
+
+Ejemplos:
+
+* servicios planificados;
+* servicios ejecutados;
+* cumplimiento SLA;
+* incidencias abiertas;
+* productividad;
+* órdenes pendientes.
+
+---
+
+# Casos de uso
+
+Diseñar los principales casos de uso.
+
+Ejemplos:
+
+CreateOperationalPlan
+
+GenerateScheduledServices
+
+CreateWorkOrder
+
+AssignResources
+
+StartExecution
+
+CompleteExecution
+
+RegisterIncident
+
+AttachEvidence
+
+ValidateExecution
+
+CloseWorkOrder
+
+GetOperationalCalendar
+
+ListPendingWorkOrders
+
+GetOperationalDashboard
+
+---
+
+# Eventos de dominio
+
+Diseñar eventos conceptuales.
+
+Ejemplos:
+
+OperationalPlanCreated
+
+WorkOrderCreated
+
+WorkOrderAssigned
+
+ExecutionStarted
+
+ExecutionCompleted
+
+IncidentRegistered
+
+EvidenceAttached
+
+WorkOrderClosed
+
+SLAExceeded
+
+---
+
+# APIs conceptuales
+
+Definir únicamente la estructura.
+
+Ejemplos:
+
+```text
+/operations
+
+/work-orders
+
+/work-orders/{id}
+
+/assignments
+
+/schedules
+
+/incidents
+
+/dashboard
+```
+
+No implementar.
+
+---
+
+# UI conceptual
+
+Definir las pantallas necesarias.
+
+Como mínimo:
+
+* Centro de Operaciones.
+* Calendario.
+* Agenda.
+* Órdenes de Trabajo.
+* Detalle de Orden.
+* Incidencias.
+* Dashboard.
+
+---
+
+# Escalabilidad
+
+Preparar la arquitectura para soportar:
+
+* múltiples organizaciones;
+* múltiples sedes;
+* múltiples contratos;
+* múltiples equipos;
+* miles de órdenes diarias.
+
+---
+
+# Calidad
+
+La arquitectura debe ser:
+
+* modular;
+* desacoplada;
+* escalable;
+* testeable;
+* Charlie Compliant.
+
+---
+
+# Entregables
+
+Generar un documento técnico completo que incluya:
+
+1. Visión del módulo.
+2. Objetivos.
+3. Alcance.
+4. Integraciones.
+5. Modelo de dominio.
+6. Entidades.
+7. Casos de uso.
+8. Máquina de estados.
+9. Eventos de dominio.
+10. APIs conceptuales.
+11. Arquitectura recomendada.
+12. Riesgos y decisiones de diseño.
+
+---
+
+# Restricciones
+
+No generar:
+
+* código;
+* SQL;
+* componentes React;
+* APIs implementadas.
+
+Únicamente arquitectura.
+
+---
+
+# Criterios de aceptación
+
+Al finalizar debe quedar completamente definido:
+
+* qué es Operations;
+* cómo se integra con Contract Management;
+* cómo administra la ejecución;
+* cómo registra evidencias;
+* cómo controla SLA;
+* cómo se relaciona con Library;
+* cómo se prepara para las siguientes etapas.
+
+---
+
+# Contexto para OPS-00.1
+
+Finalizar el documento con una sección denominada:
+
+## **"Contexto para OPS-00.1"**
+
+Debe resumir:
+
+* decisiones arquitectónicas adoptadas;
+* entidades del dominio;
+* bounded contexts;
+* integraciones requeridas;
+* eventos de dominio previstos;
+* reglas de negocio que no podrán romperse.
+
+Este contexto será la base para diseñar la integración completa de **Operations** con el resto de los módulos de FACILIA antes de comenzar la implementación técnica.

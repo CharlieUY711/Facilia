@@ -1,0 +1,625 @@
+# PROMPT COM-01 — Modelo de Dominio, Persistencia y Arquitectura Técnica del Módulo COM
+
+> **Rol**
+>
+> Actúa como un **Enterprise Domain Architect** especializado en DDD, Clean Architecture, sistemas SaaS multi-tenant, comunicaciones empresariales, integración con WhatsApp Business API y plataformas de Field Service Management.
+>
+> El módulo:
+>
+> # COM — Communications Hub
+>
+> cuenta con:
+>
+> * COM-00 — Documento Maestro Funcional.
+>
+> Esta etapa debe definir el modelo técnico del dominio y la persistencia.
+>
+> **No implementar código todavía.**
+>
+> **No implementar Twilio todavía.**
+>
+> **No crear frontend.**
+>
+> **No modificar Operations, Directory ni Library.**
+>
+> El objetivo es crear una base arquitectónica estable para la implementación posterior.
+
+---
+
+# Objetivo
+
+Diseñar el dominio COM para gestionar:
+
+* comunicaciones operativas;
+* conversaciones;
+* mensajes;
+* plantillas;
+* reglas automáticas;
+* respuestas;
+* evidencias;
+* integraciones externas.
+
+---
+
+# Principio fundamental
+
+COM administra comunicaciones.
+
+No administra:
+
+* órdenes de trabajo;
+* empleados;
+* clientes;
+* archivos;
+* contratos.
+
+Debe referenciar esos dominios.
+
+---
+
+# Bounded Context
+
+Definir:
+
+```text
+COM — Communications Hub
+```
+
+Responsabilidad:
+
+Transformar eventos operativos en comunicaciones trazables.
+
+---
+
+# Arquitectura
+
+Mantener:
+
+```text
+Domain
+
+Application
+
+Infrastructure
+
+API
+```
+
+---
+
+# Modelo de dominio
+
+Implementar conceptualmente:
+
+---
+
+# 1. Conversation
+
+## Responsabilidad
+
+Representar una comunicación operacional relacionada con un contexto.
+
+Ejemplo:
+
+```text
+Orden 000123
+
+Empleado:
+Juan Pérez
+
+Cliente:
+Empresa ABC
+```
+
+---
+
+## Campos
+
+Definir:
+
+* id;
+* organization_id;
+* employee_id;
+* work_order_id;
+* channel;
+* estado;
+* fecha inicio;
+* fecha cierre.
+
+---
+
+## Estados
+
+```text
+OPEN
+
+CLOSED
+
+ARCHIVED
+```
+
+---
+
+# 2. Message
+
+Representa un mensaje individual.
+
+Puede ser:
+
+* enviado;
+* recibido.
+
+---
+
+## Tipos
+
+```text
+TEXT
+
+IMAGE
+
+DOCUMENT
+
+LOCATION
+
+SYSTEM
+```
+
+---
+
+## Dirección
+
+```text
+OUTBOUND
+
+INBOUND
+```
+
+---
+
+## Estados
+
+```text
+CREATED
+
+SENT
+
+DELIVERED
+
+READ
+
+FAILED
+```
+
+---
+
+## Campos
+
+Definir:
+
+* conversation_id;
+* contenido;
+* proveedor;
+* external_id;
+* timestamp;
+* usuario origen.
+
+---
+
+# 3. CommunicationTemplate
+
+Representa una plantilla reutilizable.
+
+Ejemplos:
+
+* asignación de tarea;
+* recordatorio;
+* solicitud de evidencia.
+
+---
+
+## Campos
+
+* nombre;
+* organización;
+* tipo;
+* contenido;
+* variables;
+* estado.
+
+---
+
+# 4. CommunicationRule
+
+Define automatizaciones.
+
+Ejemplo:
+
+```text
+Evento:
+
+WorkOrderAssigned
+
+Acción:
+
+Enviar WhatsApp
+```
+
+---
+
+## Campos
+
+* evento origen;
+* plantilla;
+* canal;
+* destinatario;
+* condiciones.
+
+---
+
+# 5. DeliveryRecord
+
+Registra interacción con proveedores externos.
+
+Ejemplo:
+
+Twilio.
+
+---
+
+Campos:
+
+* provider;
+* external_message_id;
+* estado;
+* timestamps.
+
+---
+
+# 6. EvidenceReference
+
+Referencia a evidencias recibidas.
+
+No almacenar archivos.
+
+Library es propietaria.
+
+Guardar:
+
+* library_file_id;
+* message_id;
+* contexto.
+
+---
+
+# 7. CommunicationPreference
+
+Configuración de comunicación.
+
+Ejemplo:
+
+Empleado:
+
+* WhatsApp habilitado.
+* Horario permitido.
+
+---
+
+# Relaciones
+
+Modelo conceptual:
+
+```text
+Organization
+
+    |
+
+Conversation
+
+    |
+
+Message
+
+    |
+
+DeliveryRecord
+
+
+CommunicationTemplate
+
+    |
+
+CommunicationRule
+
+
+Message
+
+    |
+
+EvidenceReference
+```
+
+---
+
+# Integración con Directory
+
+No crear:
+
+* Employee;
+* User;
+* Phone.
+
+Referenciar:
+
+```text
+employee_id
+
+user_id
+
+organization_id
+```
+
+---
+
+# Integración con Operations
+
+No crear:
+
+* WorkOrder.
+
+Referenciar:
+
+```text
+work_order_id
+```
+
+---
+
+# Integración con Library
+
+No almacenar:
+
+* imágenes;
+* documentos.
+
+Guardar:
+
+```text
+library_file_id
+```
+
+---
+
+# Integración con Twilio
+
+Crear abstracción:
+
+```text
+CommunicationProvider
+```
+
+Implementaciones futuras:
+
+```text
+TwilioWhatsAppProvider
+
+EmailProvider
+
+SMSProvider
+```
+
+---
+
+# Repositorios
+
+Definir interfaces:
+
+```text
+ConversationRepository
+
+MessageRepository
+
+TemplateRepository
+
+RuleRepository
+
+DeliveryRepository
+```
+
+---
+
+# Casos de uso
+
+Definir:
+
+---
+
+## SendCommunication
+
+Enviar comunicación.
+
+---
+
+## ReceiveMessage
+
+Procesar mensaje entrante.
+
+---
+
+## CreateTemplate
+
+Administrar plantillas.
+
+---
+
+## ExecuteCommunicationRule
+
+Ejecutar automatización.
+
+---
+
+## RegisterDeliveryStatus
+
+Actualizar estado Twilio.
+
+---
+
+## AttachEvidenceReference
+
+Relacionar evidencia.
+
+---
+
+# Eventos de dominio
+
+Definir:
+
+```text
+CommunicationCreated
+
+CommunicationSent
+
+CommunicationDelivered
+
+CommunicationFailed
+
+MessageReceived
+
+EmployeeConfirmedTask
+
+EmployeeRejectedTask
+
+EvidenceReceived
+
+OperationalIssueReported
+```
+
+---
+
+# Base de datos
+
+Diseñar migraciones PostgreSQL.
+
+Requerimientos:
+
+* UUID.
+* organization_id obligatorio.
+* timestamps.
+* auditoría.
+* soft delete donde aplique.
+
+---
+
+# Índices
+
+Preparar consultas por:
+
+## Messages
+
+* conversación;
+* fecha;
+* estado.
+
+---
+
+## Conversations
+
+* empleado;
+* orden;
+* organización.
+
+---
+
+## Rules
+
+* evento;
+* estado activo.
+
+---
+
+# Multi-tenancy
+
+Toda entidad debe respetar:
+
+```text
+organization_id
+```
+
+Nunca permitir acceso cruzado.
+
+---
+
+# Seguridad
+
+Registrar:
+
+* creación;
+* modificación;
+* ejecución automática;
+* mensajes enviados.
+
+---
+
+# Performance
+
+Considerar:
+
+* alto volumen de mensajes;
+* multimedia;
+* historial largo.
+
+Preparar estrategia futura de:
+
+* archivado;
+* retención;
+* búsqueda.
+
+---
+
+# Entregables
+
+Generar:
+
+1. Modelo entidad-relación.
+2. Entidades de dominio.
+3. Relaciones.
+4. Value Objects.
+5. Migraciones SQL propuestas.
+6. Interfaces de repositorio.
+7. Casos de uso.
+8. Eventos.
+9. Decisiones arquitectónicas.
+
+---
+
+# Criterios de aceptación
+
+Debe quedar definido:
+
+✅ cómo se almacenan comunicaciones
+✅ cómo se relacionan con operaciones
+✅ cómo se integra WhatsApp sin acoplamiento
+✅ cómo se reciben evidencias
+✅ cómo se mantiene trazabilidad completa
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar que el modelo no duplica responsabilidades de otros módulos.
+2. Confirmar compatibilidad con arquitectura FACILIA.
+3. Listar entidades finales.
+4. Generar sección:
+
+# "Contexto para COM-02"
+
+Incluyendo:
+
+* implementación del backend;
+* integración con Twilio WhatsApp API;
+* webhooks de entrada;
+* envío de mensajes;
+* manejo de estados de entrega;
+* seguridad de credenciales.

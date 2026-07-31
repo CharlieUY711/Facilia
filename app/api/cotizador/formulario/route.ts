@@ -1,6 +1,14 @@
 import { NextResponse } from "next/server";
 import { createServiceClient } from "@/lib/supabase/server";
 
+// Sin esto, Next.js App Router trata este GET como estático (no usa
+// cookies/headers/params dinámicos) y lo congela en el build/primer
+// request — sirviendo esa respuesta vieja hasta el próximo deploy, sin
+// volver a consultar Supabase. Bug real detectado en producción: los
+// UPDATE de limpieza de pasos/campos (2026-07-30) no se reflejaban en
+// /api/cotizador/formulario pese a estar aplicados en la base.
+export const dynamic = "force-dynamic";
+
 /**
  * GET /api/cotizador/formulario
  *
@@ -10,10 +18,15 @@ import { createServiceClient } from "@/lib/supabase/server";
  *   cotizador_opciones (activas) de esa variable.
  * - si no, salen de la columna `opciones` propia del campo (jsonb).
  *
- * Pública (sin requireAdmin): la va a consumir el cotizador público
- * (Etapa 5D). Por ahora no la usa nadie todavía — sirve para verificar
- * que la estructura cargada en la Etapa 5B se resuelve correctamente
- * antes de tocar CotizadorForm.tsx.
+ * Pública (sin requireAdmin). La consume components/CotizadorForm.tsx
+ * (fetch a este endpoint al montar el wizard) — pero solo para resolver
+ * las OPCIONES de cada campo vía buscarCampoPorCodigo()/conOpciones()/
+ * conFilas(); la estructura de pasos/navegación del wizard sigue
+ * hardcodeada en el componente, no viene de acá. Ojo: buscarCampoPorCodigo
+ * busca por código de campo de NIVEL SUPERIOR únicamente — no resuelve
+ * códigos que solo existen anidados dentro de `opciones.filas` (ver
+ * CAMPO.tipo_ambiente en CotizadorForm.tsx, que por este motivo nunca
+ * matchea y siempre cae al catálogo hardcodeado legado).
  *
  * Shape de respuesta:
  * {

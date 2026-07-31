@@ -1,0 +1,406 @@
+Estoy de acuerdo. Si **OPS-06 es el último prompt de esta etapa**, el siguiente no debería agregar funcionalidades. Debería ser un **prompt de cierre, consolidación y congelamiento arquitectónico** del módulo. Eso evita que Sonnet siga desarrollando y, en cambio, deje el módulo listo para integrarse con el resto de FACILIA.
+
+---
+
+# PROMPT OPS-CLOSE — Cierre y Congelamiento del Módulo Operations
+
+> **Rol**
+>
+> Actúa como un **Principal Enterprise Software Architect** especializado en DDD, Clean Architecture, Enterprise ERP, Facility Management (FM), Field Service Management (FSM) y arquitectura de plataformas SaaS multi-tenant.
+>
+> El módulo **Operations** ha finalizado su primera versión funcional.
+>
+> Han sido completadas las etapas:
+>
+> * OPS-00 — Documento Funcional
+> * OPS-00.1 — Arquitectura de Integración
+> * OPS-01 — Backend
+> * OPS-02 — Frontend
+> * OPS-03 — Motor de Planificación
+> * OPS-04 — Work Orders
+> * OPS-05 — Ejecución en Campo
+> * OPS-06 — Recursos, Activos y Equipamiento
+>
+> **No agregar nuevas funcionalidades.**
+>
+> **No generar código nuevo.**
+>
+> **No modificar el dominio.**
+>
+> El objetivo es consolidar, auditar y congelar la arquitectura del módulo.
+
+---
+
+# Objetivo
+
+Realizar el cierre técnico del módulo **Operations**, dejando una base estable, documentada y preparada para evolucionar sin romper compatibilidad.
+
+Este documento será la referencia oficial para futuros desarrollos.
+
+---
+
+# Auditoría Arquitectónica
+
+Realizar una revisión completa del módulo verificando:
+
+* consistencia del dominio;
+* límites de contexto (Bounded Contexts);
+* Aggregate Roots;
+* Value Objects;
+* entidades;
+* repositorios;
+* casos de uso;
+* eventos de dominio;
+* APIs públicas;
+* integración con otros módulos.
+
+Detectar inconsistencias y proponer correcciones únicamente si afectan la arquitectura.
+
+---
+
+# Inventario Técnico
+
+Generar un inventario completo de todo el módulo.
+
+Como mínimo incluir:
+
+## Dominio
+
+* entidades;
+* agregados;
+* value objects;
+* enums;
+* eventos;
+* reglas de negocio.
+
+---
+
+## Persistencia
+
+Listar:
+
+* tablas;
+* índices;
+* relaciones;
+* vistas;
+* migraciones SQL.
+
+---
+
+## Backend
+
+Listar:
+
+* servicios;
+* repositories;
+* DTOs;
+* casos de uso;
+* APIs;
+* validaciones;
+* middleware;
+* eventos publicados y consumidos.
+
+---
+
+## Frontend
+
+Listar:
+
+* páginas;
+* layouts;
+* componentes;
+* hooks;
+* context providers;
+* tablas;
+* dashboards;
+* formularios.
+
+---
+
+# Matriz de Integraciones
+
+Documentar todas las dependencias con otros módulos.
+
+## Directory
+
+Qué consume.
+
+Qué publica.
+
+---
+
+## Leads
+
+Integración existente o futura.
+
+---
+
+## Cotizaciones
+
+Relación con Operations.
+
+---
+
+## Contract Management
+
+Cómo se generan los Planes Operativos.
+
+Qué datos consume.
+
+Qué nunca debe modificar.
+
+---
+
+## Library
+
+Cómo se almacenan evidencias.
+
+Cómo se consultan documentos.
+
+---
+
+## Finance (futuro)
+
+Eventos previstos.
+
+No implementar.
+
+---
+
+## Assets (futuro)
+
+Interfaces previstas.
+
+---
+
+# Eventos de Dominio
+
+Generar un catálogo completo.
+
+Para cada evento indicar:
+
+* productor;
+* consumidor;
+* payload conceptual;
+* objetivo.
+
+---
+
+# APIs Públicas
+
+Documentar todas las APIs.
+
+Clasificarlas por dominio.
+
+Identificar:
+
+* públicas;
+* internas;
+* futuras.
+
+---
+
+# Reglas Arquitectónicas Inmutables
+
+Definir explícitamente las reglas que no podrán romperse.
+
+Ejemplos:
+
+* Operations nunca modifica contratos.
+* Operations nunca almacena archivos.
+* Library es el único repositorio documental.
+* Directory es la única fuente de personas y organizaciones.
+* Todo trabajo deriva de un contrato o servicio autorizado.
+* Ningún módulo accede directamente a tablas de otro dominio.
+* Toda integración se realiza mediante APIs, servicios o eventos.
+
+---
+
+# Dependencias Permitidas
+
+Documentar qué dependencias son válidas.
+
+Ejemplo:
+
+```text
+Directory
+        ↓
+Contract Management
+        ↓
+Operations
+        ↓
+Library
+```
+
+Documentar también las dependencias prohibidas.
+
+---
+
+# Checklist de Calidad
+
+Verificar:
+
+* Clean Architecture.
+* DDD.
+* TypeScript Strict.
+* Charlie Compliant.
+* Multi-tenant.
+* Soft Delete.
+* RLS.
+* Auditoría.
+* APIs REST consistentes.
+* Naming conventions.
+* Sin código duplicado.
+* Sin dependencias circulares.
+
+---
+
+# Roadmap de Evolución
+
+Documentar las futuras extensiones sin implementarlas.
+
+Ejemplos:
+
+* Calidad y Auditorías.
+* Business Intelligence.
+* Automatización.
+* Inteligencia Artificial.
+* Optimización de rutas.
+* Inventario.
+* Gestión de activos.
+* Integraciones IoT.
+
+Indicar que todas serán módulos opcionales y desacoplados.
+
+---
+
+# Documentación Final
+
+Generar un documento ejecutivo con:
+
+## Resumen del módulo
+
+Qué resuelve.
+
+Qué procesos cubre.
+
+Qué procesos no cubre.
+
+---
+
+## Flujo operativo completo
+
+Desde:
+
+Lead aprobado
+
+↓
+
+Cotización
+
+↓
+
+Contrato
+
+↓
+
+Plan Operativo
+
+↓
+
+Calendario
+
+↓
+
+Servicio Programado
+
+↓
+
+Orden de Trabajo
+
+↓
+
+Asignación
+
+↓
+
+Ejecución
+
+↓
+
+Evidencias
+
+↓
+
+Cierre
+
+---
+
+## Modelo Conceptual
+
+Explicar las relaciones entre todas las entidades principales.
+
+---
+
+## Mapa de Navegación
+
+Documentar todas las pantallas implementadas.
+
+---
+
+## Mapa de APIs
+
+Documentar todas las APIs disponibles.
+
+---
+
+## Mapa de Eventos
+
+Documentar todos los eventos publicados y consumidos.
+
+---
+
+# Declaración de Arquitectura Congelada
+
+Finalizar el documento con la sección:
+
+# **OPERATIONS — ARQUITECTURA CONGELADA (VERSIÓN 1.0)**
+
+Declarar formalmente que:
+
+* el modelo de dominio queda congelado;
+* los Aggregate Roots quedan definidos;
+* las APIs públicas quedan estabilizadas;
+* los eventos públicos quedan estabilizados;
+* las integraciones quedan documentadas;
+* cualquier nueva funcionalidad deberá implementarse mediante extensiones compatibles, sin romper contratos existentes.
+
+---
+
+# Entregables
+
+Generar exclusivamente documentación técnica.
+
+No generar:
+
+* código;
+* SQL;
+* componentes React;
+* migraciones;
+* APIs nuevas.
+
+---
+
+# Criterios de aceptación
+
+Al finalizar deberá existir una documentación completa que permita:
+
+* comprender el funcionamiento integral del módulo;
+* auditar su arquitectura;
+* integrarlo con cualquier otro módulo de FACILIA;
+* mantener compatibilidad futura;
+* utilizar este documento como especificación oficial para el mantenimiento y evolución de **Operations**.
+
+---
+
+Con este prompt, el módulo **Operations** queda formalmente cerrado en su **Versión 1.0**, listo para integrarse con los demás dominios de FACILIA sin seguir incorporando funcionalidades dentro de este ciclo.

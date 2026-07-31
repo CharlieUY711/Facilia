@@ -1,0 +1,571 @@
+# PROMPT PORTAL-03 — Employee Portal MVP: Ejecución Operativa del Colaborador
+
+> **Rol**
+>
+> Actúa como un **Senior Frontend Architect + Product Engineer** especializado en aplicaciones móviles empresariales, Field Service Management (FSM), operaciones en campo, React, Next.js App Router, TypeScript Strict y SaaS multi-tenant.
+>
+> El ecosistema:
+>
+> # FACILIA Portal Platform
+>
+> cuenta con:
+>
+> * PORTAL-00 — Documento Maestro Portal.
+> * PORTAL-01 — Identidad, Usuarios, Roles y Acceso.
+> * PORTAL-02 — Arquitectura Base del Portal FACILIA.
+>
+> Esta etapa implementa la primera versión funcional del:
+>
+> # Employee Portal MVP
+>
+> orientado al personal operativo.
+>
+> **No desarrollar Customer Portal todavía.**
+>
+> **No modificar Operations.**
+>
+> **No duplicar lógica de Work Orders.**
+>
+> El portal consume información existente.
+
+---
+
+# Objetivo
+
+Crear una experiencia móvil para que un empleado pueda:
+
+* consultar sus tareas;
+* confirmar asignaciones;
+* ejecutar servicios;
+* reportar problemas;
+* enviar evidencias.
+
+---
+
+# Principio fundamental
+
+El empleado no administra la operación.
+
+El empleado ejecuta.
+
+La fuente de verdad continúa siendo:
+
+```text id="q7b8am"
+Operations
+```
+
+El portal es una interfaz de ejecución.
+
+---
+
+# Arquitectura
+
+Flujo:
+
+```text id="3u8v0m"
+Operations
+
+↓
+
+Employee Portal
+
+↓
+
+Empleado
+
+↓
+
+COM
+
+↓
+
+Library
+
+↓
+
+Operations
+```
+
+---
+
+# 1. Dashboard del empleado
+
+Ruta:
+
+```text
+/employee
+```
+
+Mostrar:
+
+---
+
+## Próxima tarea
+
+Ejemplo:
+
+```text id="4x0kq1"
+Próximo servicio
+
+Cliente:
+Empresa ABC
+
+Servicio:
+Limpieza oficinas
+
+Hora:
+08:00
+
+Estado:
+Pendiente
+```
+
+---
+
+## Resumen diario
+
+Indicadores:
+
+* tareas asignadas;
+* tareas completadas;
+* incidencias abiertas.
+
+---
+
+# 2. Mis tareas
+
+Ruta:
+
+```text
+/employee/tasks
+```
+
+Vista principal:
+
+Mobile cards.
+
+Información:
+
+* fecha;
+* cliente;
+* servicio;
+* horario;
+* ubicación;
+* estado.
+
+---
+
+Estados:
+
+```text id="y5v7cw"
+ASSIGNED
+
+CONFIRMED
+
+IN_PROGRESS
+
+COMPLETED
+
+INCIDENT
+```
+
+---
+
+# 3. Detalle de tarea
+
+Ruta:
+
+```text
+/employee/tasks/{id}
+```
+
+Mostrar:
+
+## Información del servicio
+
+* cliente;
+* dirección;
+* horario;
+* instrucciones.
+
+---
+
+## Recursos necesarios
+
+Desde:
+
+```text id="u7e1pg"
+Operations Resources
+```
+
+Mostrar:
+
+* herramientas;
+* equipos;
+* kits.
+
+---
+
+## Acciones
+
+Botones:
+
+---
+
+Confirmar:
+
+```text id="0yq3sn"
+CONFIRM TASK
+```
+
+Genera evento:
+
+```text
+EmployeeConfirmedTask
+```
+
+---
+
+Iniciar:
+
+```text
+START SERVICE
+```
+
+Genera:
+
+```text
+ServiceStarted
+```
+
+---
+
+Finalizar:
+
+```text
+COMPLETE SERVICE
+```
+
+Genera:
+
+```text
+ServiceCompleted
+```
+
+---
+
+# 4. Ejecución del servicio
+
+Durante la tarea:
+
+Mostrar:
+
+* checklist;
+* instrucciones;
+* observaciones.
+
+---
+
+Permitir:
+
+* marcar pasos realizados;
+* agregar comentarios.
+
+---
+
+# 5. Evidencias
+
+Integración:
+
+```text id="z7x2p0"
+Employee Portal
+
+↓
+
+Library
+```
+
+---
+
+Permitir:
+
+* tomar foto;
+* subir imagen;
+* agregar descripción.
+
+---
+
+Ejemplo:
+
+```text id="m8p1rd"
+Foto final
+
+Comentario:
+
+Área común terminada.
+```
+
+---
+
+Crear referencia:
+
+```text
+EvidenceReference
+```
+
+---
+
+# 6. Incidentes
+
+Ruta:
+
+```text id="3d0v6z"
+/employee/issues
+```
+
+---
+
+Crear reporte:
+
+Tipos:
+
+```text id="v4q9g2"
+Falta acceso
+
+Falta material
+
+Herramienta dañada
+
+Problema cliente
+
+Otro
+```
+
+---
+
+Datos:
+
+* descripción;
+* foto opcional;
+* ubicación;
+* tarea relacionada.
+
+---
+
+Generar:
+
+```text
+OperationalIssue
+```
+
+---
+
+# 7. Comunicación
+
+Integración con COM.
+
+Mostrar:
+
+* instrucciones recibidas;
+* mensajes operativos;
+* avisos.
+
+---
+
+Acciones rápidas:
+
+```text id="9m3z0a"
+Confirmar
+
+Responder
+
+Solicitar ayuda
+```
+
+---
+
+# 8. Perfil del empleado
+
+Ruta:
+
+```text
+/employee/profile
+```
+
+Mostrar:
+
+* nombre;
+* organización;
+* teléfono;
+* supervisor.
+
+---
+
+Preparar futuro:
+
+* capacitaciones;
+* documentos;
+* certificaciones.
+
+---
+
+# 9. Geolocalización preparada
+
+No implementar seguimiento continuo.
+
+Preparar integración:
+
+Eventos futuros:
+
+```text id="n6y8pa"
+ServiceStarted
+
+EmployeeArrivedLocation
+
+ServiceCompleted
+```
+
+---
+
+# 10. Componentes
+
+Crear:
+
+```text id="p3x8sm"
+EmployeeDashboard
+
+TaskCard
+
+TaskDetail
+
+TaskStatusBadge
+
+TaskTimeline
+
+EvidenceUploader
+
+IncidentForm
+
+CommunicationPanel
+
+EmployeeProfile
+```
+
+---
+
+# 11. Hooks
+
+Crear:
+
+```text id="5k1q7m"
+useEmployeeTasks()
+
+useTaskDetail()
+
+useTaskActions()
+
+useEvidenceUpload()
+
+useIncidents()
+```
+
+---
+
+# 12. APIs consumidas
+
+Preparar:
+
+```http id="4s8x2q"
+GET /api/employee/tasks
+
+GET /api/employee/tasks/{id}
+
+POST /api/employee/tasks/{id}/confirm
+
+POST /api/employee/tasks/{id}/start
+
+POST /api/employee/tasks/{id}/complete
+
+POST /api/employee/tasks/{id}/evidence
+
+POST /api/employee/issues
+```
+
+---
+
+# 13. Seguridad
+
+Validar:
+
+* empleado autenticado;
+* solo tareas propias;
+* organización correcta.
+
+Nunca permitir:
+
+* consultar tareas de otro empleado;
+* modificar asignaciones.
+
+---
+
+# 14. Experiencia de usuario
+
+Prioridades:
+
+1. pocos clics;
+2. botones grandes;
+3. funcionamiento móvil;
+4. información clara;
+5. velocidad.
+
+---
+
+# Entregables
+
+Generar:
+
+1. Pantallas Employee Portal MVP.
+2. Componentes React.
+3. Hooks.
+4. Integración APIs.
+5. Estados visuales.
+6. Manejo de errores.
+7. Documentación.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+✅ ingresar como empleado
+✅ ver tareas asignadas
+✅ confirmar tarea
+✅ iniciar servicio
+✅ finalizar servicio
+✅ enviar evidencias
+✅ reportar incidentes
+✅ consultar comunicaciones
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar compilación completa.
+2. Listar archivos creados/modificados.
+3. Confirmar compatibilidad con PORTAL-00, PORTAL-01 y PORTAL-02.
+4. Generar sección:
+
+# "Contexto para PORTAL-04"
+
+Incluyendo:
+
+* implementación del Customer Portal MVP;
+* dashboard cliente;
+* servicios contratados;
+* contratos;
+* evidencias;
+* solicitudes;
+* integración con Contracts, Operations y Library.

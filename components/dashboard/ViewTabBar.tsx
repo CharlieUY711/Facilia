@@ -36,15 +36,15 @@ export default function ViewTabBar({
   backHref = "/dashboard",
 }: ViewTabBarProps) {
   return (
-    <nav className="flex items-center gap-4 border-b border-navy-100 pb-3">
-      <span className="font-display font-semibold text-navy text-2xl shrink-0">{title}</span>
+    <nav className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-navy-100 pb-3">
+      <span className="font-display font-semibold text-navy text-xl sm:text-2xl shrink-0">{title}</span>
 
-      <div className="flex-1 flex flex-wrap items-center justify-center gap-2">
+      <div className="flex-1 min-w-[140px] flex flex-wrap items-center justify-center gap-2">
         {tabs?.map((t) => (
           <button
             key={t.id}
             onClick={() => onTabChange?.(t.id)}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors whitespace-nowrap ${
               activeTab === t.id ? "bg-navy text-white" : "text-ink/60 hover:bg-navy-50"
             }`}
           >
@@ -54,7 +54,7 @@ export default function ViewTabBar({
         {tabsTrailing}
       </div>
 
-      {rightSlot && <div className="flex items-center gap-2 shrink-0">{rightSlot}</div>}
+      {rightSlot && <div className="flex items-center gap-2 shrink-0 flex-wrap justify-end">{rightSlot}</div>}
 
       <Link
         href={backHref}

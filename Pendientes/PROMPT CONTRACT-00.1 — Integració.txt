@@ -1,0 +1,490 @@
+# PROMPT CONTRACT-00.1 — Integración Arquitectónica del Módulo Contract Management con FACILIA
+
+> **Rol**
+>
+> Actúa como un **Enterprise Software Architect Senior**, especialista en DDD, Event-Driven Architecture, ERP empresariales, Contract Lifecycle Management (CLM), plataformas SaaS multi-tenant y arquitectura Charlie Compliant.
+>
+> Este documento continúa **CONTRACT-00**.
+>
+> **No generar código.**
+> **No generar SQL.**
+> **No generar componentes React.**
+>
+> El objetivo es definir cómo el módulo **Contract Management** se integra con el resto de FACILIA.
+
+---
+
+# Contexto
+
+La arquitectura funcional del módulo Contract Management ya fue definida en **CONTRACT-00**.
+
+Ahora debe definirse cómo interactúa con el resto de la plataforma.
+
+FACILIA está compuesto por módulos independientes que cooperan entre sí sin acoplamiento directo.
+
+---
+
+# Objetivo
+
+Definir la arquitectura de integración del ciclo contractual dentro de FACILIA.
+
+El contrato debe convertirse en el punto de unión entre el proceso comercial y la operación del servicio.
+
+---
+
+# Principio fundamental
+
+## El contrato nunca es un punto de partida.
+
+Siempre deriva de una entidad existente.
+
+No puede existir un contrato sin trazabilidad.
+
+Todo contrato debe tener un origen claramente identificado y verificable.
+
+---
+
+# Arquitectura general
+
+Diseñar la integración conceptual:
+
+```text
+                    DIRECTORY
+                         │
+                         │
+                     Organización
+                         │
+                         ▼
+LEADS → QUOTATIONS → CONTRACTS → OPERATIONS → BILLING
+                         │
+                         │
+                      LIBRARY
+```
+
+El contrato conecta el mundo comercial con el operativo.
+
+---
+
+# Integración con Directory
+
+Directory es la fuente única de verdad para:
+
+* Organizaciones
+* Personas
+* Contactos
+* Relaciones
+
+Contract Management únicamente consume estos datos.
+
+No puede:
+
+* crear organizaciones;
+* modificar clientes;
+* duplicar contactos.
+
+---
+
+# Integración con Leads
+
+Cuando un Lead evoluciona a oportunidad comercial, el contrato todavía no existe.
+
+El contrato solamente podrá generarse cuando el proceso comercial determine que existe una aceptación formal.
+
+Definir el evento conceptual:
+
+```text
+LeadApproved
+```
+
+---
+
+# Integración con Quotations
+
+La cotización es el origen principal del contrato.
+
+Debe existir trazabilidad completa.
+
+Ejemplo:
+
+```text
+Quotation
+FAC-2026-00045
+
+↓
+
+Contract
+CTR-2026-00012
+```
+
+El contrato debe conservar permanentemente la referencia a la cotización origen.
+
+---
+
+# Integración con Library
+
+Library es propietaria de todos los documentos.
+
+Contract Management únicamente referencia documentos.
+
+Ejemplos:
+
+* Contrato firmado
+* Anexos
+* SLA
+* Actas
+* Correspondencia contractual
+
+Nunca almacenar archivos dentro del módulo Contract.
+
+---
+
+# Integración con Operations
+
+Operations no crea servicios libremente.
+
+Debe consumir únicamente servicios contratados.
+
+Ejemplo:
+
+```text
+Contrato
+
+↓
+
+Servicios contratados
+
+↓
+
+Plan Operativo
+
+↓
+
+Órdenes de Trabajo
+```
+
+Operations no debe modificar el contrato.
+
+---
+
+# Integración con Finance
+
+Preparar la arquitectura para futuras integraciones.
+
+Ejemplos:
+
+* Facturación recurrente
+* Ajustes
+* Índices
+* Penalizaciones
+* Notas de crédito
+
+No implementar todavía.
+
+---
+
+# Integración con Assets
+
+Cuando un contrato incluya activos específicos:
+
+Ejemplo:
+
+* Equipamiento instalado
+* Máquinas
+* Equipos HVAC
+
+El contrato podrá referenciar activos existentes.
+
+Nunca duplicarlos.
+
+---
+
+# Integración con Documentos
+
+Todo documento contractual se administra mediante Library.
+
+Ejemplo conceptual:
+
+```text
+Contract
+
+↓
+
+DocumentLink
+
+↓
+
+Library Document
+```
+
+Tipos previstos:
+
+* Contrato
+* Anexo
+* Adenda
+* Acta
+* Certificado
+* Evidencia
+
+---
+
+# Modelo de origen contractual
+
+Definir la entidad conceptual:
+
+## ContractOrigin
+
+Debe soportar:
+
+```text
+QUOTE
+
+EXTENSION
+
+RENEWAL
+```
+
+Cada origen debe almacenar:
+
+* tipo;
+* identificador;
+* fecha;
+* usuario;
+* motivo.
+
+---
+
+# Modelo de relaciones
+
+Un contrato podrá relacionarse con:
+
+* Organización
+* Contactos
+* Cotización origen
+* Servicios
+* Ubicaciones
+* Documentos
+* Renovaciones
+* Extensiones
+
+Sin duplicar información.
+
+---
+
+# Servicios contratados
+
+El contrato no debe contener texto libre como única definición.
+
+Cada servicio debe vincularse al catálogo oficial de servicios de FACILIA.
+
+Ejemplo:
+
+```text
+Contract
+
+↓
+
+ContractService
+
+↓
+
+Service Catalog
+```
+
+Preparar el diseño para que Operations pueda interpretar automáticamente los servicios contratados.
+
+---
+
+# Ubicaciones
+
+Un contrato podrá abarcar una o varias ubicaciones.
+
+Ejemplo:
+
+Cliente ABC
+
+* Casa Central
+* Depósito
+* Sucursal Norte
+
+Cada ubicación podrá tener:
+
+* servicios distintos;
+* frecuencias distintas;
+* SLA distintos.
+
+---
+
+# Eventos de dominio
+
+Diseñar eventos conceptuales:
+
+```text
+ContractCreated
+
+ContractApproved
+
+ContractActivated
+
+ContractRenewed
+
+ContractExtended
+
+ContractExpired
+
+ContractCancelled
+
+ContractDocumentAttached
+```
+
+Estos eventos serán utilizados por otros módulos.
+
+---
+
+# Interfaces de integración
+
+Definir servicios conceptuales reutilizables.
+
+Ejemplo:
+
+```typescript
+ContractService
+```
+
+Métodos previstos:
+
+* createFromQuotation()
+* createRenewal()
+* createExtension()
+* activate()
+* cancel()
+* attachDocument()
+* listServices()
+* getTimeline()
+
+Los módulos consumidores nunca accederán directamente a la base de datos del contrato.
+
+---
+
+# Seguridad
+
+Definir reglas:
+
+* Multi-tenant.
+* Organización propietaria.
+* Roles internos.
+* Auditoría.
+* Permisos heredados de Directory.
+
+Preparar integración futura con Library ACL.
+
+---
+
+# Notificaciones
+
+Preparar eventos para futuras notificaciones:
+
+* Contrato próximo a vencer.
+* Contrato activado.
+* Renovación pendiente.
+* Extensión aprobada.
+* Firma pendiente.
+
+No implementar proveedores.
+
+---
+
+# Reglas de diseño
+
+El módulo Contract Management:
+
+NO administra:
+
+* archivos físicos;
+* clientes;
+* operaciones;
+* facturación.
+
+Administra exclusivamente:
+
+* compromiso contractual;
+* vigencia;
+* servicios contratados;
+* evolución del contrato.
+
+---
+
+# Preparación para futuras fases
+
+Dejar preparada la arquitectura para:
+
+* Firma electrónica.
+* Renovaciones automáticas.
+* Alertas.
+* Facturación recurrente.
+* Gestión de SLA.
+* Penalizaciones.
+* KPI contractuales.
+* Integración con IA.
+
+---
+
+# Entregables
+
+Generar un documento técnico que incluya:
+
+1. Arquitectura de integración.
+2. Bounded Contexts involucrados.
+3. Relaciones entre módulos.
+4. Interfaces conceptuales.
+5. Eventos de dominio.
+6. Modelo de origen contractual.
+7. Reglas de integración.
+8. Seguridad.
+9. Estrategia de evolución.
+10. Riesgos arquitectónicos.
+
+---
+
+# Restricciones
+
+No generar:
+
+* código;
+* SQL;
+* componentes React;
+* APIs implementadas.
+
+Solo arquitectura.
+
+---
+
+# Criterios de aceptación
+
+Al finalizar debe quedar completamente definido:
+
+* cómo nace un contrato;
+* cómo se relaciona con el resto de FACILIA;
+* cómo consume información de otros módulos;
+* cómo expone información a Operations y futuras integraciones;
+* cómo mantiene la trazabilidad completa desde el Lead hasta la finalización del servicio.
+
+---
+
+# Contexto para CONTRACT-01
+
+Al finalizar generar una sección llamada:
+
+## **"Contexto para CONTRACT-01"**
+
+Debe contener un resumen ejecutivo para el equipo de implementación indicando:
+
+* entidades a implementar;
+* agregados;
+* relaciones;
+* repositorios;
+* casos de uso;
+* APIs previstas;
+* restricciones arquitectónicas obligatorias;
+* reglas de integración con Directory, Library, Quotations y Operations.
+
+Este contexto será utilizado como base obligatoria para la implementación del dominio, la base de datos y el backend del módulo **Contract Management**.

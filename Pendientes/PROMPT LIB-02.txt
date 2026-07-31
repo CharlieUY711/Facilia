@@ -1,0 +1,560 @@
+# PROMPT LIB-02 — Frontend, Gestión Documental e Integración con la UI de FACILIA
+
+> **Rol**
+>
+> Actúa como un **Senior Frontend Engineer** especializado en Next.js 15, React 19, TypeScript Strict, TailwindCSS, DDD y la arquitectura Charlie Compliant utilizada en FACILIA.
+>
+> El backend del módulo Library ya fue implementado en **LIB-01**.
+>
+> **No modifiques el backend.**
+>
+> **No cambies la arquitectura.**
+>
+> Tu trabajo consiste únicamente en construir la interfaz de usuario utilizando los casos de uso y APIs ya existentes.
+
+---
+
+# Contexto
+
+Existe un módulo Library completamente funcional a nivel de:
+
+* Dominio
+* Base de datos
+* Storage
+* Repositories
+* Use Cases
+* APIs REST
+
+Ahora debe implementarse la experiencia de usuario.
+
+Debe utilizar exactamente los mismos componentes visuales, estilos y patrones utilizados por el resto de FACILIA.
+
+---
+
+# Objetivo
+
+Construir la interfaz completa del módulo Library.
+
+Debe quedar completamente funcional.
+
+Debe compilar.
+
+Debe integrarse con el backend existente.
+
+---
+
+# Alcance
+
+Implementar únicamente
+
+* UI
+* Componentes React
+* Hooks
+* Server Actions necesarias
+* Navegación
+* Preview
+* Upload
+
+No modificar SQL.
+
+No modificar entidades.
+
+No modificar repositorios.
+
+---
+
+# Diseño
+
+La pantalla debe mantener exactamente el estándar visual de FACILIA.
+
+Barra superior
+
+Tabla
+
+Panel lateral
+
+Toolbar
+
+Buscador
+
+Filtros
+
+Breadcrumb
+
+Preview
+
+---
+
+# Navegación
+
+Implementar
+
+```text
+Biblioteca
+
+├── Pública
+
+└── Privada
+```
+
+Dentro de cada una
+
+```text
+Carpetas
+
+↓
+
+Subcarpetas
+
+↓
+
+Documentos
+```
+
+---
+
+# Layout
+
+Dividir la pantalla en
+
+## Panel izquierdo
+
+Árbol de carpetas
+
+Expandir
+
+Contraer
+
+Nueva carpeta
+
+Renombrar
+
+Eliminar
+
+Mover
+
+---
+
+## Panel derecho
+
+Tabla de documentos
+
+---
+
+## Panel inferior (opcional)
+
+Preview
+
+o Drawer lateral.
+
+---
+
+# Toolbar
+
+Implementar
+
+Nuevo archivo
+
+Nueva carpeta
+
+Subir archivos
+
+Actualizar
+
+Buscar
+
+Filtros
+
+Vista
+
+---
+
+# Tabla
+
+Utilizar exactamente el componente de tabla utilizado en FACILIA.
+
+Columnas
+
+Icono
+
+Nombre
+
+Descripción
+
+Formato
+
+Tamaño
+
+Repositorio
+
+Fecha
+
+Usuario
+
+---
+
+Debe soportar
+
+Ordenamiento
+
+Selección múltiple
+
+Checkbox
+
+Acciones
+
+---
+
+# Acciones
+
+Por fila
+
+Abrir
+
+Descargar
+
+Renombrar
+
+Mover
+
+Eliminar
+
+Copiar enlace interno
+
+Ver propiedades
+
+---
+
+# Drag & Drop
+
+Implementar
+
+Arrastrar archivos
+
+Soltar sobre carpeta
+
+Carga automática
+
+Indicador visual
+
+Barra de progreso
+
+---
+
+# Upload
+
+Implementar
+
+Selector múltiple
+
+Drag & Drop
+
+Barra de progreso
+
+Cancelación
+
+Mensajes de error
+
+---
+
+# Preview
+
+Implementar
+
+PDF
+
+Imágenes
+
+No descargar para visualizar.
+
+Utilizar Signed URL del backend.
+
+---
+
+# Otros formatos
+
+Mostrar icono.
+
+Permitir descarga.
+
+---
+
+# Iconografía
+
+Asignar iconos automáticamente según extensión.
+
+Ejemplos
+
+PDF
+
+Word
+
+Excel
+
+PowerPoint
+
+Imagen
+
+ZIP
+
+Video
+
+Audio
+
+Texto
+
+---
+
+# Breadcrumb
+
+Implementar
+
+```text
+Biblioteca
+
+>
+
+Privada
+
+>
+
+Contratos
+
+>
+
+Cliente ABC
+```
+
+Debe permitir volver rápidamente.
+
+---
+
+# Búsqueda
+
+Implementar búsqueda en tiempo real.
+
+Buscar por
+
+Nombre
+
+Descripción
+
+Extensión
+
+---
+
+# Filtros
+
+Repositorio
+
+Tipo
+
+Fecha
+
+Usuario
+
+Formato
+
+---
+
+# Estados
+
+Vacío
+
+Cargando
+
+Error
+
+Sin resultados
+
+---
+
+# Integración
+
+El módulo debe poder abrirse desde cualquier otro módulo mediante un selector reutilizable.
+
+Crear componente
+
+LibraryPicker
+
+Capaz de funcionar como modal.
+
+Debe permitir
+
+Buscar documentos
+
+Seleccionar
+
+Confirmar
+
+Retornar
+
+DocumentId
+
+Nombre
+
+URL
+
+---
+
+# Componentes reutilizables
+
+Crear componentes independientes.
+
+Ejemplo
+
+LibraryTable
+
+FolderTree
+
+UploadDialog
+
+PreviewPanel
+
+DocumentCard
+
+DocumentIcon
+
+Toolbar
+
+SearchBar
+
+FolderBreadcrumb
+
+LibraryPicker
+
+---
+
+# Hooks
+
+Crear hooks reutilizables.
+
+Ejemplos
+
+useLibrary()
+
+useFolders()
+
+useUpload()
+
+usePreview()
+
+useSearch()
+
+---
+
+# Calidad
+
+No usar any.
+
+No duplicar lógica.
+
+Componentes pequeños.
+
+Separación clara.
+
+Cumplir arquitectura Charlie.
+
+---
+
+# Accesibilidad
+
+Teclado
+
+Focus
+
+ARIA
+
+Atajos básicos
+
+---
+
+# Responsive
+
+Desktop
+
+Tablet
+
+No priorizar Mobile.
+
+---
+
+# Exclusiones
+
+No implementar todavía
+
+ACL
+
+Compartición
+
+Versionado
+
+Auditoría
+
+OCR
+
+Firma Digital
+
+Contratos
+
+Workflow
+
+Comentarios
+
+Etiquetas
+
+---
+
+# Entregables
+
+Generar todos los archivos React completos.
+
+No pseudocódigo.
+
+No fragmentos.
+
+No explicaciones.
+
+Generar únicamente código.
+
+---
+
+# Criterios de aceptación
+
+El usuario debe poder
+
+* Navegar carpetas.
+* Crear carpetas.
+* Subir múltiples archivos.
+* Arrastrar archivos.
+* Buscar.
+* Filtrar.
+* Descargar.
+* Visualizar imágenes.
+* Visualizar PDFs.
+* Seleccionar documentos desde otros módulos mediante `LibraryPicker`.
+
+Todo utilizando el backend desarrollado en **LIB-01**.
+
+Todo debe compilar sin errores.
+
+---
+
+# Instrucción final
+
+Al finalizar:
+
+1. Verificar que toda la solución compile.
+2. Listar todos los componentes creados.
+3. Listar todos los hooks creados.
+4. Listar todas las páginas agregadas.
+5. Generar un apartado llamado **"Contexto para LIB-03"** con un resumen técnico y un prompt de continuidad para implementar la última etapa del módulo, incluyendo:
+
+   * ACL (permisos por organización, rol y usuario).
+   * Compartición de documentos.
+   * Auditoría.
+   * Preparación para versionado.
+   * Integración transversal con todos los módulos de FACILIA.
+   * Optimización y hardening del módulo.
+
+   **No rediseñar la arquitectura ni modificar el código existente; únicamente extender el módulo sobre la base ya implementada en LIB-01 y LIB-02.**

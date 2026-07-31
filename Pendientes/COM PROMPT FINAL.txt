@@ -1,0 +1,534 @@
+# PROMPT COM-CLOSE — Cierre y Congelamiento Arquitectónico del Módulo COM
+
+> **Rol**
+>
+> Actúa como un **Principal Enterprise Software Architect** especializado en SaaS multi-tenant, DDD, Clean Architecture, Workflow Automation, Field Service Management (FSM), comunicaciones empresariales y arquitectura modular.
+>
+> El módulo:
+>
+> # COM — Communications Hub
+>
+> completó su primera versión funcional.
+>
+> Etapas realizadas:
+>
+> * COM-00 — Documento Maestro Funcional.
+> * COM-01 — Modelo de Dominio y Persistencia.
+> * COM-02 — Backend Core + Integración Twilio WhatsApp API.
+> * COM-03 — Motor de Plantillas, Reglas y Automatizaciones.
+> * COM-04 — Inbox Operacional, Evidencias, Respuestas e Incidentes.
+> * COM-05 — Integración Completa COM + Operations.
+>
+> Esta etapa tiene como objetivo cerrar formalmente el módulo COM versión 1.0.
+>
+> **No crear nuevas funcionalidades.**
+>
+> **No modificar dominios existentes.**
+>
+> **No ampliar alcance.**
+>
+> **No implementar código nuevo salvo correcciones necesarias para consistencia.**
+
+---
+
+# Objetivo
+
+Generar la documentación final oficial del módulo:
+
+# COM — Communications Hub v1.0
+
+Debe quedar preparado para operación productiva dentro de FACILIA.
+
+---
+
+# 1. Resumen ejecutivo
+
+Documentar:
+
+* problema que resuelve COM;
+* valor operacional;
+* relación con Continuidad Operativa FACILIA.
+
+Explicar que COM permite:
+
+> asegurar que cada tarea asignada sea comunicada, confirmada, ejecutada y documentada.
+
+---
+
+# 2. Alcance definitivo COM 1.0
+
+Documentar capacidades implementadas:
+
+---
+
+## Comunicación WhatsApp
+
+* envío automático;
+* recepción;
+* historial;
+* estados de entrega.
+
+---
+
+## Automatizaciones
+
+* asignaciones;
+* recordatorios;
+* confirmaciones;
+* notificaciones.
+
+---
+
+## Respuestas operativas
+
+* confirmar;
+* rechazar;
+* solicitar ayuda.
+
+---
+
+## Evidencias
+
+* fotografías;
+* documentos;
+* referencias hacia Library.
+
+---
+
+## Incidentes
+
+* problemas operativos;
+* requerimientos;
+* alertas.
+
+---
+
+# 3. Arquitectura final
+
+Documentar:
+
+```text id="h7w8zc"
+                    FACILIA
+
+
+Directory
+    |
+    |
+Operations
+    |
+    |
+COM Communications Hub
+    |
+    |
+Twilio WhatsApp
+    |
+    |
+Personal Operativo
+
+
+COM
+
+    |
+    +---- Library
+
+    |
+    +---- GEO (futuro)
+
+    |
+    +---- Quality (futuro)
+```
+
+---
+
+# 4. Límites del dominio
+
+Declarar oficialmente:
+
+## COM administra:
+
+* comunicaciones;
+* mensajes;
+* conversaciones;
+* plantillas;
+* reglas;
+* automatizaciones;
+* respuestas;
+* evidencias asociadas.
+
+---
+
+## COM NO administra:
+
+* empleados;
+* clientes;
+* órdenes;
+* planificación;
+* archivos;
+* ubicación;
+* contratos;
+* inventarios.
+
+---
+
+# 5. Modelo de dominio final
+
+Documentar entidades definitivas:
+
+---
+
+## Conversation
+
+Responsabilidad:
+
+Contexto comunicacional operacional.
+
+---
+
+## Message
+
+Responsabilidad:
+
+Unidad individual de comunicación.
+
+---
+
+## CommunicationTemplate
+
+Responsabilidad:
+
+Contenido reutilizable.
+
+---
+
+## CommunicationRule
+
+Responsabilidad:
+
+Automatización basada en eventos.
+
+---
+
+## DeliveryRecord
+
+Responsabilidad:
+
+Estado del proveedor externo.
+
+---
+
+## EvidenceReference
+
+Responsabilidad:
+
+Vinculación con Library.
+
+---
+
+## OperationalIssue
+
+Responsabilidad:
+
+Problemas reportados desde comunicación.
+
+---
+
+## OperationalRequest
+
+Responsabilidad:
+
+Solicitudes generadas desde WhatsApp.
+
+---
+
+# 6. Integración con Twilio
+
+Documentar:
+
+## Responsable de Twilio
+
+* transporte WhatsApp;
+* entrega;
+* recepción;
+* multimedia.
+
+---
+
+## Responsable FACILIA COM
+
+* reglas;
+* lógica;
+* historial;
+* trazabilidad.
+
+---
+
+# 7. Flujo operativo completo
+
+Documentar:
+
+```text id="z6p8ax"
+Operations crea OT
+
+↓
+
+Asignación de empleado
+
+↓
+
+Evento WorkOrderAssigned
+
+↓
+
+COM genera comunicación
+
+↓
+
+Twilio envía WhatsApp
+
+↓
+
+Empleado confirma
+
+↓
+
+Empleado ejecuta servicio
+
+↓
+
+COM solicita evidencia
+
+↓
+
+Empleado envía foto
+
+↓
+
+Library almacena evidencia
+
+↓
+
+Operations recibe actualización
+
+↓
+
+Servicio cerrado
+```
+
+---
+
+# 8. Catálogo de eventos
+
+Documentar eventos finales:
+
+```text id="6x3v7m"
+CommunicationCreated
+
+CommunicationSent
+
+CommunicationDelivered
+
+CommunicationFailed
+
+MessageReceived
+
+EmployeeConfirmedTask
+
+EmployeeRejectedTask
+
+EvidenceReceived
+
+OperationalIssueReported
+
+OperationalRequestCreated
+```
+
+---
+
+# 9. APIs finales
+
+Generar inventario:
+
+* endpoint;
+* propósito;
+* consumidor;
+* estado.
+
+Separar:
+
+* internas;
+* administrativas.
+
+---
+
+# 10. Seguridad y privacidad
+
+Documentar:
+
+* multi-tenancy;
+* permisos;
+* auditoría;
+* protección de credenciales Twilio.
+
+---
+
+Definir:
+
+Quién puede:
+
+* enviar comunicaciones;
+* consultar conversaciones;
+* acceder a evidencias.
+
+---
+
+# 11. Operación y mantenimiento
+
+Documentar:
+
+* monitoreo;
+* errores Twilio;
+* mensajes fallidos;
+* reintentos;
+* auditoría.
+
+---
+
+# 12. Métricas operativas
+
+Indicadores:
+
+* mensajes enviados;
+* entregas exitosas;
+* confirmaciones;
+* rechazos;
+* evidencias recibidas;
+* incidencias generadas.
+
+---
+
+# 13. Roadmap futuro COM 2.0
+
+Solo documentar.
+
+No implementar.
+
+---
+
+## COM 2.0 — Inteligencia Operativa
+
+Posibles capacidades:
+
+* respuestas inteligentes;
+* clasificación automática;
+* sugerencias.
+
+---
+
+## COM 2.1 — Multi Canal
+
+Agregar:
+
+* email;
+* SMS;
+* push móvil.
+
+---
+
+## COM 2.2 — Comunicación con Clientes
+
+Permitir:
+
+* avisos;
+* confirmaciones;
+* encuestas.
+
+---
+
+## COM 2.3 — Integración GEO
+
+Ejemplos:
+
+* llegada detectada;
+* inicio automático;
+* cierre validado.
+
+---
+
+# 14. Checklist de arquitectura
+
+Confirmar:
+
+✅ Clean Architecture
+✅ DDD
+✅ Multi-tenant
+✅ Independencia del proveedor WhatsApp
+✅ Integración por eventos
+✅ Auditoría completa
+✅ Separación de responsabilidades
+✅ Compatibilidad FACILIA
+
+---
+
+# 15. Declaración de congelamiento
+
+Generar:
+
+# COM — ARQUITECTURA CONGELADA v1.0
+
+Declarar:
+
+* entidades estabilizadas;
+* APIs definidas;
+* integraciones documentadas;
+* límites del dominio establecidos.
+
+Toda evolución futura debe realizarse mediante:
+
+* nuevas capacidades;
+* nuevos servicios;
+* nuevas versiones.
+
+No mediante cambios destructivos.
+
+---
+
+# 16. Estado final
+
+El módulo queda:
+
+# Production Ready — COM v1.0
+
+Integrado con:
+
+* Directory.
+* Operations.
+* Library.
+* Twilio WhatsApp.
+
+Preparado para operar como parte del ecosistema FACILIA.
+
+---
+
+# Entregables finales
+
+Generar:
+
+1. Documento técnico COM v1.0.
+2. Arquitectura definitiva.
+3. Modelo de dominio final.
+4. Catálogo de APIs.
+5. Catálogo de eventos.
+6. Matriz de integraciones.
+7. Límites del módulo.
+8. Roadmap COM 2.0.
+9. Documento de mantenimiento.
+
+---
+
+## Resultado esperado
+
+Con COM cerrado, FACILIA completa el ciclo operativo:
+
+**Planificar → Asignar → Comunicar → Confirmar → Ejecutar → Evidenciar → Controlar**
+
+Este módulo queda congelado y listo para avanzar al siguiente dominio de la plataforma.

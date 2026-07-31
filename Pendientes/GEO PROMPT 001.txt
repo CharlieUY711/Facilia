@@ -1,0 +1,524 @@
+# PROMPT GEO-01 — Modelo de Dominio, Base de Datos y Persistencia del Módulo GEO
+
+> **Rol**
+>
+> Actúa como un **Senior Domain Architect** especializado en DDD, PostgreSQL, sistemas SaaS multi-tenant, geolocalización empresarial, Workforce Management y Clean Architecture.
+>
+> El documento funcional y arquitectura del módulo **GEO — Geopositioning & Workforce Control** ya fue aprobado en GEO-00.
+>
+> Esta etapa debe diseñar el modelo técnico del dominio y la persistencia.
+>
+> **No implementar todavía frontend.**
+>
+> **No implementar aplicación móvil.**
+>
+> **No implementar mapas.**
+>
+> **No modificar módulos externos.**
+>
+> El objetivo es crear una base sólida para el desarrollo posterior.
+
+---
+
+# Objetivo
+
+Diseñar el modelo de dominio y persistencia necesario para soportar:
+
+* dispositivos corporativos;
+* usuarios asociados;
+* captura de posiciones;
+* sesiones de seguimiento;
+* geocercas;
+* eventos de presencia;
+* validaciones contra tareas operativas.
+
+---
+
+# Principios de diseño
+
+## GEO es dueño únicamente de información geográfica.
+
+No duplicar:
+
+* personas;
+* organizaciones;
+* clientes;
+* órdenes;
+* contratos.
+
+Toda referencia externa debe realizarse mediante identificadores.
+
+---
+
+# Bounded Context
+
+Definir:
+
+```text
+GEO — Geopositioning & Workforce Control
+```
+
+Responsabilidades:
+
+* tracking;
+* ubicación;
+* presencia;
+* validación geográfica.
+
+---
+
+# Modelo de dominio
+
+Diseñar las siguientes entidades.
+
+---
+
+# 1. Device
+
+Representa un dispositivo móvil corporativo.
+
+Campos conceptuales:
+
+* id;
+* organization_id;
+* device_identifier;
+* nombre;
+* modelo;
+* sistema operativo;
+* versión;
+* usuario asignado;
+* estado;
+* última conexión.
+
+Estados:
+
+```text
+ACTIVE
+
+INACTIVE
+
+LOST
+
+BLOCKED
+
+RETIRED
+```
+
+---
+
+# 2. TrackingSession
+
+Representa una sesión activa de seguimiento.
+
+Ejemplo:
+
+Empleado inicia jornada.
+
+Campos:
+
+* id;
+* organization_id;
+* employee_id;
+* device_id;
+* inicio;
+* fin;
+* estado.
+
+Estados:
+
+```text
+ACTIVE
+
+PAUSED
+
+ENDED
+
+CANCELLED
+```
+
+---
+
+# 3. LocationRecord
+
+Representa una posición capturada.
+
+Campos:
+
+* id;
+* organization_id;
+* device_id;
+* employee_id;
+* latitude;
+* longitude;
+* accuracy;
+* altitude (opcional);
+* speed (opcional);
+* timestamp.
+
+Consideraciones:
+
+Debe estar preparado para alto volumen de registros.
+
+---
+
+# 4. Geofence
+
+Representa una zona geográfica.
+
+Ejemplos:
+
+* cliente;
+* oficina;
+* depósito.
+
+Campos:
+
+* id;
+* organization_id;
+* nombre;
+* tipo;
+* referencia externa;
+* centro;
+* radio;
+* estado.
+
+Tipos:
+
+```text
+CLIENT_LOCATION
+
+OFFICE
+
+WAREHOUSE
+
+CUSTOM
+```
+
+---
+
+# 5. PresenceEvent
+
+Representa un evento dentro de una geocerca.
+
+Ejemplos:
+
+Empleado llega.
+
+Empleado sale.
+
+Campos:
+
+* id;
+* employee_id;
+* device_id;
+* geofence_id;
+* tipo;
+* timestamp;
+* location_record_id.
+
+Tipos:
+
+```text
+ENTER
+
+EXIT
+
+STAY
+
+UNKNOWN
+```
+
+---
+
+# 6. LocationValidation
+
+Resultado del cruce entre GEO y otros módulos.
+
+Ejemplo:
+
+Orden:
+
+08:00 Cliente A
+
+Ubicación:
+
+08:05 Cliente A
+
+Resultado:
+
+VALIDATED
+
+Campos:
+
+* id;
+* organization_id;
+* employee_id;
+* work_order_id;
+* geofence_id;
+* resultado;
+* fecha;
+* diferencia horaria.
+
+Estados:
+
+```text
+VALIDATED
+
+PARTIAL
+
+FAILED
+
+PENDING
+```
+
+---
+
+# Relaciones
+
+Definir:
+
+```text
+Organization
+
+    |
+    |
+    +--- Device
+
+    |
+    +--- TrackingSession
+
+    |
+    +--- LocationRecord
+
+    |
+    +--- Geofence
+
+    |
+    +--- PresenceEvent
+
+    |
+    +--- LocationValidation
+```
+
+---
+
+# Integración con Directory
+
+No crear tabla Employee.
+
+Guardar únicamente:
+
+```text
+employee_id
+user_id
+organization_id
+```
+
+Directory es la fuente maestra.
+
+---
+
+# Integración con Operations
+
+No crear tabla WorkOrder.
+
+Guardar únicamente:
+
+```text
+work_order_id
+service_id
+location_id
+```
+
+Operations mantiene la propiedad.
+
+---
+
+# Base de datos
+
+Diseñar migraciones PostgreSQL.
+
+Requerimientos:
+
+* UUID como clave primaria.
+* timestamps estándar.
+* soft delete cuando corresponda.
+* organization_id obligatorio.
+* auditoría.
+
+---
+
+# Índices
+
+Definir índices para:
+
+## LocationRecord
+
+Preparar consultas por:
+
+* dispositivo;
+* empleado;
+* rango temporal.
+
+---
+
+## PresenceEvent
+
+Consultar:
+
+* empleado;
+* geocerca;
+* fecha.
+
+---
+
+## TrackingSession
+
+Consultar:
+
+* activo;
+* empleado;
+* jornada.
+
+---
+
+# Geoespacial
+
+Evaluar soporte para:
+
+* PostGIS.
+
+Definir si será utilizado desde la primera versión.
+
+La decisión debe justificarse.
+
+---
+
+# Seguridad
+
+Definir:
+
+* Row Level Security.
+* aislamiento por organización.
+* permisos por rol.
+
+---
+
+# Repositorios
+
+Definir interfaces:
+
+Ejemplo:
+
+```text
+DeviceRepository
+
+TrackingSessionRepository
+
+LocationRepository
+
+GeofenceRepository
+
+PresenceEventRepository
+
+ValidationRepository
+```
+
+---
+
+# Casos de uso preparados
+
+Definir interfaces:
+
+```text
+RegisterDevice
+
+StartTrackingSession
+
+EndTrackingSession
+
+RecordLocation
+
+CreateGeofence
+
+DetectPresence
+
+ValidateLocation
+```
+
+---
+
+# Eventos de dominio
+
+Definir payload conceptual:
+
+```text
+LocationRecorded
+
+TrackingSessionStarted
+
+TrackingSessionEnded
+
+EmployeeArrivedLocation
+
+EmployeeLeftLocation
+
+PresenceValidated
+```
+
+---
+
+# Auditoría
+
+Toda modificación administrativa debe registrar:
+
+* usuario;
+* fecha;
+* organización;
+* acción.
+
+---
+
+# Performance
+
+Diseñar considerando:
+
+* miles de empleados;
+* múltiples posiciones por día;
+* crecimiento histórico.
+
+Definir estrategia futura:
+
+* archivado;
+* particionamiento;
+* retención.
+
+---
+
+# Entregables
+
+Generar:
+
+1. Modelo entidad-relación.
+2. Entidades de dominio.
+3. Value Objects.
+4. Relaciones.
+5. Migraciones SQL propuestas.
+6. Índices.
+7. Repositorios.
+8. Casos de uso.
+9. Eventos.
+10. Decisiones arquitectónicas.
+
+---
+
+# Criterios de aceptación
+
+Al finalizar debe existir un modelo listo para implementar:
+
+* backend GEO;
+* APIs;
+* captura móvil;
+* integración con Operations.
+
+El diseño debe permitir crecer desde un MVP hasta una plataforma empresarial sin rehacer el dominio.

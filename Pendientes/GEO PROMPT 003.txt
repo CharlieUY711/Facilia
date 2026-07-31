@@ -1,0 +1,501 @@
+# PROMPT GEO-03 — Integración GEO + Directory + Operations
+
+> **Rol**
+>
+> Actúa como un **Enterprise Integration Architect** especializado en arquitecturas SaaS multi-tenant, DDD, Event Driven Architecture, Workforce Management, Field Service Management (FSM) y sistemas empresariales integrados.
+>
+> El módulo **GEO — Geopositioning & Workforce Control** ya cuenta con:
+>
+> * GEO-00 — Documento funcional y arquitectura.
+> * GEO-01 — Modelo de dominio y persistencia.
+> * GEO-02 — Backend Core y APIs.
+>
+> Esta etapa implementa la integración del módulo GEO con los dominios existentes de FACILIA:
+>
+> * DIRECTORY — Master Data Management.
+> * OPERATIONS — Gestión operativa.
+>
+> **No modificar la propiedad de datos de otros módulos.**
+>
+> **No duplicar entidades existentes.**
+>
+> **No implementar todavía aplicación móvil ni dashboards.**
+
+---
+
+# Objetivo
+
+Permitir que GEO pueda cruzar:
+
+```text
+Empleado
++
+Dispositivo
++
+Horario
++
+Orden de Trabajo
++
+Ubicación Cliente
++
+Posición GPS
+```
+
+para generar validaciones operativas.
+
+---
+
+# Principio fundamental
+
+Cada módulo mantiene su responsabilidad.
+
+## Directory es dueño de:
+
+* personas;
+* usuarios;
+* organizaciones;
+* roles;
+* dispositivos asignados administrativamente.
+
+---
+
+## Operations es dueño de:
+
+* contratos;
+* servicios;
+* planificación;
+* órdenes de trabajo;
+* asignaciones operativas.
+
+---
+
+## GEO es dueño de:
+
+* ubicación;
+* tracking;
+* geocercas;
+* presencia;
+* validaciones geográficas.
+
+---
+
+# Arquitectura de integración
+
+Implementar integración mediante:
+
+* APIs internas;
+* servicios de aplicación;
+* eventos de dominio.
+
+No realizar consultas directas entre tablas de módulos.
+
+---
+
+# Integración con DIRECTORY
+
+## Objetivo
+
+Relacionar el seguimiento geográfico con una persona real del sistema.
+
+---
+
+# Consumir información
+
+Desde Directory:
+
+* employee_id;
+* user_id;
+* organization_id;
+* nombre;
+* estado;
+* rol.
+
+---
+
+# Casos de uso
+
+Implementar:
+
+---
+
+## SyncEmployeeReference
+
+Permitir que GEO conozca usuarios autorizados para seguimiento.
+
+No copiar información completa.
+
+Solo referencia.
+
+---
+
+## AssignDeviceToEmployee
+
+Permitir asociar:
+
+```text
+Device
+
+↓
+
+Employee
+```
+
+Validando:
+
+* usuario existente;
+* organización correcta.
+
+---
+
+## ValidateUserPermission
+
+Antes de iniciar tracking:
+
+Verificar:
+
+* usuario activo;
+* permisos;
+* organización.
+
+---
+
+# Eventos Directory consumidos
+
+Preparar integración con:
+
+```text
+UserCreated
+
+UserUpdated
+
+UserDeactivated
+
+OrganizationUpdated
+```
+
+---
+
+# Integración con OPERATIONS
+
+## Objetivo
+
+Relacionar ubicación real con trabajo planificado.
+
+---
+
+# Consumir desde Operations
+
+Información requerida:
+
+* work_order_id;
+* employee_id;
+* service_id;
+* location_id;
+* scheduled_start;
+* scheduled_end.
+
+---
+
+# No duplicar
+
+GEO no debe almacenar:
+
+* descripción del servicio;
+* datos del cliente;
+* contrato;
+* instrucciones operativas.
+
+Solo referencias.
+
+---
+
+# Casos de uso
+
+---
+
+## LinkTrackingToWorkOrder
+
+Relacionar una sesión GEO con una orden.
+
+Ejemplo:
+
+```text
+Orden 000123
+
+Empleado Juan
+
+Sesión GPS 08:00-12:00
+```
+
+---
+
+## ValidateArrival
+
+Validar:
+
+```text
+Hora planificada
+
++
+
+Hora GPS llegada
+
++
+
+Geocerca cliente
+```
+
+Resultado:
+
+```text
+ON_TIME
+
+LATE
+
+FAILED
+```
+
+---
+
+## ValidatePresence
+
+Confirmar permanencia.
+
+Ejemplo:
+
+Orden:
+
+08:00-12:00
+
+GPS:
+
+08:10-11:50
+
+Resultado:
+
+VALIDATED
+
+---
+
+## DetectDeviation
+
+Detectar:
+
+* llegada tarde;
+* ausencia;
+* salida anticipada;
+* ubicación incorrecta.
+
+---
+
+# Modelo de integración
+
+Crear:
+
+## WorkOrderTrackingContext
+
+Entidad de integración.
+
+Responsabilidad:
+
+Relacionar:
+
+* work_order_id;
+* tracking_session_id;
+* geofence_id;
+* resultado.
+
+---
+
+# Eventos GEO publicados
+
+Implementar:
+
+```text
+EmployeeArrivedLocation
+
+EmployeeLeftLocation
+
+PresenceValidated
+
+LocationDeviationDetected
+```
+
+---
+
+# Consumidores futuros
+
+Preparar para:
+
+* Operations Dashboard.
+* Quality.
+* Notifications.
+* BI.
+
+---
+
+# Flujo completo
+
+Documentar:
+
+```text
+Directory
+
+Empleado creado
+
+        ↓
+
+GEO
+
+Dispositivo asignado
+
+        ↓
+
+Operations
+
+Orden asignada
+
+        ↓
+
+GEO
+
+Tracking iniciado
+
+        ↓
+
+GPS
+
+Ubicación registrada
+
+        ↓
+
+Geofence
+
+Presencia detectada
+
+        ↓
+
+GEO
+
+Validación generada
+
+        ↓
+
+Operations
+
+Resultado operativo disponible
+```
+
+---
+
+# Reglas de negocio
+
+Implementar:
+
+---
+
+## Regla 1 — Organización
+
+Un empleado solo puede tener dispositivos dentro de su organización.
+
+---
+
+## Regla 2 — Orden asignada
+
+Una ubicación solo puede validarse contra una orden asignada.
+
+---
+
+## Regla 3 — Geocerca válida
+
+La validación requiere:
+
+* geocerca activa;
+* timestamp válido.
+
+---
+
+## Regla 4 — Auditoría
+
+Toda validación debe registrar:
+
+* fecha;
+* origen;
+* usuario;
+* organización.
+
+---
+
+# APIs de integración
+
+Crear servicios internos:
+
+```text
+GET /internal/geo/employees/{id}
+
+POST /internal/geo/work-orders/link
+
+POST /internal/geo/work-orders/{id}/validate
+
+GET /internal/geo/work-orders/{id}/presence
+```
+
+---
+
+# Seguridad
+
+Garantizar:
+
+* aislamiento multi-tenant;
+* permisos por rol;
+* trazabilidad;
+* mínimo privilegio.
+
+---
+
+# Calidad
+
+Todo debe:
+
+* respetar arquitectura existente;
+* evitar acoplamiento fuerte;
+* utilizar interfaces;
+* mantener independencia entre dominios.
+
+---
+
+# Entregables
+
+Generar:
+
+1. Servicios de integración.
+2. Adaptadores.
+3. Eventos.
+4. Casos de uso.
+5. APIs internas.
+6. Documentación de flujos.
+7. Diagramas de integración.
+
+---
+
+# Criterios de aceptación
+
+Debe ser posible:
+
+✅ asociar dispositivos a empleados
+✅ relacionar tracking con órdenes
+✅ validar llegada a clientes
+✅ validar permanencia
+✅ detectar desvíos básicos
+✅ mantener independencia entre módulos
+
+---
+
+# Instrucción final
+
+Antes de finalizar:
+
+1. Verificar compatibilidad con GEO-01 y GEO-02.
+2. Listar archivos creados/modificados.
+3. Documentar contratos de integración.
+4. Generar sección **"Contexto para GEO-04"** explicando la implementación del **Agente Móvil/PWA de captura GPS**, incluyendo autenticación, registro periódico de ubicación, funcionamiento offline, consumo de batería y sincronización.

@@ -1,0 +1,746 @@
+# FACILIA — Documento Maestro
+
+# COM — Communications Hub
+
+## Plataforma de Comunicación Operacional vía WhatsApp
+
+**Versión:** 1.0
+**Estado:** Documento funcional inicial
+**Módulo:** COM
+**Integración principal:** Twilio WhatsApp API
+
+---
+
+# 1. Introducción
+
+FACILIA necesita una capa de comunicación operacional que permita conectar de forma automática a la organización con el personal encargado de ejecutar servicios.
+
+Actualmente, los módulos operativos pueden definir:
+
+* clientes;
+* servicios;
+* órdenes de trabajo;
+* planificación;
+* asignaciones.
+
+Sin embargo, existe una necesidad crítica:
+
+> Asegurar que la persona correcta reciba la información correcta, confirme la tarea, pueda reportar inconvenientes y entregue evidencias de ejecución.
+
+El módulo **COM — Communications Hub** resuelve esta necesidad utilizando WhatsApp como canal operativo principal.
+
+---
+
+# 2. Visión del módulo
+
+COM transforma una orden operativa en una interacción trazable.
+
+No es un sistema de chat.
+
+Es un motor de comunicación empresarial orientado a ejecución.
+
+---
+
+## Concepto central
+
+```text
+ORDEN DE TRABAJO
+
+        ↓
+
+COMUNICACIÓN AUTOMÁTICA
+
+        ↓
+
+CONFIRMACIÓN DEL OPERARIO
+
+        ↓
+
+EJECUCIÓN
+
+        ↓
+
+EVIDENCIA
+
+        ↓
+
+CIERRE OPERATIVO
+```
+
+---
+
+# 3. Objetivo principal
+
+Permitir que FACILIA pueda:
+
+* asignar tareas automáticamente;
+* enviar instrucciones;
+* solicitar confirmaciones;
+* recibir respuestas;
+* recibir fotos;
+* registrar incidentes;
+* mantener evidencia histórica.
+
+---
+
+# 4. Principios arquitectónicos
+
+## COM no reemplaza otros módulos.
+
+Cada dominio mantiene su responsabilidad.
+
+---
+
+# Operations
+
+Es dueño de:
+
+* órdenes;
+* servicios;
+* planificación;
+* asignaciones.
+
+---
+
+# Directory
+
+Es dueño de:
+
+* usuarios;
+* personas;
+* teléfonos;
+* organizaciones.
+
+---
+
+# Library
+
+Es dueño de:
+
+* archivos;
+* imágenes;
+* documentos.
+
+---
+
+# GEO
+
+Es dueño de:
+
+* ubicación;
+* presencia;
+* validaciones geográficas.
+
+---
+
+# COM
+
+Es dueño de:
+
+* comunicaciones;
+* mensajes;
+* plantillas;
+* automatizaciones;
+* respuestas.
+
+---
+
+# 5. Arquitectura conceptual
+
+```text
+                     FACILIA
+
+
+Directory
+    |
+    |
+Operations
+    |
+    |
+    ↓
+
+COM Communication Hub
+
+    |
+    |
+    ↓
+
+Twilio WhatsApp API
+
+    |
+    |
+    ↓
+
+Personal operativo
+
+
+Respuesta
+
+    ↓
+
+Twilio Webhook
+
+    ↓
+
+COM Inbox
+
+    ↓
+
+Operations / Library
+```
+
+---
+
+# 6. Casos de uso principales
+
+---
+
+# 6.1 Asignación automática de tareas
+
+Cuando Operations asigna una orden:
+
+Evento:
+
+```text
+WorkOrderAssigned
+```
+
+COM genera comunicación.
+
+Ejemplo:
+
+```
+Hola Juan.
+
+Tenés una nueva tarea asignada.
+
+Cliente:
+Empresa ABC
+
+Servicio:
+Limpieza oficina
+
+Fecha:
+15/08
+
+Horario:
+08:00
+
+Respondé:
+CONFIRMAR
+```
+
+---
+
+# 6.2 Confirmación del trabajador
+
+Respuesta:
+
+```
+CONFIRMAR
+```
+
+COM registra:
+
+```
+TaskAccepted
+```
+
+---
+
+Respuesta:
+
+```
+NO PUEDO
+```
+
+COM registra:
+
+```
+TaskRejected
+```
+
+---
+
+# 6.3 Recordatorios automáticos
+
+Ejemplos:
+
+## Día anterior
+
+```
+Recordatorio:
+Mañana tenés servicio en Empresa ABC.
+```
+
+---
+
+## Antes del horario
+
+```
+Tu servicio comienza en 60 minutos.
+```
+
+---
+
+# 6.4 Instrucciones operativas
+
+Permitir enviar:
+
+* descripción;
+* instrucciones especiales;
+* documentación;
+* fotos de referencia.
+
+Ejemplo:
+
+```
+Importante:
+
+Ingresar por puerta lateral.
+Solicitar acceso a recepción.
+```
+
+---
+
+# 6.5 Solicitud de evidencia
+
+COM puede solicitar:
+
+* fotografías;
+* comentarios;
+* confirmaciones.
+
+Ejemplo:
+
+```
+Servicio finalizado.
+
+Enviá una foto del trabajo terminado.
+```
+
+---
+
+# 6.6 Reporte de incidentes
+
+Empleado:
+
+```
+No puedo completar la tarea.
+Falta producto.
+```
+
+COM registra:
+
+```
+OperationalIssueReported
+```
+
+---
+
+# 7. Integración con Twilio
+
+## Rol de Twilio
+
+Twilio será el proveedor de transporte.
+
+Responsabilidades:
+
+* envío WhatsApp;
+* recepción mensajes;
+* multimedia;
+* estado entrega.
+
+---
+
+COM mantiene:
+
+* lógica;
+* reglas;
+* historial;
+* relación con operaciones.
+
+---
+
+# 8. Modelo conceptual
+
+---
+
+# Conversation
+
+Representa una conversación operacional.
+
+Ejemplo:
+
+```
+Orden 000123
+
+Empleado:
+Juan Pérez
+
+Cliente:
+ABC SA
+```
+
+---
+
+Campos:
+
+* id;
+* organization_id;
+* employee_id;
+* work_order_id;
+* estado.
+
+---
+
+# Message
+
+Representa un mensaje.
+
+Tipos:
+
+```
+TEXT
+
+IMAGE
+
+DOCUMENT
+
+LOCATION
+
+SYSTEM
+```
+
+---
+
+Campos:
+
+* id;
+* conversation_id;
+* dirección;
+* contenido;
+* fecha;
+* estado.
+
+---
+
+# CommunicationTemplate
+
+Plantilla reutilizable.
+
+Ejemplo:
+
+```
+Asignación de servicio
+```
+
+Variables:
+
+```
+{{empleado}}
+
+{{cliente}}
+
+{{hora}}
+
+{{direccion}}
+```
+
+---
+
+# CommunicationRule
+
+Define automatizaciones.
+
+Ejemplo:
+
+```
+Cuando:
+WorkOrderAssigned
+
+Enviar:
+Template Assignment
+```
+
+---
+
+# EvidenceRequest
+
+Solicitud de evidencia.
+
+Ejemplo:
+
+```
+Solicitar foto final
+```
+
+---
+
+# 9. Estados de mensaje
+
+```text
+CREATED
+
+SENT
+
+DELIVERED
+
+READ
+
+FAILED
+```
+
+---
+
+# 10. Eventos de dominio
+
+COM generará:
+
+```
+CommunicationSent
+
+CommunicationDelivered
+
+CommunicationFailed
+
+EmployeeConfirmedTask
+
+EmployeeRejectedTask
+
+EvidenceReceived
+
+OperationalIssueReported
+```
+
+---
+
+# 11. Seguridad
+
+Debe contemplar:
+
+* multi-tenancy;
+* separación por organización;
+* auditoría;
+* permisos.
+
+Registrar:
+
+* quién creó la comunicación;
+* cuándo;
+* para qué orden;
+* destinatario.
+
+---
+
+# 12. Privacidad
+
+El módulo debe almacenar únicamente información necesaria.
+
+No administrar:
+
+* conversaciones personales;
+* mensajes fuera del contexto operativo.
+
+---
+
+# 13. Integraciones futuras
+
+---
+
+## GEO
+
+Ejemplo:
+
+```
+Empleado llegó al cliente.
+
+Enviar:
+
+"Confirmamos llegada al servicio."
+```
+
+---
+
+## Quality
+
+Ejemplo:
+
+```
+Solicitar encuesta posterior al servicio.
+```
+
+---
+
+## Customer Portal
+
+Ejemplo:
+
+```
+Cliente recibe actualización automática.
+```
+
+---
+
+# 14. MVP recomendado
+
+La primera versión debe incluir:
+
+## Comunicación
+
+✅ Envío WhatsApp
+✅ Recepción WhatsApp
+✅ Historial
+
+---
+
+## Operación
+
+✅ Asignación automática
+✅ Confirmación
+✅ Rechazo
+✅ Recordatorios
+
+---
+
+## Evidencia
+
+✅ Fotos
+✅ Comentarios
+✅ Requerimientos
+
+---
+
+# 15. Fuera de alcance inicial
+
+No implementar:
+
+* chatbot inteligente;
+* IA conversacional;
+* llamadas;
+* WhatsApp comercial;
+* campañas masivas;
+* marketing.
+
+---
+
+# 16. Roadmap
+
+---
+
+# COM-00
+
+Documento maestro funcional y arquitectura
+
+Estado:
+Inicial
+
+---
+
+# COM-01
+
+Modelo de dominio y persistencia
+
+Incluye:
+
+* entidades;
+* relaciones;
+* SQL;
+* repositorios.
+
+---
+
+# COM-02
+
+Backend + Twilio Integration
+
+Incluye:
+
+* adapter Twilio;
+* APIs;
+* webhooks;
+* envío y recepción.
+
+---
+
+# COM-03
+
+Motor de plantillas y automatizaciones
+
+Incluye:
+
+* reglas;
+* eventos;
+* programación.
+
+---
+
+# COM-04
+
+Evidencias y requerimientos operativos
+
+Incluye:
+
+* fotos;
+* archivos;
+* incidencias.
+
+---
+
+# COM-05
+
+Integración completa con Operations
+
+Incluye:
+
+* Work Orders;
+* planificación;
+* estados.
+
+---
+
+# COM-CLOSE
+
+Congelamiento:
+
+* arquitectura;
+* APIs;
+* eventos;
+* responsabilidades.
+
+---
+
+# 17. Resultado esperado
+
+COM debe convertirse en la capa que asegure:
+
+> "Cada persona sabe qué tiene que hacer, cuándo hacerlo, dónde hacerlo y puede demostrar que fue realizado."
+
+---
+
+# 18. Posicionamiento dentro de FACILIA
+
+La plataforma completa queda:
+
+```text
+DIRECTORY
+    |
+    |
+OPERATIONS
+    |
+    |
+COM
+    |
+    |
+GEO
+    |
+    |
+LIBRARY
+    |
+    |
+QUALITY
+```
+
+La combinación permite entregar:
+
+**Continuidad Operativa con comunicación, trazabilidad y evidencia.**
