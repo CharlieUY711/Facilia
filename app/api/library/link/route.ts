@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getLibraryAuth, puedeVerRepositorio } from "@/lib/library/auth";
-import { getDocument, linkDocument, unlinkDocument } from "@/lib/library/repository";
+import { getDocument, linkDocument, listDocumentsForEntity, unlinkDocument } from "@/lib/library/repository";
 
 function readLinkParams(body: Record<string, unknown> | null, sp: URLSearchParams) {
   return {
@@ -8,6 +8,30 @@ function readLinkParams(body: Record<string, unknown> | null, sp: URLSearchParam
     entityType: String(body?.entity_type ?? sp.get("entity_type") ?? "").trim(),
     entityId: String(body?.entity_id ?? sp.get("entity_id") ?? ""),
   };
+}
+
+/**
+ * GET /api/library/link?entity_type=...&entity_id=...
+ * Lista los documentos vinculados a una entidad de FACILIA. Filtra
+ * los que el usuario no tiene permiso de ver (ej. un colaborador no
+ * ve documentos vinculados que viven en la biblioteca privada).
+ */
+export async function GET(req: NextRequest) {
+  const auth = await getLibraryAuth();
+  if (!auth) return NextResponse.json({ ok: false, error: "No autorizado" }, { status: 403 });
+
+  const sp = req.nextUrl.searchParams;
+  const entityType = (sp.get("entity_type") ?? "").trim();
+  const entityId = sp.get("entity_id") ?? "";
+  if (!entityType || !entityId) {
+    return NextResponse.json({ ok: false, error: "Faltan entity_type o entity_id" }, { status: 400 });
+  }
+
+  const { data, error } = await listDocumentsForEntity({ entityType, entityId });
+  if (error) return NextResponse.json({ ok: false, error }, { status: 500 });
+
+  const visible = data.filter((doc) => puedeVerRepositorio(auth, doc.repository_type));
+  return NextResponse.json({ ok: true, documents: visible });
 }
 
 /**

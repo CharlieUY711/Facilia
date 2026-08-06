@@ -13,6 +13,7 @@ import Modal from "@/components/Modal";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import ViewTabBar from "@/components/dashboard/ViewTabBar";
 import { ROLE_LABEL, type Role } from "@/lib/roles";
+import EntityDocuments from "@/components/library/EntityDocuments";
 
 // ── Tipos ──────────────────────────────────────────────────────────
 
@@ -170,8 +171,11 @@ export default function DirectorioPage() {
       fetch("/api/locaciones").then((r) => r.json()),
     ]);
     if (rp.ok) setPersonas(rp.personas);
+    else setError(rp.error ?? "No se pudieron cargar las personas.");
     if (ro.ok) setOrganizaciones(ro.organizaciones);
+    else setError((prev) => prev ?? ro.error ?? "No se pudieron cargar las organizaciones.");
     if (rl.ok) setLocaciones(rl.locaciones);
+    else setError((prev) => prev ?? rl.error ?? "No se pudieron cargar las locaciones.");
     setLoadingData(false);
   }
 
@@ -216,7 +220,7 @@ export default function DirectorioPage() {
 
   return (
     <div className="min-h-screen bg-paper">
-      <DashboardHeader title="Directorio" active="directorio" />
+      <DashboardHeader title="Personas y Empresas" active="directorio" />
 
       <main className="max-w-screen-2xl mx-auto px-5 sm:px-8 py-10 space-y-6">
         {error && (
@@ -230,7 +234,7 @@ export default function DirectorioPage() {
 
         {/* Tabs */}
         <ViewTabBar
-          title="Directorio"
+          title="Personas y Empresas"
           tabs={[
             { id: "personas", label: `Personas (${personas.length})` },
             { id: "organizaciones", label: `Organizaciones (${organizaciones.length})` },
@@ -832,6 +836,7 @@ function PersonaFormModal({
             value={form.notas}
             onChange={(e) => setForm({ ...form, notas: e.target.value })}
           />
+          {editing && <EntityDocuments entityType="persona" entityId={editing.id} allowPrivada />}
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="ghost" onClick={onClose} disabled={saving}>
               Cancelar
@@ -997,6 +1002,7 @@ function OrganizacionFormModal({
           value={form.notas}
           onChange={(e) => setForm({ ...form, notas: e.target.value })}
         />
+        {editing && <EntityDocuments entityType="organizacion" entityId={editing.id} allowPrivada />}
         <div className="flex justify-end gap-2 pt-2">
           <Button variant="ghost" onClick={onClose} disabled={saving}>
             Cancelar

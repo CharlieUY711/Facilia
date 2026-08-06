@@ -56,7 +56,7 @@ export default function LandingPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-white/40 via-white/70 to-paper" />
         <div className="relative max-w-5xl mx-auto px-5 sm:px-8 pt-20 pb-0 text-center">
           <h1 className="font-display font-bold text-navy leading-[1.05] mb-6 animate-fadeUp">
-            <span className="block text-xl xs:text-2xl sm:text-4xl">Nos ocupamos que tu espacio nunca se detenga.</span>
+            <span className="block text-xl xs:text-2xl sm:text-4xl">No vendemos productos. No vendemos horas.</span>
             <span className="block text-xl xs:text-2xl sm:text-4xl text-orange">Entregamos continuidad operativa.</span>
           </h1>
           <p className="max-w-3xl mx-auto text-ink/90 text-lg mb-12 animate-fadeUp">

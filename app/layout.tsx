@@ -12,7 +12,7 @@ const poppins = Poppins({
 export const metadata: Metadata = {
   title: "FACILIA — Facility Services by ODDY",
   description:
-    "Nos ocupamos que tu espacio nunca se detenga. Entregamos continuidad operativa. Limpieza, mantenimiento y gestión de recursos críticos para empresas, oficinas y comercios.",
+    "No vendemos productos. No vendemos horas. Entregamos continuidad operativa. Limpieza, mantenimiento y gestión de recursos críticos para empresas, oficinas y comercios.",
   icons: { icon: "/FACILIA.png", apple: "/apple-touch-icon.png" },
   manifest: "/site.webmanifest",
   appleWebApp: {

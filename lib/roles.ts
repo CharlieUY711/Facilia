@@ -44,7 +44,7 @@ export function dashboardItemsForRole(role: Role): DashboardItem[] {
       ...comunes,
       {
         key: "directorio",
-        titulo: "Directorio",
+        titulo: "Personas y Empresas",
         descripcion: "Organizaciones, personas y locaciones. Accesos y roles de todo el equipo FACILIA.",
         href: "/dashboard/usuarios",
         icon: "👥",
@@ -55,6 +55,13 @@ export function dashboardItemsForRole(role: Role): DashboardItem[] {
         descripcion: "Legajos del personal: evolución, tareas, comunicados y documentación.",
         href: "/dashboard/personal",
         icon: "🧑‍💼",
+      },
+      {
+        key: "biblioteca",
+        titulo: "Biblioteca",
+        descripcion: "Documentos y carpetas de la biblioteca pública y privada.",
+        href: "/dashboard/biblioteca",
+        icon: "📚",
       },
       {
         key: "reportes",
@@ -84,7 +91,7 @@ export function dashboardItemsForRole(role: Role): DashboardItem[] {
       ...comunes,
       {
         key: "directorio",
-        titulo: "Directorio",
+        titulo: "Personas y Empresas",
         descripcion: "Organizaciones, personas y locaciones. Accesos y roles del equipo.",
         href: "/dashboard/usuarios",
         icon: "👥",
@@ -95,6 +102,13 @@ export function dashboardItemsForRole(role: Role): DashboardItem[] {
         descripcion: "Legajos del personal: evolución, tareas, comunicados y documentación.",
         href: "/dashboard/personal",
         icon: "🧑‍💼",
+      },
+      {
+        key: "biblioteca",
+        titulo: "Biblioteca",
+        descripcion: "Documentos y carpetas de la biblioteca pública y privada.",
+        href: "/dashboard/biblioteca",
+        icon: "📚",
       },
       {
         key: "reportes",
@@ -115,6 +129,13 @@ export function dashboardItemsForRole(role: Role): DashboardItem[] {
         icon: "📋",
       },
       ...comunes,
+      {
+        key: "biblioteca",
+        titulo: "Biblioteca",
+        descripcion: "Documentos y carpetas de la biblioteca pública.",
+        href: "/dashboard/biblioteca",
+        icon: "📚",
+      },
       {
         key: "reportes",
         titulo: "Reportes",
